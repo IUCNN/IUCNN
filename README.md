@@ -6,7 +6,7 @@ Automated assessment of IUCN threat status
 
 
 ## Installation
-You can install IUCNN directly from gtihub using devtools.
+You can install IUCNN directly from Github using devtools.
 
 ```{r}
 install.packages("devtools")
@@ -16,7 +16,7 @@ install_github("azizka/IUCNN")
 ```
 
 ## Usage
-A vignette with a detailed turorial on how to use IUCNN is avaialble as part of the package
+A vignette with a detailed tutorial on how to use IUCNN is available as part of the package
 
 ## Citation
 
