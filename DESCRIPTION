@@ -1,15 +1,19 @@
 Package: IUCNN
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+Title: Neural Networks to Approximate IUCN Red List Conservation Assessments
+Version: 0.9.1
+Authors@R: c(
+    person(given = "Alexander", 
+    family = "Zizka", 
+    role = c("aut", 'cre"),
+    email = alexander.zizka@idiv.de,
+    comment = c(ORCID = "0000-0002-1680-9192")),
+    person(given = "Daniele", 
+    family = "Silvestro", 
+    role ="aut",
+    comment = c(ORCID = "0000-0003-0100-0961")),
+  )
+Description: Train neural networks based on geographic species occurrences, environmental data and existing IUCN Red List assessments to predict the conservation status of "Not Evaluated" or "Data Deficient" species, for any taxon or geographic region of interest.
+License:  LGPL-2.1
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
