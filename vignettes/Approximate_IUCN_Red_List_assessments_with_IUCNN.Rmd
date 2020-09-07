@@ -1,0 +1,19 @@
+---
+title: "Approximate_IUCN_Red_List_assessments_with_IUCNN"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Approximate_IUCN_Red_List_assessments_with_IUCNN}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(IUCNN)
+```

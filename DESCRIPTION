@@ -19,5 +19,10 @@ BugReports: https://github.com/azizka/IUCNN/issues
 Suggests: 
     covr,
     testthat,
-    spelling
+    spelling,
+    knitr,
+    rmarkdown
 Language: en-US
+Imports: 
+    magrittr
+VignetteBuilder: knitr
