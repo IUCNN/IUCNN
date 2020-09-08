@@ -17,3 +17,42 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(IUCNN)
 ```
+
+# Installation
+
+# Input data
+
+## Features
+
+### Geography
+
+### Biomes
+
+### Climate
+
+### Other features
+
+## Classes
+
+## Labels
+
+# Train an IUCNN model
+
+# Use a trained model to predict the conservation status of Not Evaluated species
+
+# Summary
+
+# Visualize results
+
+# Additional features
+
+## Rasterized data (e.g. climate, human impact)
+
+## Polygon data (eg. Protected areas, Biomes)
+
+
+
+
+
+
+
