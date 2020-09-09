@@ -74,7 +74,7 @@ geo_features <- function(x,
 
     #hemisphere
     mutate(lat_hemisphere = ifelse(mean_lat < 0, 0, 1)) %>%
-    mutate(mean_lat = abs(mean_lat))
+    mutate(mean_lat = abs(.data$mean_lat))
 
     # EOO and AOO
      spa <- rCAT::ConBatch(taxa = uni[species] %>%  unlist(),

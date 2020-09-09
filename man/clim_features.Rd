@@ -58,6 +58,7 @@ clim_features(dat)
 }
 \seealso{
 Other Feature preparation: 
+\code{\link{biome_features}()},
 \code{\link{geo_features}()}
 }
 \concept{Feature preparation}

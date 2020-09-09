@@ -3,5 +3,8 @@
 language: R
 cache: packages
 
+before_install:
+  - pip install numpy tensorflow
+  
 after_success:
     - Rscript -e 'covr::codecov()'
