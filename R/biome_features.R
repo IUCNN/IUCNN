@@ -67,7 +67,6 @@ biome_features <- function(x,
             exdir = file.path(download.path, "WWF_ecoregions"))
       file.remove(file.path(download.path, "wwf_ecoregions.zip"))
     }
-
     #load biomes
     biome.input <- sf::st_read(dsn = file.path(download.path, "WWF_ecoregions", "official"),
                                layer = "wwf_terr_ecos")
@@ -78,10 +77,13 @@ biome_features <- function(x,
                       coords = c(lon, lat),
                       crs= st_crs(biome.input))
 
-  biom <- st_intersects(pts, biome.input) # this gives the rownames of each point in wwf
+  biom <- sf::st_intersects(pts, biome.input) # this gives the rownames of each point in wwf
 
   sf::st_geometry(biome.input) <- NULL
   biom2 <-biome.input[as.numeric(biom), biome.id]
+
+  #All possible biome values
+  all_biomes <- unique(biome.input[,biome.id])
 
   biom <- dplyr::bind_cols(x %>% dplyr::select(species = .data$species),
                    BIOME =  biom2) %>%
@@ -91,4 +93,14 @@ biome_features <- function(x,
     replace(is.na(.), 0) %>%
     dplyr::select(-`NA`)
 
+  test <- all_biomes[!all_biomes %in% names(biom)]
+
+  if(length(test) > 0){
+    add <- data.frame(t(test))
+    names(add) <- test
+    add[] <- 0
+
+    biom <- bind_cols(biom, add)
+  }
+  return(biom)
 }

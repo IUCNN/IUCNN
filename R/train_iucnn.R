@@ -3,16 +3,16 @@
 train_iucnn <- function(x,
                         labels,
                         path_to_output="",
-                        validation_split=0.1,
-                        test_fraction=0.1,
-                        seed=1234,
-                        verbose=0, #can be 0, 1, 2
-                        model_name="iuc_nn_model",
-                        max_epochs=1000,
-                        n_layers=c(60,60,20),
-                        use_bias=1,
-                        act_f="relu",
-                        patience=500){
+                        model_name = "iuc_nn_model",
+                        validation_split = 0.1,
+                        test_fraction = 0.1,
+                        seed = 1234,
+                        verbose = 0, #can be 0, 1, 2
+                        max_epochs = 1000,
+                        n_layers = c(60,60,20),
+                        use_bias = 1,
+                        act_f = "relu",
+                        patience = 500){
 
   # Check input
   if(!"species" %in% names(x)){
@@ -55,17 +55,17 @@ train_iucnn <- function(x,
 
   # prepare input data for the python function
   dataset <- tmp %>%
-    select(-species, -labels)
+    dplyr::select(-species, -labels)
 
   labels <- tmp %>%
-    select(labels)
+    dplyr::select(labels)
 
-  # preapre labels to start at 0
+  # prepare labels to start at 0
   if(min(labels$labels) != 0){
     warning(sprintf("Labels need to start at 0. Labels substracted with %s", min(labels$labels)))
 
     labels <-  labels %>%
-      mutate(labels = labels - min(.data$labels))
+      dplyr::mutate(labels = labels - min(.data$labels))
   }
 
   labels <- labels %>%
@@ -74,20 +74,21 @@ train_iucnn <- function(x,
   # source python function
   reticulate::source_python('inst/python/IUCNN_train.py')
 
-  # call python functio
-  trained_model <- iucnn_train(dataset = as.matrix(dataset),
-                               labels = as.matrix(labels))
-
+  # run model via python script
+  iucnn_train(dataset = as.matrix(dataset),
+              labels = as.matrix(labels),
+              path_to_output = path_to_output,
+              validation_split = validation_split,
+              test_fraction = test_fraction,
+              seed = as.integer(seed),
+              verbose = verbose,
+              max_epochs = as.integer(max_epochs),
+              n_layers = n_layers,
+              use_bias = use_bias,
+              act_f = act_f,
+              patience = patience
+              )
 
   #   # load python function
   # reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
-
-
-  # prepare output object
-
-  # set class to output object
-
-  # return
-  return(out)
-
 }

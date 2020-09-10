@@ -1,4 +1,16 @@
-def iucnn_predict(feature_set,model_dir,
+import tensorflow as tf
+import numpy as np
+from tensorflow import keras
+from tensorflow.keras import layers
+import os
+
+try:
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
+except:
+    pass
+
+def iucnn_predict(feature_set,
+                  model_dir,
                   verbose=0,
                   return_prob=False):
     print("Loading model...")

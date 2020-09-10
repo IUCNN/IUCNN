@@ -9,19 +9,32 @@ try:
 except:
     pass
 
+# def iucnn_train(dataset, labels,
+#                 path_to_output="",
+#                 validation_split=0.1,
+#                 test_fraction=0.1,
+#                 seed=1234,
+#                 verbose=0, #can be 0, 1, 2
+#                 model_name="iuc_nn_model",
+#                 max_epochs=1000,
+#                 n_layers=[60,60,20],
+#                 use_bias=1,
+#                 act_f="relu",
+#                 patience=500):
+
 
 def iucnn_train(dataset, labels,
-                path_to_output="",
-                validation_split=0.1,
-                test_fraction=0.1,
-                seed=1234,
-                verbose=0, #can be 0, 1, 2
-                model_name="iuc_nn_model",
-                max_epochs=1000,
-                n_layers=[60,60,20],
-                use_bias=1,
-                act_f="relu",
-                patience=500):
+                path_to_output,
+                validation_split,
+                test_fraction,
+                seed,
+                verbose, #can be 0, 1, 2
+                model_name,
+                max_epochs,
+                n_layers,
+                use_bias,
+                act_f,
+                patience):
     
     def build_classification_model():
         architecture = [layers.Dense(n_layers[0], 
@@ -80,11 +93,11 @@ def iucnn_train(dataset, labels,
     prm_est = model.predict(test_set, verbose=verbose)
     predictions = np.argmax(prm_est, axis=1)
 
-    from sklearn.metrics import confusion_matrix
-    cM = confusion_matrix(np.argmax(test_labels, axis=1), predictions)
-    print("Confusion matrix (test set):\n", cM)
-    rescaled_cM = (np.array(cM).T / np.sum(np.array(cM), 1)).T
-    print(rescaled_cM)
+    # from sklearn.metrics import confusion_matrix
+    # cM = confusion_matrix(np.argmax(test_labels, axis=1), predictions)
+    # print("Confusion matrix (test set):\n", cM)
+    # rescaled_cM = (np.array(cM).T / np.sum(np.array(cM), 1)).T
+    # print(rescaled_cM)
 
     model.save(model_name)
     print("IUC-NN model saved as:", model_name)

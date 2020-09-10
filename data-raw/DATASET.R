@@ -23,3 +23,18 @@ labels_broad <- read.delim("data-raw/2_main_iucn_full_clean_broad_labels_fullds.
 species_id <- read.delim("data-raw/2_main_iucn_full_clean_broad_speciesid_fullds.txt", col.names = "species")
 labels_broad <- bind_cols(species_id, labels_broad)
 usethis::use_data(labels_broad, overwrite = TRUE)
+
+
+load(file = "C:/Users/az64mycy/Dropbox (iDiv)/research_projects/37_orchid_redlisting/orchid_assessment/output/orchids_filtered_occurrences.rda")
+
+orchid_target <- orch_filt %>%
+  filter(!canonical_name %in% orchid_occ$species)
+
+sel <- unique(orchid_target$canonical_name)
+sel <- sel[sample(1:length(sel), size = 100)]
+
+orchid_target <- orchid_target %>%
+  filter(canonical_name %in% sel) %>%
+  select(species = canonical_name, decimallongitude, decimallatitude)
+
+usethis::use_data(orchid_target, overwrite = TRUE)
