@@ -3,6 +3,7 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 import os
+
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
 except:

@@ -20,6 +20,9 @@ library(IUCNN)
 
 # Installation
 
+
+reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
+reticulate::py_install("sklearn", pip = TRUE)
 # Input data
 
 ## Features
