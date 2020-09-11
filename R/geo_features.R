@@ -73,7 +73,7 @@ geo_features <- function(x,
         (.data[[lon]] %>% quantile(probs = 0.05) + 180) ) %>%
 
     #hemisphere
-    mutate(lat_hemisphere = ifelse(mean_lat < 0, 0, 1)) %>%
+    mutate(lat_hemisphere = ifelse(.data$mean_lat < 0, 0, 1)) %>%
     mutate(mean_lat = abs(.data$mean_lat))
 
     # EOO and AOO

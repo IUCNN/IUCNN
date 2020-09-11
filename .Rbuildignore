@@ -3,3 +3,6 @@
 ^\.travis\.yml$
 ^codecov\.yml$
 ^data-raw$
+^iuc_nn_model$
+^wc10$
+^WWF_ecoregions$

@@ -33,7 +33,7 @@ reticulate::py_install("sklearn", pip = TRUE)
 
 ### Climate
 
-### Other features
+### Additional features
 
 ## Classes
 
@@ -43,16 +43,7 @@ reticulate::py_install("sklearn", pip = TRUE)
 
 # Use a trained model to predict the conservation status of Not Evaluated species
 
-# Summary
-
-# Visualize results
-
-# Additional features
-
-## Rasterized data (e.g. climate, human impact)
-
-## Polygon data (eg. Protected areas, Biomes)
-
+# Threatend vs non threatend (2 classes)
 
 
 

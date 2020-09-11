@@ -90,8 +90,9 @@ biome_features <- function(x,
     dplyr::distinct() %>%
     dplyr::mutate(presence = 1) %>%
     tidyr::pivot_wider(id_cols = .data$species, names_from = .data$BIOME, values_from = .data$presence) %>%
-    replace(is.na(.), 0) %>%
-    dplyr::select(-`NA`)
+    dplyr::select(-.data$`NA`)
+
+  biom[is.na(biom)] <- 0
 
   test <- all_biomes[!all_biomes %in% names(biom)]
 
