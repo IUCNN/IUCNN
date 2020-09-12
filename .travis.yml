@@ -4,7 +4,7 @@ language: R
 cache: packages
 
 before_install:
-  - pip install --progress-bar off -r requirements.txt numpy tensorflow
+  - pip install --progress-bar off numpy tensorflow
   
 after_success:
     - Rscript -e 'covr::codecov()'

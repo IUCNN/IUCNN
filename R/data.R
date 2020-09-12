@@ -73,7 +73,7 @@
 #'   \item{category_broad}{The IUCN conservation assessment, converted to numerical for use with IUCNN.
 #'   Threatened ("CR", "EN", or "VU") Not Threatened ("NT" or "LC")}
 #'   \item{category_detail}{The IUCN conservation assessment, converted to numerical for use with IUCNN.
-#'   0 =  Critically ENdangered (CR), 1 = Endangered (EN), 2 = Vulnerable (VU), 3 = Near Threatened (NT), 4 = Least Concern (LC)}
+#'   0 =  Critically Endangered (CR), 1 = Endangered (EN), 2 = Vulnerable (VU), 3 = Near Threatened (NT), 4 = Least Concern (LC)}
 #' }
 #' @source \url{https://www.iucnredlist.org/}
 "orchid_classes"
