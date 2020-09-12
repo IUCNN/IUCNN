@@ -15,10 +15,10 @@ install_github("azizka/IUCNN")
 ```
 
 2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
-If problems occur at this step, check the excellent [documentation of reticualte](https://rstudio.github.io/reticulate/index.html).
+If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
 ```{r}
 install.packages(reticulate)
-library(reticualte)
+library(reticulate)
 install_miniconda()
 ```
 If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
@@ -73,3 +73,7 @@ predict_iucnn(x = "features_predict")
 library(IUCNN)
 citation("IUCNN")
 ```
+
+Zizka A, Silvestro D, Vitt P, Knight T (2020). “Automated conservation assessment of the orchid family with deep
+learning.” _Conservation Biology_, 0, 0-0. doi: doi.org/10.1111/cobi.13616 (URL: https://doi.org/doi.org/10.1111/cobi.13616),
+<URL: https://github.com/azizka/IUCNN>.

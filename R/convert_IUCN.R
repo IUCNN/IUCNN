@@ -1,12 +1,18 @@
-convert_IUCN <- (x)
+#'Format IUCN Red List categories for IUCNN
 
-A function to produce the detailed and broad assessments for IUCNN
+convert_IUCN <- fucntion(x){
 
-# remove DD and NE
+  # accepte either a data.frame, or the output of the iUCN redlist package
+  A function to produce the detailed and broad assessments for IUCNN
 
-# convert to numerical
+  # remove DD and NE
 
-Print summary to screen (e.g. how amny categories and the category coding)
+  # convert to numerical
 
-# return output
+  # Print summary to screen (e.g. how amny categories and the category coding)
+
+  # return output
+
+}
+
 

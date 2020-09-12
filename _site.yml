@@ -1,0 +1,21 @@
+name: IUCNN
+output_dir: docs
+navbar:
+  title: IUCNN
+  type: inverse
+  left:
+  - text: Home
+    icon: fa-home 
+    href: index.html
+  - text: Articles
+    menu:
+      - text: Approximate IUCN Red List assessments with IUCNN
+        href: vignettes/Approximate_IUCN_Red_List_assessments_with_IUCNN.html
+
+  right:
+  - text: GitHub
+    href: https://github.com/azizka/IUCNN
+output:
+  html_document:
+    lib_dir: site_libs
+    self_contained: no
