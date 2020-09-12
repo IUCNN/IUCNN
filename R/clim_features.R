@@ -9,7 +9,7 @@
 #'
 #'@param climate.input a raster or rasterStack with climate data. Optional. If not provided,
 #'the 19 bioclim variables from www.worldclim.org are used as default.
-#'@param res numeric. The resolution of the default climate rasters. ONe of 2.5, 5, or 10. Only relevant if
+#'@param res numeric. The resolution of the default climate rasters. One of 2.5, 5, or 10. Only relevant if
 #'climate.input is NULL
 #'@inheritParams geo_features
 #'

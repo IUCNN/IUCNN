@@ -2,7 +2,7 @@
 #'
 #' Will code all species in the input file into biomes based on an
 #' intersection of the coordinates with a shape file. The biome scheme can
-#' be user provided or by default will download the wWf biomes.
+#' be user provided or by default will download the WWF biomes.
 #'
 #'
 #' If biome.input is NULL this will download  the WWF biome scheme from

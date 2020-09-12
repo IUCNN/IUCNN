@@ -14,16 +14,26 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+IUCN conservation assessments
+
+Approcimation methods
+
+NEural netowrks one approach
+
+IUCNN does the following
+
+
 ```{r setup}
 library(IUCNN)
 ```
 
 # Installation
 
-
+```{r, eval = FALSE}
 reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
-reticulate::py_install("sklearn", pip = TRUE)
-# Input data
+```
+
 
 ## Features
 
@@ -43,8 +53,9 @@ reticulate::py_install("sklearn", pip = TRUE)
 
 # Use a trained model to predict the conservation status of Not Evaluated species
 
-# Threatend vs non threatend (2 classes)
+# Threatened vs non threatened (2 classes)
 
+# What does is all mean?
 
 
 

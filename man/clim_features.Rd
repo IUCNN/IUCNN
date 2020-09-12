@@ -31,7 +31,7 @@ the 19 bioclim variables from www.worldclim.org are used as default.}
 This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 feature values are returned.}
 
-\item{res}{numeric. The resolution of the default climate rasters. ONe of 2.5, 5, or 10. Only relevant if
+\item{res}{numeric. The resolution of the default climate rasters. One of 2.5, 5, or 10. Only relevant if
 climate.input is NULL}
 }
 \value{

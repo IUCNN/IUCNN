@@ -69,7 +69,6 @@ train_iucnn <- function(x,
                         validation_split = 0.1,
                         test_fraction = 0.1,
                         seed = 1234,
-                        verbose = 0, #can be 0, 1, 2
                         max_epochs = 1000,
                         n_layers = c(60,60,20),
                         use_bias = 1,
