@@ -8,3 +8,4 @@
 ^WWF_ecoregions$
 pre_submission_tests.R
 _site.yml
+^docs$
