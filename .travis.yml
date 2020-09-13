@@ -3,6 +3,11 @@
 language: R
 cache: packages
 
+addons:
+apt:
+packages:
+- libudunits2-dev
+
 before_install:
   - pip install --progress-bar off --user numpy tensorflow
   
