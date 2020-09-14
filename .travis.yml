@@ -6,6 +6,7 @@ addons:
   apt:
     packages:
       - libudunits2-dev
+      - gdal-bin
 
 before_install:
   - pip install --progress-bar off --user numpy tensorflow
