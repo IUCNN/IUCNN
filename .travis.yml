@@ -7,6 +7,10 @@ addons:
     packages:
       - libudunits2-dev
       - gdal-bin
+      - libproj-dev 
+      - proj-data 
+      - proj-bin 
+      - libgeos-dev
 
 before_install:
   - pip install --progress-bar off --user numpy tensorflow
