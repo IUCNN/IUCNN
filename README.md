@@ -1,5 +1,6 @@
 [![Travis build status](https://travis-ci.com/azizka/IUCNN.svg?branch=master)](https://travis-ci.com/azizka/IUCNN)
 [![Codecov test coverage](https://codecov.io/gh/azizka/IUCNN/branch/master/graph/badge.svg)](https://codecov.io/gh/azizka/IUCNN?branch=master)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 # IUCNN
 Batch estimation of species' IUCN Red List threat status using neural networks.
