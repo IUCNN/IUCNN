@@ -1,4 +1,4 @@
-data("orchid_occ")
+data("prediction_occ")
 orchid<- clim_features(orchid_occ)
 
 test_that("is a data,frame", {

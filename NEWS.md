@@ -3,6 +3,7 @@
 * Added description information
 * Add citation information
 * Start Readme
+* Add vignette
 
 # IUCNN 0.0.0.9000
 

@@ -2,18 +2,20 @@
 
 language: R
 cache: packages
+
+before_install:
+  - pip install --progress-bar off --user numpy tensorflow
+  - sudo apt-get -y install gdal-bin
+
 addons:
   apt:
     packages:
       - libudunits2-dev
       - gdal-bin
-      - libproj-dev 
-      - proj-data 
-      - proj-bin 
+      - libproj-dev
+      - proj-data
+      - proj-bin
       - libgeos-dev
 
-before_install:
-  - pip install --progress-bar off --user numpy tensorflow
-  
 after_success:
     - Rscript -e 'covr::codecov()'

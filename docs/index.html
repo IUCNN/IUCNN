@@ -118,15 +118,15 @@ install_miniconda()</code></pre>
 library(IUCNN)
 
 #load example data 
-data("orchid_occ") #geographic occurrences of species with IUCN assessment
-data("labels_detail")# the corresponding IUCN assessments
-data("orchid_target") #occurrences from Not Evaluated species to prdict
+data("training_occ") #geographic occurrences of species with IUCN assessment
+data("training_labels")# the corresponding IUCN assessments
+data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # Training
 ## Generate features
-geo &lt;- geo_features(orchid_occ) #geographic
-cli &lt;- clim_features(orchid_occ) #climate
-bme &lt;- biome_features(orchid_occ) #biomes
+geo &lt;- geo_features(training_occ) #geographic
+cli &lt;- clim_features(training_occ) #climate
+bme &lt;- biome_features(training_occ) #biomes
 
 features &lt;- geo %&gt;% 
   left_join(cli) %&gt;% 
@@ -134,13 +134,16 @@ features &lt;- geo %&gt;%
 
 # train the model
 train_iucnn(x = features,
-            labels = labels_detail)
+            labels = training_labels)
+
+# Prepare training labels
+labels_train &lt;- prepare_labels(training_labels)
 
 #Prediction
 ## Generate features
-geo &lt;- geo_features(orchid_target)
-cli &lt;- clim_features(orchid_target)
-bme &lt;- biome_features(orchid_target)
+geo &lt;- geo_features(prediction_occ)
+cli &lt;- clim_features(prediction_occ)
+bme &lt;- biome_features(prediction_occ)
 
 features_predict &lt;- geo %&gt;% 
   left_join(cli) %&gt;% 

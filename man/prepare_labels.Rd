@@ -15,7 +15,7 @@ prepare_labels(
 }
 \arguments{
 \item{x}{a data.frame or a list. If a data.frame, two columns with the species names and IUCN categories
-respectively. THe column naems are defined by the species and labels arguments. If a list, expecting
+respectively. The column names are defined by the species and labels arguments. If a list, expecting
 the format as returned by \link[rredlist]{rl_search}.}
 
 \item{species}{a character string. The name of the column with the species names.}
@@ -28,7 +28,7 @@ function will correspond to the order in this argument.
 For instance with default settings, "CR ->0, LC -> 4.}
 
 \item{level}{a character string. The level of output level detail. IF "detail"
-full iucn categories, if "broad" then 0 = Threatened, and 1 = NOt threatened.}
+full iucn categories, if "broad" then 0 = Threatened, and 1 = Not threatened.}
 
 \item{threatened}{a character string. Only if level=="broad", Which labels to consider threatened.}
 }

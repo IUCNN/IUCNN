@@ -77,7 +77,7 @@ geo_features <- function(x,
     mutate(mean_lat = abs(.data$mean_lat))
 
     # EOO and AOO
-     spa <- rCAT::ConBatch(taxa = uni[species] %>%  unlist(),
+    spa <- rCAT::ConBatch(taxa = uni[species] %>%  unlist(),
                            lat = uni[lat] %>%  unlist(),
                            lon = uni[lon] %>%  unlist(),
                            cellsize = 2000) %>%

@@ -6,3 +6,7 @@ wc10
 WWF_ecoregions
 pre_submission_tests.R
 iuc_nn_model
+vignettes/wc10
+vignettes/WWF_ecoregions
+vignettes/iuc_nn_model
+
