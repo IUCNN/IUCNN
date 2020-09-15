@@ -133,7 +133,7 @@ train_iucnn <- function(x,
     dplyr::mutate(labels = .data$labels - 1)
 
   # source python function
-  reticulate::source_python('inst/python/IUCNN_train.py')
+  reticulate::source_python(system.file("extdata/python/", "IUCNN_train.py", package = "IUCNN"))
 
   # run model via python script
   iucnn_train(dataset = as.matrix(dataset),

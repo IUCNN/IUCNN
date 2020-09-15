@@ -15,18 +15,20 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
-The conservation assessments of the Global Red List of the INternational Union for the COnservation of nature (www.iucn.org), are arguably one of the most thorough and widely used tools to assess the global extinction risk of species. However, IUCN assessments---usually performed by a group of specialists for each taxonomic group, or professional assessors---are time and data intense, and therefore a large fraction of global plant and animal spceis have not yet been evaluated. IUCNN implements neural networkds to predicr the IUCN status of so far not evaluated or data deficient species based on publicly availble geographic distribution and enfironmental data and existing red lists from other species. A typical application example are to predict conservation status of some plant species using all evaluated species in the same family as training data.
+The conservation assessments of the Global Red List of the INternational Union for the COnservation of nature (www.iucn.org), are arguably one of the most thorough and widely used tools to assess the global extinction risk of species. However, IUCN assessments---usually performed by a group of specialists for each taxonomic group, or professional assessors---are time and data intense, and therefore a large fraction of global plant and animal species have not yet been evaluated. IUCNN implements neural networks to predict the IUCN status of so far not evaluated or data deficient species based on publicly available geographic distribution and environmental data and existing red lists from other species. A typical application example are to predict conservation status of some plant species using all evaluated species in the same family as training data.
 
 
 ```{r setup}
 library(IUCNN)
+library(magrittr)
+library(dplyr)
 ```
 
 # Installation
 IUCNN uses R and python, so multiple steps are necessary to install IUCNN.
 
 1. install IUCNN directly from Github using devtools. 
-```{r}
+```{r, eval = FALSE}
 install.packages("devtools")
 library(devtools)
 
@@ -35,7 +37,7 @@ install_github("azizka/IUCNN")
 
 2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
-```{r}
+```{r, eval = FALSE}
 install.packages(reticulate)
 library(reticulate)
 install_miniconda()
@@ -44,71 +46,89 @@ If python has been installed before, you can specify the python version to sue w
 
 
 3. Install the tensorflow module
-```{r}
+```{r, eval = FALSE}
 reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
 ```
 
 # Usage
 ## Input data
-IUCNN predicts the IUCN Global Red List assessment categories of Not Evaluated and Data Deficient species based on geographic occurrence records and a set of training species for which occurrence records and IUCN assessments are available (training data). The amount of training species necessary varies with the number of categories but in general "the more, the better". Ideally, the training dataset should comprise several hundred species, so a typical scenario will be to use all availble plant species from a region, or all available species from a plant family. If the availability of training species is limited, a good option can be to predict possibly threatened (IUCN categories "CR", "EN", and "VU") vs. not threatened species ("NT" and "LC").
+IUCNN predicts the IUCN Global Red List assessment categories of Not Evaluated and Data Deficient species based on geographic occurrence records and a set of training species for which occurrence records and IUCN assessments are available (training data). The amount of training species necessary varies with the number of categories but in general "the more, the better". Ideally, the training dataset should comprise several hundred species, so a typical scenario will be to use all available plant species from a region, or all available species from a plant family. If the availability of training species is limited, a good option can be to predict possibly threatened (IUCN categories "CR", "EN", and "VU") vs. not threatened species ("NT" and "LC").
 
 Hence, three types of input are necessary, which are easily available for many species: 
 
 ### 1. Geographic occurrence ecords of training species (training occurrences)
-Occurrence records might stem from a variety of databses, For example, from field collections or public databases such BIEN (https://bien.nceas.ucsb.edu/bien/) or GBIF (www.gbif.org). GBIF data can be obtained from within R via the rbif package, See [here](https://ropensci.org/tutorials/rgbif_tutorial/) for a tutorial on how to do so. IUCNN needs a dataset with (at least) three columns, containing the species name, decimal longitude coordinates and decimal latitude coordinates.
+Occurrence records might stem from a variety of databases, For example, from field collections or public databases such BIEN (https://bien.nceas.ucsb.edu/bien/) or GBIF (www.gbif.org). GBIF data can be obtained from within R via the rbif package, See [here](https://ropensci.org/tutorials/rgbif_tutorial/) for a tutorial on how to do so. IUCNN needs a dataset with (at least) three columns, containing the species name, decimal longitude coordinates and decimal latitude coordinates.
 
 ### 2. IUCN Global Red List assessment of the training species (training labels)
 THese can be obtained from IUCN, either via the webpage www.iucn.org or via the rredlist package from inside R (preferred for many species). See [here](https://ropensci.org/tutorials/rredlist_tutorial/) for a tutorial on how to use rredlist. It is important, that all target label classes are well represented in the training data, which is rarely the case for IUCN data, since for instance "VU" is rare. If the classes are to imbalance, consider using possibly threatened (IUCN categories "CR", "EN", and "VU") vs. not threatened species ("NT" and "LC").
 
 ### 3. Geographic occurrence records of the species for which the IUCN status should be predicted (predict occurrences)
-Geographic occurrence for the target species, in the same foramt as for the training occurrences above.
+Geographic occurrence for the target species, in the same format as for the training occurrences above.
 
-Example dataset are available with IUCNN: `data(orchid_occ)` (training occurrences), `data(labels_detail)` (training labels) and `data(orchid_target)`.
+Example dataset are available with IUCNN: `data(training_occ)` (training occurrences), `data(labels_detail)` (training labels) and `data(prediction_occ)`.
 
 ## Feature and label ppreparation
 IUCNN uses sets of per species traits ("features"). Necessary is an input data.frame, with a species column, and then numerical columns indicating the feature values for each species. In general, features might represent any species trait, including from taxonomy (family), anatomy (body size), ecology (e.g., feeding guild) or conservation (e. g., population dynamics). Any of these features can be provided to IUCNN. However, since most of these data are scarce for many taxonomic groups, in most cases features will be based on geographic occurrences and auxiliary data alone. The IUCNN package contains convenience functions to obtain geographic features (number of occurrences, number of unique occurrences, mean latitude, mean longitude, latitudinal range, longitudinal range, the extend of occurrence, the area of occupancy and hemisphere), climatic features (median values per species from 19 bioclim variables from www.worldclim.org) and biome features (presence in global biomes from the [WWF](https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world)) based on occurrence records. In this tutorial, we will use the example datasets from the Orchid family (Orchidaceae) provided with the IUCNN package, 
 
 
-```{r, eval = FALSE}
-data("orchid_occ") #geographic occurrences of species with IUCN assessment
-data("orchid_target")
+```{r, eval = TRUE}
+data("training_occ") #geographic occurrences of species with IUCN assessment
+data("prediction_occ")
 
 # prepare features for training data
-geo <- geo_features(orchid_occ) #geographic
-cli <- clim_features(orchid_occ) #climate
-bme <- biome_features(orchid_occ) #biomes
+geo <- geo_features(training_occ) #geographic
+cli <- clim_features(training_occ) #climate
+bme <- biome_features(training_occ) #biomes
 
 features_train <- geo %>% 
   left_join(cli) %>% 
   left_join(bme)
 
 # prepare features for target species
-geo <- geo_features(orchid_target)
-cli <- clim_features(orchid_target)
-bme <- biome_features(orchid_target)
+geo <- geo_features(prediction_occ)
+cli <- clim_features(prediction_occ)
+bme <- biome_features(prediction_occ)
 
 features_predict <- geo %>% 
   left_join(cli) %>% 
   left_join(bme)
 ```
 
-IUCNN expects the labels for training as numerical categories. So, to use IUCN Red LIst categoreis, those need to be converted to numeric in the right way. This can be done using the `prepare_labels` function. The function can use with detailed categories or with broader threatened not threatened categories. See `?prepare_labels` for more information.
+IUCNN expects the labels for training as numerical categories. So, to use IUCN Red LIst categories, those need to be converted to numeric in the right way. This can be done using the `prepare_labels` function. The function can use with detailed categories or with broader threatened not threatened categories. See `?prepare_labels` for more information. The labels will be converted into numeric categories following the `accepted_labels` argument, so for instance, in the default case: CR -> 0 and LC -> 4. IF you change the accepted labels, the match will change accordingly.
 
 ```{r}
-data(orchid_labels)
+data("training_labels")
 
-labels_train <- prepare_labels(orchid_labels)
+labels_train <- prepare_labels(training_labels)
 ```
 
-Document new dataset, remove label datasets, change examples and readme to use prepare_labels
-
 ## Model training
-The describe how the function works and the options briefly. will write to disk
+BAsed on the training features and labels, IUCNN trains a neural network, using the tensorflow module. The training is done vie the `train_iucnn` function. There are multiple options to change the design of the network, including among others the number of layers, and the fraction of records used for testing and validation. The `train_iucnn` function will write a folder to the working directory containing the model and print summary statistics to the screen.
+
+```{r}
+train_iucnn(x = features_train,
+            labels = labels_train)
+```
+
 
 # Predict IUCN Global Red List status
-Describe how the function works and the options
+The trained model can then predict the conservation status of Not Evaluated and Data DEficient species with the `predict_iucnn` function. The output is a a data.frame with species names and numeric labels (as generated with prepare_labels).
 
+```{r}
+predict_iucnn(x = "features_predict")
+```
 
+It is important to remember the following points when using IUCNN:
+
+1. The resulting IUCNN categories are predictions. While IUCNN has reached accuracies  between 80 and 90% on the broad (threatened vs non-threatened) level and up to 80% on the detailed level, some species will be misclassified.
+
+2. IUCNN is indifferent to the provided features. On the one hand this means that any species traits for which data is available can bes used, but on the other hand this means that thought is needed in the choice of the features. The default features of IUCNN are usually a safe choice. The number of features is not limited, but currently IUCNN does not support missing values in the feature table and removes species with missing values. 
+
+3. IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guilt or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended. 
+
+4. The amount of training data is important. The more the better. Minimum several hundred training species with a more or less equal distribution on the label classes should be included. IF traing data is limited, the broader Threatened/Not threatened level is recommended. 
+
+5. IUCNN predictions are not equivalent to full IUCN Red List assessments. We see the main purpose of IUCNN in 1) identifying species that will likely need conservation action to trigger a full IUCN assessment , and 2) provide large-scale overviews on the extinction risk in a given taxonomic group, for instance in a macro-ecological and macro-evolutionary context.
 
 
 

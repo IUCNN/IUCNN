@@ -63,7 +63,7 @@ predict_iucnn <- function(x,
     dplyr::select(-.data$species)
 
   # source python function
-  reticulate::source_python('inst/python/IUCNN_predict.py')
+  reticulate::source_python(system.file("extdata/python/", "IUCNN_predict.py", package = "IUCNN"))
 
   # run predict function
   out <- iucnn_predict(feature_set = as.matrix(tmp),

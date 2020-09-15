@@ -37,15 +37,15 @@ library(tidyverse)
 library(IUCNN)
 
 #load example data 
-data("orchid_occ") #geographic occurrences of species with IUCN assessment
-data("labels_detail")# the corresponding IUCN assessments
-data("orchid_target") #occurrences from Not Evaluated species to prdict
+data("training_occ") #geographic occurrences of species with IUCN assessment
+data("training_labels")# the corresponding IUCN assessments
+data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # Training
 ## Generate features
-geo <- geo_features(orchid_occ) #geographic
-cli <- clim_features(orchid_occ) #climate
-bme <- biome_features(orchid_occ) #biomes
+geo <- geo_features(training_occ) #geographic
+cli <- clim_features(training_occ) #climate
+bme <- biome_features(training_occ) #biomes
 
 features <- geo %>% 
   left_join(cli) %>% 
@@ -53,13 +53,16 @@ features <- geo %>%
 
 # train the model
 train_iucnn(x = features,
-            labels = labels_detail)
+            labels = training_labels)
+
+# Prepare training labels
+labels_train <- prepare_labels(training_labels)
 
 #Prediction
 ## Generate features
-geo <- geo_features(orchid_target)
-cli <- clim_features(orchid_target)
-bme <- biome_features(orchid_target)
+geo <- geo_features(prediction_occ)
+cli <- clim_features(prediction_occ)
+bme <- biome_features(prediction_occ)
 
 features_predict <- geo %>% 
   left_join(cli) %>% 

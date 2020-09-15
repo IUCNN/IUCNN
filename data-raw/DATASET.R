@@ -28,7 +28,7 @@ labels_broad <- bind_cols(species_id, labels_broad)
 labels_broad$labels = labels_broad$labels - 1
 usethis::use_data(labels_broad, overwrite = TRUE)
 
-
+usethis::use_data(orchid_labels, overwrite = TRUE)
 
 
 load(file = "C:/Users/az64mycy/Dropbox (iDiv)/research_projects/37_orchid_redlisting/orchid_assessment/output/orchids_filtered_occurrences.rda")
@@ -44,3 +44,17 @@ orchid_target <- orchid_target %>%
   select(species = canonical_name, decimallongitude, decimallatitude)
 
 usethis::use_data(orchid_target, overwrite = TRUE)
+
+
+data(orchid_occ)
+training_occ <- orchid_occ
+usethis::use_data(training_occ, overwrite = TRUE)
+
+data(training_labels)
+training_labels <- training_labels %>%
+  select(species, labels = category_detail)
+usethis::use_data(training_labels, overwrite = TRUE)
+
+data(orchid_target)
+prediction_occ <- orchid_target
+usethis::use_data(prediction_occ, overwrite = TRUE)
