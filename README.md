@@ -72,7 +72,7 @@ features_predict <- geo %>%
 predict_iucnn(x = "features_predict")
 ```
 
-## Citation
+# Citation
 ```{r}
 library(IUCNN)
 citation("IUCNN")
