@@ -12,15 +12,20 @@
 #'second "labels with the labels (i.e. IUCN categories).
 #'@param path_to_output character string. The path to the location
 #'where the IUCNN model shall be saved
-#'@param model_name character string. The name of the model.
-#'@param validation_split numeric. The fraction of the input data used for validation.
-#'@param test_fraction numeric. The fraction of the input data used as test data.
-#'@param seed specify the python seed.
+#'@param model_name character string. The name used to save the trained model.
+#'@param validation_split numeric. The fraction of the input data used as validation set.
+#'@param test_fraction numeric. The fraction of the input data used as test set.
+#'@param seed reset the python random seed.
 #'@param max_epochs integer. The maximum number of epochs.
-#'@param n_layers numeric vector with length three. The number of layers of the neural network.
-#'@param use_bias integer (1/0). Should bias be used
-#'@param act_f character string. The act-f value
-#'@param patience integer. The patience value.
+#'@param n_layers numeric vector with length of at least one. The vector quantifies the number of nodes 
+#'used in each hidden layer of the neural network. This also implicitly specifies the number of hidden
+#'layers. For example, n_layers = c(60, 10) defines a model with two hidden layers with 60 and 10 nodes 
+#' respectively. Note that the number of nodes in the output layer is automatically determined based on 
+#'the number of unique labels in the training set. 
+#'@param use_bias integer (1/0). Specifies if a bias node is used in the first hidden layer. 
+#'@param act_f character string. Specifies the activation function should be used in the hidden layers. 
+#'Available options are: "relu" (default), "tanh", "sigmoid"
+#'@param patience integer. Number of epochs with no improvement after which training will be stopped.
 #'
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a

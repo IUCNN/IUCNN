@@ -23,12 +23,13 @@ except:
 #                 patience=500):
 
 
-def iucnn_train(dataset, labels,
+def iucnn_train(dataset, 
+                labels,
                 path_to_output,
                 validation_split,
                 test_fraction,
                 seed,
-                verbose, #can be 0, 1, 2
+                verbose, 
                 model_name,
                 max_epochs,
                 n_layers,
@@ -92,13 +93,8 @@ def iucnn_train(dataset, labels,
 
     prm_est = model.predict(test_set, verbose=verbose)
     predictions = np.argmax(prm_est, axis=1)
-
-    # from sklearn.metrics import confusion_matrix
-    # cM = confusion_matrix(np.argmax(test_labels, axis=1), predictions)
-    # print("Confusion matrix (test set):\n", cM)
-    # rescaled_cM = (np.array(cM).T / np.sum(np.array(cM), 1)).T
-    # print(rescaled_cM)
-
+    
     model.save( os.path.join(path_to_output, model_name) )
     print("IUC-NN model saved as:", model_name, "in", path_to_output)
+    return [test_labels, predictions]
 
