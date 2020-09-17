@@ -99,6 +99,6 @@ def iucnn_train(dataset, labels,
     # rescaled_cM = (np.array(cM).T / np.sum(np.array(cM), 1)).T
     # print(rescaled_cM)
 
-    model.save(model_name)
-    print("IUC-NN model saved as:", model_name)
+    model.save( os.path.join(path_to_output, model_name) )
+    print("IUC-NN model saved as:", model_name, "in", path_to_output)
 
