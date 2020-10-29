@@ -12,3 +12,4 @@ _site.yml
 ^vignettes/wc10$
 ^vignettes/WWF_ecoregions$
 ^vignettes/iuc_nn_model$
+^manual_tests$

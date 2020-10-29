@@ -52,12 +52,12 @@ features <- geo %>%
   left_join(cli) %>% 
   left_join(bme)
 
-# train the model
-train_iucnn(x = features,
-            labels = training_labels)
-
 # Prepare training labels
 labels_train <- prepare_labels(training_labels)
+
+# train the model
+train_iucnn(x = features,
+            labels = labels_train)
 
 #Prediction
 ## Generate features
@@ -69,7 +69,8 @@ features_predict <- geo %>%
   left_join(cli) %>% 
   left_join(bme)
 
-predict_iucnn(x = "features_predict")
+predict_iucnn(x = features_predict,
+              model_dir = "iuc_nn_model")
 ```
 
 # Citation
