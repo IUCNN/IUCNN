@@ -76,7 +76,9 @@ predict_iucnn <- function(x,
 
   #return output object
   out <- bind_cols(tmp.in %>% select(.data$species),
-                   out)
+                   predicted_IUCN_categories = out)
+
+  message("Done")
 
   return(out)
 }
