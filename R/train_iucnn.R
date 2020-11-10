@@ -17,13 +17,13 @@
 #'@param test_fraction numeric. The fraction of the input data used as test set.
 #'@param seed reset the python random seed.
 #'@param max_epochs integer. The maximum number of epochs.
-#'@param n_layers numeric vector with length of at least one. The vector quantifies the number of nodes 
+#'@param n_layers numeric vector with length of at least one. The vector quantifies the number of nodes
 #'used in each hidden layer of the neural network. This also implicitly specifies the number of hidden
-#'layers. For example, n_layers = c(60, 10) defines a model with two hidden layers with 60 and 10 nodes 
-#' respectively. Note that the number of nodes in the output layer is automatically determined based on 
-#'the number of unique labels in the training set. 
-#'@param use_bias integer (1/0). Specifies if a bias node is used in the first hidden layer. 
-#'@param act_f character string. Specifies the activation function should be used in the hidden layers. 
+#'layers. For example, n_layers = c(60, 10) defines a model with two hidden layers with 60 and 10 nodes
+#' respectively. Note that the number of nodes in the output layer is automatically determined based on
+#'the number of unique labels in the training set.
+#'@param use_bias integer (1/0). Specifies if a bias node is used in the first hidden layer.
+#'@param act_f character string. Specifies the activation function should be used in the hidden layers.
 #'Available options are: "relu" (default), "tanh", "sigmoid"
 #'@param patience integer. Number of epochs with no improvement after which training will be stopped.
 #'
@@ -134,8 +134,8 @@ train_iucnn <- function(x,
       dplyr::mutate(labels = .data$labels - min(.data$labels))
   }
 
-  labels <- labels %>%
-    dplyr::mutate(labels = .data$labels - 1)
+  # labels <- labels %>%
+  #   dplyr::mutate(labels = .data$labels )
 
   # source python function
   reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))

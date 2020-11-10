@@ -97,7 +97,7 @@ geo_features <- function(x,
        out <- out %>%
          mutate(tot_occ = log10(1 + .data$tot_occ),
                 uni_occ = log10(1 + .data$uni_occ),
-                mean_lat = .data$mean_lat / 80,
+                mean_lat = .data$mean_lat / 90,
                 mean_lon = .data$mean_lon / 180,
                 lat_range = log10(1 + .data$lat_range),
                 lon_range = log10(1 + .data$lon_range))

@@ -53,6 +53,8 @@ predict_iucnn <- function(x,
                           model_dir,
                           return_prob = FALSE){
 
+
+  message("Preparing input data")
   # complete cases only
   tmp.in <- x[complete.cases(x),]
 
@@ -65,8 +67,12 @@ predict_iucnn <- function(x,
   tmp <- tmp.in %>%
     dplyr::select(-.data$species)
 
+  message("Loading python code")
+
   # source python function
   reticulate::source_python(system.file("python", "IUCNN_predict.py", package = "IUCNN"))
+
+  message("Predicting conservation status")
 
   # run predict function
   out <- iucnn_predict(feature_set = as.matrix(tmp),
@@ -74,9 +80,11 @@ predict_iucnn <- function(x,
                        verbose = 0,
                        return_prob = return_prob)
 
+  names(out) <- "predicted_IUCN_categories"
+
   #return output object
   out <- bind_cols(tmp.in %>% select(.data$species),
-                   predicted_IUCN_categories = out)
+                    out)
 
   message("Done")
 
