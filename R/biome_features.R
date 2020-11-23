@@ -103,5 +103,9 @@ biome_features <- function(x,
 
     biom <- bind_cols(biom, add)
   }
+
+  # remove biomes without any entries
+  biom <- biom[,c(TRUE, colSums(biom[,-1]) > 0)]
+
   return(biom)
 }
