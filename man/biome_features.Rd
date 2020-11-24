@@ -11,7 +11,8 @@ biome_features(
   lat = "decimallatitude",
   biome.input = NULL,
   biome.id = "BIOME",
-  download.path = NULL
+  download.path = NULL,
+  remove_zeros = FALSE
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ Default is "BIOME"}
 
 \item{download.path}{character string. The path were to save the WWF polygons
 if biome.input is NULL. Default is the working directory}
+
+\item{remove_zeros}{logical. If TRUE biomes without occurrence of any species are removed from the features.
+Default = FALSE}
 }
 \value{
 a data.frame of climatic features
@@ -61,6 +65,7 @@ biom_features(dat)
 \seealso{
 Other Feature preparation: 
 \code{\link{clim_features}()},
+\code{\link{footprint_features}()},
 \code{\link{geo_features}()}
 }
 \concept{Feature preparation}

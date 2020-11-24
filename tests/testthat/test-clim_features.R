@@ -7,7 +7,7 @@ test_that("is a data,frame", {
 
 test_that("right amount of columns", {
   expect_s3_class(orchid, "data.frame")
-  expect_equal(ncol(orchid), 20)
+  expect_equal(ncol(orchid), 13)
 })
 
 test_that("all columns numeric", {

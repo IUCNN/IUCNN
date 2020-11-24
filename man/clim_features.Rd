@@ -11,7 +11,8 @@ clim_features(
   lon = "decimallongitude",
   lat = "decimallatitude",
   rescale = TRUE,
-  res = 10
+  res = 10,
+  type = "selected"
 )
 }
 \arguments{
@@ -33,12 +34,16 @@ feature values are returned.}
 
 \item{res}{numeric. The resolution of the default climate rasters. One of 2.5, 5, or 10. Only relevant if
 climate.input is NULL}
+
+\item{type}{character string. A selection of which variables to return. If "all" all 19 bioclim variables
+if "selected" only Annual Mean Temperature, Temperature Seasonality, Mean temperature of the Coldest Quarter,
+Annual Precipitation, Precipitation seasonality and Precipitation of the Driest Quarter are returned}
 }
 \value{
 a data.frame of climatic features
 }
 \description{
-Extract median climate features based on a table of  species occurrence coordinates.
+Extract median and range (95\% - 5\% quantiles) climate features based on a table of species occurrence coordinates.
 If no climate data is supplied via the input.climate argument, 19 bioclim variables are
 downloaded from  www.worldclim.org. Rescaling is only done for these default variables.
 }
@@ -59,6 +64,7 @@ clim_features(dat)
 \seealso{
 Other Feature preparation: 
 \code{\link{biome_features}()},
+\code{\link{footprint_features}()},
 \code{\link{geo_features}()}
 }
 \concept{Feature preparation}

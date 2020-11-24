@@ -29,23 +29,28 @@ second "labels with the labels (i.e. IUCN categories).}
 \item{path_to_output}{character string. The path to the location
 where the IUCNN model shall be saved}
 
-\item{model_name}{character string. The name of the model.}
+\item{model_name}{character string. The name used to save the trained model.}
 
-\item{validation_split}{numeric. The fraction of the input data used for validation.}
+\item{validation_split}{numeric. The fraction of the input data used as validation set.}
 
-\item{test_fraction}{numeric. The fraction of the input data used as test data.}
+\item{test_fraction}{numeric. The fraction of the input data used as test set.}
 
-\item{seed}{specify the python seed.}
+\item{seed}{reset the python random seed.}
 
 \item{max_epochs}{integer. The maximum number of epochs.}
 
-\item{n_layers}{numeric vector with length three. The number of layers of the neural network.}
+\item{n_layers}{numeric vector with length of at least one. The vector quantifies the number of nodes
+used in each hidden layer of the neural network. This also implicitly specifies the number of hidden
+layers. For example, n_layers = c(60, 10) defines a model with two hidden layers with 60 and 10 nodes
+respectively. Note that the number of nodes in the output layer is automatically determined based on
+the number of unique labels in the training set.}
 
-\item{use_bias}{integer (1/0). Should bias be used}
+\item{use_bias}{integer (1/0). Specifies if a bias node is used in the first hidden layer.}
 
-\item{act_f}{character string. The act-f value}
+\item{act_f}{character string. Specifies the activation function should be used in the hidden layers.
+Available options are: "relu" (default), "tanh", "sigmoid"}
 
-\item{patience}{integer. The patience value.}
+\item{patience}{integer. Number of epochs with no improvement after which training will be stopped.}
 }
 \value{
 a folder in the working directory (or as specified with path_to_output) with the trained model,

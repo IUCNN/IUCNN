@@ -16,6 +16,8 @@
 #'Default is "BIOME"
 #'@param download.path character string. The path were to save the WWF polygons
 #'if biome.input is NULL. Default is the working directory
+#'@param remove_zeros logical. If TRUE biomes without occurrence of any species are removed from the features.
+#'Default = FALSE
 #'@inheritParams geo_features
 #'
 #'
@@ -50,7 +52,8 @@ biome_features <- function(x,
                            lat = "decimallatitude",
                            biome.input = NULL,
                            biome.id = "BIOME",
-                           download.path = NULL){
+                           download.path = NULL,
+                           remove_zeros = FALSE){
 
   # get biome data if necessary
   if(is.null(biome.input)){
@@ -105,7 +108,9 @@ biome_features <- function(x,
   }
 
   # remove biomes without any entries
-  biom <- biom[,c(TRUE, colSums(biom[,-1]) > 0)]
+  if(remove_zeros){
+    biom <- biom[,c(TRUE, colSums(biom[,-1]) > 0)]
+  }
 
   return(biom)
 }

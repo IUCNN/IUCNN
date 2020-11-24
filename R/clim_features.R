@@ -16,7 +16,6 @@
 #'Annual Precipitation, Precipitation seasonality and Precipitation of the Driest Quarter are returned
 #'@inheritParams geo_features
 #'
-#'
 #'@return a data.frame of climatic features
 #'
 #' @keywords Feature preparation
@@ -101,8 +100,11 @@ clim_features <- function(x,
 
   if(type == "selected"){
     out <- bio %>%
-      select(species, bio1, bio4, bio11, bio12, bio15, bio17) %>%
-      bind_cols(range %>% select(range_bio1, range_bio4, range_bio11, range_bio12, range_bio15, range_bio17))
+      select(.data$species, .data$bio1, .data$bio4, .data$bio11,
+             .data$bio12, .data$bio15, .data$bio17) %>%
+      bind_cols(range %>% select(.data$range_bio1, .data$range_bio4,
+                                 .data$range_bio11, .data$range_bio12,
+                                 .data$range_bio15, .data$range_bio17))
   }else{
     out <- bind_cols(bio, range)
   }

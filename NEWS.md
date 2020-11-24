@@ -1,4 +1,11 @@
-# IUCNN 0.9.1
+# IUCNN 0.9.3
+
+* add footprint_features function
+* added option for selected variables and ranges to the clim_features function
+* added option to remove empty biomes to the biom_features function
+* improved spell-checking
+
+# IUCNN 0.9.2
 
 * bug fix predict_iucn function
 * bug fix train_iucn function

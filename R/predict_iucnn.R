@@ -28,7 +28,7 @@
 #'
 #'train_feat <- geo_features(dat)
 #'
-#'not_eval <- data.frame(species = c(A", "B")
+#'not_eval <- data.frame(species = c("A", "B")
 #'                 decimallongitude = runif (200,-5,5),
 #'                 decimallatitude = runif (200,-5,5))
 #'
