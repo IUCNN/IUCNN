@@ -4,7 +4,7 @@
 #' mean latitude, mean longitude, latitudinal range, longitudinal range,
 #' eoo, aoo and hemisphere as input features for IUCNN from a list of species occurrences.
 #'
-#' Coordinate ranges are 90% quantiles.
+#' Coordinate ranges are 90% quantiles, for species with less than three occurrences EOO is set to AOO.
 #'
 #'@param x a data.frame of species occurrence records including three columns with
 #'species name, longitudinal coordinates and latitudinal coordinates (both decimal).
@@ -84,6 +84,7 @@ geo_features <- function(x,
        dplyr::select(species = .data$taxa,
                      eoo = .data$EOOkm2,
                      aoo = .data$AOO2km) %>%
+       mutate(eoo = ifelse(eoo == 0, aoo, eoo)) %>% # set EOO to AOO
        mutate(eoo = round(as.numeric(.data$eoo), 3)) %>%
        mutate(aoo = round(as.numeric(.data$aoo), 3))
 
@@ -100,7 +101,9 @@ geo_features <- function(x,
                 mean_lat = .data$mean_lat / 90,
                 mean_lon = .data$mean_lon / 180,
                 lat_range = log10(1 + .data$lat_range),
-                lon_range = log10(1 + .data$lon_range))
+                lon_range = log10(1 + .data$lon_range),
+                eoo = log10(1 + .data$eoo),
+                aoo = log10(1 + .data$aoo))
 
      }
      # return

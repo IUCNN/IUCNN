@@ -4,6 +4,8 @@
 * added option for selected variables and ranges to the clim_features function
 * added option to remove empty biomes to the biom_features function
 * improved spell-checking
+* add rescale option for eoo and aoo as part of geo_features
+* set EOO to AOO for species with less than three occurrences
 
 # IUCNN 0.9.2
 
