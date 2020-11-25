@@ -81,7 +81,7 @@ clim_features <- function(x,
 
   # Rescale, I feel this needs some more though/justification, but Daniele is happy with it for now
   if(rescale){
-    bio[, 2] <- bio[, 2]/15
+    bio[, 2] <- bio[, 2]/150
     bio[, 3] <- bio[, 3]/10
     bio[, 4] <- bio[, 4]/50
     bio[, 5] <- log10(1+bio[, 5])

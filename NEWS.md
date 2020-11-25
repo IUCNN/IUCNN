@@ -6,6 +6,7 @@
 * improved spell-checking
 * add rescale option for eoo and aoo as part of geo_features
 * set EOO to AOO for species with less than three occurrences
+* updated the normalization of climate variables
 
 # IUCNN 0.9.2
 
