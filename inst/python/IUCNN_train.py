@@ -57,7 +57,7 @@ def iucnn_train(dataset,
     if seed > 0:
         np.random.seed(seed)
         tf.random.set_seed(seed)
-    rnd_indx = np.random.choice(range(len(labels)), len(labels))
+    rnd_indx = np.random.choice(range(len(labels)), len(labels), replace=False)
     rnd_dataset = dataset[rnd_indx,:] 
     rnd_labels  = tf.keras.utils.to_categorical(labels[rnd_indx])
 
