@@ -73,6 +73,7 @@ footprint_features(dat)
 }
 \seealso{
 Other Feature preparation: 
+\code{\link{bias_features}()},
 \code{\link{biome_features}()},
 \code{\link{clim_features}()},
 \code{\link{geo_features}()}

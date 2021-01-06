@@ -30,7 +30,10 @@ Imports:
     reticulate,
     sf,
     stats,
-    tidyr
+    tidyr,
+    checkmate
+Remotes:
+    sampbias
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
