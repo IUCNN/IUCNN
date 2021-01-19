@@ -31,7 +31,8 @@ Imports:
     sf,
     stats,
     tidyr,
-    checkmate
+    checkmate,
+    sampbias
 Remotes:
     github::azizka/sampbias
 VignetteBuilder: knitr
