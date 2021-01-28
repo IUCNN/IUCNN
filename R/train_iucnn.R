@@ -141,21 +141,33 @@ train_iucnn <- function(x,
   reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
 
   # run model via python script
-  iucnn_train(dataset = as.matrix(dataset),
-              labels = as.matrix(labels),
-              path_to_output = path_to_output,
-              model_name = model_name,
-              validation_split = validation_split,
-              test_fraction = test_fraction,
-              seed = as.integer(seed),
-              verbose = 0,
-              max_epochs = as.integer(max_epochs),
-              n_layers = n_layers,
-              use_bias = use_bias,
-              act_f = act_f,
-              patience = patience
-              )
-
+  res = iucnn_train(dataset = as.matrix(dataset),
+                    labels = as.matrix(labels),
+                    path_to_output = path_to_output,
+                    model_name = model_name,
+                    validation_split = validation_split,
+                    test_fraction = test_fraction,
+                    seed = as.integer(seed),
+                    verbose = 0,
+                    max_epochs = as.integer(max_epochs),
+                    n_layers = n_layers,
+                    use_bias = use_bias,
+                    act_f = act_f,
+                    patience = patience
+                    )
+  
+  named_res = NULL
+  named_res$test_labels <- res[[1]]
+  named_res$test_predictions <- res[[2]]
+  named_res$test_predictions <- res[[2]]
+  named_res$training_loss  <- res[[3]][1]
+  named_res$training_accuracy  <- res[[3]][2]
+  named_res$validation_loss  <- res[[3]][3]
+  named_res$validation_loss  <- res[[3]][4]
+  named_res$test_loss  <- res[[3]][5]
+  named_res$test_loss <- res[[3]][6]
+  
+  return(named_res)
   #   # load python function
   # reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
 }
