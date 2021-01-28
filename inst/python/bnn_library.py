@@ -506,6 +506,7 @@ def UpdateFixedNormal(i, d=1, n=1, Mb=100, mb= -100, rs=0):
     return z, (Ix, Iy), hastings
 
 def UpdateNormal1D(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
+    i = np.array(i)
     if not rs:
         rseed = random.randint(1000, 9999)
         rs = RandomState(MT19937(SeedSequence(rseed)))
@@ -518,6 +519,7 @@ def UpdateNormal1D(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
     return z, Ix, hastings
 
 def UpdateNormal(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
+    i = np.array(i)
     if not rs:
         rseed = random.randint(1000, 9999)
         rs = RandomState(MT19937(SeedSequence(rseed)))
@@ -531,6 +533,7 @@ def UpdateNormal(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
     return z, (Ix, Iy), hastings
 
 def UpdateNormalNormalized(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
+    i = np.array(i)
     if not rs:
         rseed = random.randint(1000, 9999)
         rs = RandomState(MT19937(SeedSequence(rseed)))
@@ -545,6 +548,7 @@ def UpdateNormalNormalized(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
 
 
 def UpdateUniform(i, d=0.1, n=1, Mb=100, mb= -100):
+    i = np.array(i)
     Ix = np.random.randint(0, i.shape[0],n) # faster than np.random.choice
     Iy = np.random.randint(0, i.shape[1],n)
     z = np.zeros(i.shape) + i
