@@ -87,16 +87,22 @@ def iucnn_train(dataset,
     print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
     print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
 
-    loss, acc = model.evaluate(test_set, 
+    test_loss, test_acc = model.evaluate(test_set, 
                                test_labels, 
                                verbose=verbose)
 
-    print("\nTest accuracy: {:5.3f}".format(acc))
+    print("\nTest accuracy: {:5.3f}".format(test_acc))
 
     prm_est = model.predict(test_set, verbose=verbose)
     predictions = np.argmax(prm_est, axis=1)
     
+    res = [history.history['loss'][-1],
+           history.history['accuracy'][-1],
+           history.history['val_loss'][-1],
+           history.history['val_accuracy'][-1],
+           test_loss, test_acc]
+    
     model.save( os.path.join(path_to_output, model_name) )
     print("IUC-NN model saved as:", model_name, "in", path_to_output)
-    return [test_labels, predictions]
+    return [test_labels, predictions, res]
 
