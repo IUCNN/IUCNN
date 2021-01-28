@@ -48,7 +48,7 @@ If python has been installed before, you can specify the python version to sue w
 
 3. Install the tensorflow module
 ```{r, eval = FALSE}
-reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
+reticulate::py_install("tensorflow~=2.2.0rc4", pip = TRUE)
 ```
 
 # Usage
@@ -66,7 +66,7 @@ These can be obtained from IUCN, either via the webpage www.iucn.org or via the 
 ### 3. Geographic occurrence records of the species for which the IUCN status should be predicted (predict occurrences)
 Geographic occurrence for the target species, in the same format as for the training occurrences above.
 
-Example dataset are available with IUCNN: `data(training_occ)` (training occurrences), `data(labels_detail)` (training labels) and `data(prediction_occ)`.
+Example dataset are available with IUCNN: `data(training_occ)` (training occurrences), `data(training_labels)` (training labels) and `data(prediction_occ)`.
 
 ## Feature and label preparation
 IUCNN uses sets of per species traits ("features"). Necessary is an input data.frame, with a species column, and then numerical columns indicating the feature values for each species. In general, features might represent any species trait, including from taxonomy (family), anatomy (body size), ecology (e.g., feeding guild) or conservation (e. g., population dynamics). Any of these features can be provided to IUCNN. However, since most of these data are scarce for many taxonomic groups, in most cases features will be based on geographic occurrences and auxiliary data alone. The IUCNN package contains convenience functions to obtain geographic features (number of occurrences, number of unique occurrences, mean latitude, mean longitude, latitudinal range, longitudinal range, the extend of occurrence, the area of occupancy and hemisphere), climatic features (median values per species from 19 bioclim variables from www.worldclim.org) and biome features (presence in global biomes from the [WWF](https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world)) based on occurrence records. In this tutorial, we will use the example datasets from the Orchid family (Orchidaceae) provided with the IUCNN package, 
@@ -117,8 +117,16 @@ train_iucnn(x = features_train,
 The trained model can then predict the conservation status of Not Evaluated and Data Deficient species with the `predict_iucnn` function. The output is a a data.frame with species names and numeric labels (as generated with prepare_labels).
 
 ```{r}
-predict_iucnn(x = features_predict,
-              model_dir = "iuc_nn_model")
+res <- train_iucnn(x = features_train,
+            labels = labels_train, 
+            model_name = "iuc_nn_model",
+	    validation_split = 0.1,
+	    test_fraction = 0.1,
+	    max_epochs = 1000,
+	    n_layers = c(60, 60, 20),
+	    use_bias = 1,
+	    act_f = "relu",
+	    patience = 10)
 ```
 
 It is important to remember the following points when using IUCNN:
