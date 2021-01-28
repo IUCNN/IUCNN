@@ -33,7 +33,8 @@
 #'                        header=TRUE, # input data has a header
 #'                        instance_id=TRUE, # input data includes names of instances
 #'                        from_file=FALSE)
-
+#' @export
+#' @importFrom reticulate source_python
 
 bnn_load_data <- function(features,
                           labels,
