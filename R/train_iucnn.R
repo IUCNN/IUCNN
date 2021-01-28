@@ -150,7 +150,7 @@ train_iucnn <- function(x,
                     seed = as.integer(seed),
                     verbose = 0,
                     max_epochs = as.integer(max_epochs),
-                    n_layers = n_layers,
+                    n_layers = as.list(n_layers),
                     use_bias = use_bias,
                     act_f = act_f,
                     patience = patience
