@@ -82,14 +82,16 @@ def iucnn_train(dataset,
                         callbacks=[early_stop])
 
     print("\nVStopped after:", len(history.history['val_loss']), "epochs")
-    print("\nValidation Accuracy: {:5.3f}".format(history.history['val_loss'][-1]))
-    print("Validation Accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
+    print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
+    print("Training accuracy: {:5.3f}".format(history.history['accuracy'][-1]))
+    print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
+    print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
 
     loss, acc = model.evaluate(test_set, 
                                test_labels, 
                                verbose=verbose)
 
-    print("\nTest Accuracy: {:5.3f}".format(acc))
+    print("\nTest accuracy: {:5.3f}".format(acc))
 
     prm_est = model.predict(test_set, verbose=verbose)
     predictions = np.argmax(prm_est, axis=1)
