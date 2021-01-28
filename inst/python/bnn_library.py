@@ -478,6 +478,448 @@ def sample_from_categorical(posterior_weights=None, post_prob_file=None, verbose
         class_counts[i] = np.bincount(res[:, i].astype(int), minlength=n_classes)
     
     return {'predictions': point_estimates, 'class_counts': class_counts, 'post_predictions': res}
+import numpy as np
+import scipy.special
+import scipy.stats
+
+np.set_printoptions(suppress=True, precision=3)
+small_number = 1e-10
+import random
+from numpy.random import MT19937
+from numpy.random import RandomState, SeedSequence
+
+
+def UpdateFixedNormal(i, d=1, n=1, Mb=100, mb= -100, rs=0):
+    if not rs:
+        rseed = random.randint(1000, 9999)
+        rs = RandomState(MT19937(SeedSequence(rseed)))
+    Ix = rs.randint(0, i.shape[0],n) # faster than np.random.choice
+    Iy = rs.randint(0, i.shape[1],n)
+    current_prm = i[Ix,Iy]
+    new_prm = rs.normal(0, d[Ix,Iy], n)
+    hastings = np.sum(scipy.stats.norm.logpdf(current_prm, 0, d[Ix,Iy]) - \
+               scipy.stats.norm.logpdf(new_prm, 0, d[Ix,Iy]))
+    z = np.zeros(i.shape) + i
+    z[Ix,Iy] = new_prm
+    z[z > Mb] = Mb- (z[z>Mb]-Mb)
+    z[z < mb] = mb- (z[z<mb]-mb)
+    return z, (Ix, Iy), hastings
+
+def UpdateNormal1D(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
+    if not rs:
+        rseed = random.randint(1000, 9999)
+        rs = RandomState(MT19937(SeedSequence(rseed)))
+    Ix = rs.randint(0, len(i),n) # faster than np.random.choice
+    z = np.zeros(i.shape) + i
+    z[Ix] = z[Ix] + rs.normal(0, d, n)
+    z[z > Mb] = Mb- (z[z>Mb]-Mb)
+    z[z < mb] = mb- (z[z<mb]-mb)
+    hastings = 0
+    return z, Ix, hastings
+
+def UpdateNormal(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
+    if not rs:
+        rseed = random.randint(1000, 9999)
+        rs = RandomState(MT19937(SeedSequence(rseed)))
+    Ix = rs.randint(0, i.shape[0],n) # faster than np.random.choice
+    Iy = rs.randint(0, i.shape[1],n)
+    z = np.zeros(i.shape) + i
+    z[Ix,Iy] = z[Ix,Iy] + rs.normal(0, d[Ix,Iy], n)
+    z[z > Mb] = Mb- (z[z>Mb]-Mb)
+    z[z < mb] = mb- (z[z<mb]-mb)
+    hastings = 0
+    return z, (Ix, Iy), hastings
+
+def UpdateNormalNormalized(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
+    if not rs:
+        rseed = random.randint(1000, 9999)
+        rs = RandomState(MT19937(SeedSequence(rseed)))
+    Ix = rs.randint(0, i.shape[0],n) # faster than np.random.choice
+    Iy = rs.randint(0, i.shape[1],n)
+    z = np.zeros(i.shape) + i
+    z[Ix,Iy] = z[Ix,Iy] + rs.normal(0, d[Ix,Iy], n)
+    z = z/np.sum(z)
+    hastings = 0
+    return z, (Ix, Iy), hastings
+
+
+
+def UpdateUniform(i, d=0.1, n=1, Mb=100, mb= -100):
+    Ix = np.random.randint(0, i.shape[0],n) # faster than np.random.choice
+    Iy = np.random.randint(0, i.shape[1],n)
+    z = np.zeros(i.shape) + i
+    z[Ix,Iy] = z[Ix,Iy] + np.random.uniform(-d[Ix,Iy], d[Ix,Iy], n)
+    z[z > Mb] = Mb- (z[z>Mb]-Mb)
+    z[z < mb] = mb- (z[z<mb]-mb)
+    hastings = 0
+    return z, (Ix, Iy), hastings
+
+
+def UpdateBinomial(ind,update_f,shape_out):
+    return np.abs(ind - np.random.binomial(1, np.random.random() * update_f, shape_out))
+
+
+def GibbsSampleNormStdGammaVector(x,a=2,b=0.1,mu=0):
+    Gamma_a = a + len(x)/2.
+    Gamma_b = b + np.sum((x-mu)**2)/2.
+    tau = np.random.gamma(Gamma_a, scale=1./Gamma_b)
+    return 1/np.sqrt(tau)
+
+
+def GibbsSampleNormStdGamma2D(x,a=1,b=0.1,mu=0):
+    Gamma_a = a + (x.shape[0])/2. #
+    Gamma_b = b + np.sum((x-mu)**2,axis=0)/2.
+    tau = np.random.gamma(Gamma_a, scale=1./Gamma_b)
+    return 1/np.sqrt(tau)
+
+def GibbsSampleNormStdGammaONE(x,a=1.5,b=0.1,mu=0):
+    Gamma_a = a + 1/2. # one observation for each value (1 Y for 1 s2)
+    Gamma_b = b + ((x-mu)**2)/2.
+    tau = np.random.gamma(Gamma_a, scale=1./Gamma_b)
+    return 1/np.sqrt(tau)
+
+def GibbsSampleGammaRateExp(sd,a,alpha_0=1.,beta_0=1.):
+    # prior is on precision tau
+    tau = 1./(sd**2) #np.array(tau_list)
+    conjugate_a = alpha_0 + len(tau)*a
+    conjugate_b = beta_0 + np.sum(tau)
+    return np.random.gamma(conjugate_a,scale=1./conjugate_b)
+
+
+def run_mcmc(bnn, mcmc, logger):
+    while True:
+        mcmc.mh_step(bnn)
+        # print some stats (iteration number, likelihood, training accuracy, test accuracy
+        if mcmc._current_iteration % mcmc._print_f == 0 or mcmc._current_iteration == 1:
+            print(mcmc._current_iteration, np.round([mcmc._logLik, mcmc._accuracy, mcmc._test_accuracy],3))
+        # save to file
+        if mcmc._current_iteration % mcmc._sampling_f == 0:
+            logger.log_sample(bnn,mcmc)
+            logger.log_weights(bnn,mcmc)
+        # stop MCMC after running desired number of iterations
+        if mcmc._current_iteration == mcmc._n_iterations:
+            break
+import csv
+import glob
+import os
+import numpy as np
+
+
+# get data
+def get_data(f,l=None,testsize=0.1, batch_training=0,seed=1234, all_class_in_testset=1,
+             instance_id=0, header=0,feature_indx=None,randomize_order=True,from_file=True):
+    np.random.seed(seed)
+    inst_id = []
+    if from_file:
+        fname = os.path.splitext(os.path.basename(f))[0]
+        try:
+            tot_x = np.load(f)
+        except(ValueError):
+            if not instance_id:
+                tot_x = np.loadtxt(f)
+            else:
+                tmp = np.genfromtxt(f, skip_header=header, dtype=str)
+                tot_x = tmp[:,1:].astype(float)
+                inst_id = tmp[:,0].astype(str)
+            
+        if header:
+            feature_names = np.array(next(open(f)).split()[1:])
+        else:
+            feature_names = np.array(["feature_%s" % i for i in range(tot_x.shape[1])])
+    else:
+        f = pd.DataFrame(f)
+        fname = 'bnn'
+        if not instance_id:
+            feature_names = np.array(f.columns)
+            tot_x = f.values
+        else:
+            feature_names = np.array(f.columns[1:])
+            tot_x = f.values[:,1:]
+            inst_id = f.values[:,0].astype(str)
+
+    if feature_indx is not None:
+        feature_indx = np.array(feature_indx)
+        tot_x = tot_x[:,feature_indx]
+        feature_names = feature_names[feature_indx]
+
+    
+    try:
+        if not l.empty:
+            l = pd.DataFrame(l)
+            tot_labels = l.values.astype(str) # if l already is a dataframe
+    except:
+        if not l:
+            return {'data': np.array(tot_x).astype(float), 'labels': [], 'label_dict': [],
+                    'test_data': [], 'test_labels': [],
+                    'id_data': inst_id, 'id_test_data': [],
+                    'file_name': fname, 'feature_names': feature_names}
+        else:
+            tot_labels = np.loadtxt(l,skiprows=header,dtype=str)
+    
+    if instance_id:
+        tot_labels = tot_labels[:,1]
+    tot_labels_numeric = turn_labels_to_numeric(tot_labels, l)
+    x, labels, x_test, labels_test, inst_id_x, inst_id_x_test = randomize_data(tot_x, tot_labels_numeric,
+                                                                               testsize=testsize,
+                                                                               all_class_in_testset=all_class_in_testset,
+                                                                               inst_id=inst_id,
+                                                                               randomize=randomize_order)
+
+    if batch_training:
+        indx = np.random.randint(0,len(labels),batch_training)
+        x = x[indx]
+        labels = labels[indx]
+
+    return {'data': np.array(x).astype(float), 'labels': labels, 'label_dict': np.unique(tot_labels),
+            'test_data': np.array(x_test).astype(float), 'test_labels': labels_test,
+            'id_data': inst_id_x, 'id_test_data': inst_id_x_test,
+            'file_name': fname, 'feature_names': feature_names}
+
+
+def save_data(dat, lab, outname="data", test_dat=[], test_lab=[]):
+    np.savetxt(outname+"_features.txt", dat, delimiter="\t")
+    np.savetxt(outname+"_labeles.txt", lab.astype(int), delimiter="\t")
+    if len(test_dat) > 0:
+        np.savetxt(outname + "_test_features.txt", test_dat, delimiter="\t")
+        np.savetxt(outname + "_test_labeles.txt", test_lab.astype(int), delimiter="\t")
+
+def init_output_files(bnn_obj, filename="BNN", sample_from_prior=0, outpath="",add_prms=None,
+                      continue_logfile=False, log_all_weights=0):
+    'prior_f = 0, p_scale = 1, hyper_p = 0, freq_indicator = 0'
+    if bnn_obj._freq_indicator ==0:
+        ind = ""
+    else:
+        ind = "_ind"
+    if sample_from_prior:
+        ind = ind + "_prior"
+    ind =  ind + "_%s" % bnn_obj._seed
+    outname = "%s_p%s_h%s_l%s_s%s_b%s%s" % (filename, bnn_obj._prior,bnn_obj._hyper_p, "_".join(map(str,
+                                            bnn_obj._n_nodes)), bnn_obj._p_scale, bnn_obj._w_bound, ind)
+
+    logfile_name = os.path.join(outpath, outname + ".log")
+    if not log_all_weights:
+        w_file_name = os.path.join(outpath, outname + ".pkl")
+        wweights = None
+    else:
+        w_file_name = os.path.join(outpath, outname + "_W.log")
+        w_file_name = open(w_file_name, "w")
+        head_w = ["it"]
+
+    head = ["it", "posterior", "likelihood", "prior", "accuracy", "test_accuracy"]
+    for i in range(bnn_obj._size_output):
+        head.append("acc_C%s" % i)
+    for i in range(bnn_obj._n_layers):
+        head.append("mean_w%s" % i)
+        head.append("std_w%s" % i)
+        if bnn_obj._hyper_p:
+            if bnn_obj._hyper_p == 1:
+                head.append("prior_std_w%s" % i)
+            else:
+                head.append("mean_prior_std_w%s" % i)
+        if log_all_weights:
+            head_w = head_w + ["w_%s_%s" % (i, j) for j in range(bnn_obj._w_layers[i].size)]
+    if bnn_obj._freq_indicator:
+        head.append("mean_ind")
+    if add_prms:
+        head = head + add_prms
+
+    if bnn_obj._act_fun._trainable:
+        head = head + ["alpha_%s" % (i) for i in range(bnn_obj._n_layers-1)]
+    
+    head.append("acc_prob")
+    head.append("mcmc_id")
+    
+    if not continue_logfile:
+        logfile = open(logfile_name, "w")
+        wlog = csv.writer(logfile, delimiter='\t')
+        wlog.writerow(head)
+    else:
+        logfile = open(logfile_name, "a")
+        wlog = csv.writer(logfile, delimiter='\t')
+
+    if log_all_weights:
+        wweights = csv.writer(w_file_name, delimiter='\t')
+        wweights.writerow(head_w)
+
+    return wlog, logfile, w_file_name, wweights
+
+
+def randomize_data(tot_x, tot_labels, testsize=0.1, all_class_in_testset=1, inst_id=[], randomize=True):
+    if randomize:
+        if testsize:
+            rnd_order = np.random.choice(range(len(tot_labels)), len(tot_labels), replace=False)
+        else:
+            rnd_order = np.arange(len(tot_labels))
+    else:
+        rnd_order = np.arange(len(tot_labels))
+        all_class_in_testset=0
+    tot_x = tot_x[rnd_order]
+    tot_labels = tot_labels[rnd_order]
+    test_set_ind = int(testsize * len(tot_labels))
+    inst_id_x = []
+    inst_id_test = []
+    tot_inst_id = []
+    if len(inst_id):
+        tot_inst_id = inst_id[rnd_order]
+
+    if all_class_in_testset and testsize:
+        test_set_ind = []
+
+        for i in np.unique(tot_labels):
+            ind = np.where(tot_labels == i)[0]
+            test_set_ind = test_set_ind + list(np.random.choice(ind, np.max([1, int(testsize*len(ind))])))
+
+        test_set_ind = np.array(test_set_ind)
+        x_test = tot_x[test_set_ind]
+        labels_test = tot_labels[test_set_ind]
+        train_ind = np.array([z for z in range(tot_labels.size) if not z in test_set_ind])
+
+        x = tot_x[train_ind]
+        labels = tot_labels[train_ind]
+        if len(inst_id):
+            inst_id_x = tot_inst_id[train_ind]
+            inst_id_test = tot_inst_id[test_set_ind]
+    elif test_set_ind == 0:
+        x_test = []
+        labels_test = []
+        x = tot_x
+        labels = tot_labels
+        if len(inst_id):
+            inst_id_x = tot_inst_id
+            inst_id_test = []
+    else:
+        x_test = tot_x[-test_set_ind:, :]
+        labels_test = tot_labels[-test_set_ind:]
+        x = tot_x[:-test_set_ind, :]
+        labels = tot_labels[:-test_set_ind]
+        if len(inst_id):
+            inst_id_test = tot_inst_id[-test_set_ind:]
+            inst_id_x = tot_inst_id[:-test_set_ind]
+         
+    return x, labels, x_test, labels_test, inst_id_x, inst_id_test
+
+
+def load_obj(file_name):
+    try:
+        with open(file_name, 'rb') as f:
+            return pickle.load(f)
+    except:
+        import pickle5
+        with open(file_name, 'rb') as f:
+            return pickle5.load(f)
+
+def merge_dict(d1, d2):
+    from collections import defaultdict
+    d = defaultdict(list)
+    for a, b in d1.items() + d2.items():
+        d[a].append(b)
+    return d
+
+
+def combine_pkls(files=None, dir=None, tag=""):
+    if dir is not None:
+        files = glob.glob(os.path.join(dir, "*%s*.pkl" % tag))
+        print("Combining files: ", files)
+    comb_pkl = list()
+    for f in files:
+        w = load_obj(f)
+        comb_pkl = comb_pkl + w
+    return comb_pkl
+
+def turn_labels_to_numeric(labels,label_file,save_to_file=False):
+    numerical_labels = np.zeros(len(labels)).astype(int)
+    c = 0
+    for i in np.unique(labels):
+        numerical_labels[labels == i] = c
+        c += 1
+
+    if save_to_file:
+        outfile = label_file.replace('.txt','_numerical.txt')
+        np.savetxt(outfile,numerical_labels,fmt='%i')
+    return numerical_labels
+
+
+
+
+
+
+import numpy as np
+np.set_printoptions(suppress=True)
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+
+def plotResults(bnn_predictions_file, bnn_lower_file, bnn_upper_file, nn_predictions_file, predictions_outdir, filename_str):
+
+	filename_str = os.path.basename(filename_str)
+	try:
+		plot_nn = 1
+		nn_predictions = np.loadtxt(nn_predictions_file)
+	except:
+		plot_nn = 0
+		nn_predictions = 0
+	bnn_predictions = np.loadtxt(bnn_predictions_file)
+	bnn_lower = np.loadtxt(bnn_lower_file)
+	bnn_upper = np.loadtxt(bnn_upper_file)
+
+	delta_lower = np.abs(bnn_predictions[:,0]-bnn_lower)
+	delta_upper = np.abs(bnn_upper-bnn_predictions[:,0])
+
+	fig=plt.figure()
+	if plot_nn:
+		plt.plot(nn_predictions[:,0],'rx',label='NN predictions')
+	plt.plot(bnn_predictions[:,0],'gx',label='BNN predictions')
+	plt.axhline(0.5,color='black')
+	plt.ylabel('Probability of cat 0')
+	plt.xlabel('Prediction instances')
+	plt.legend()
+	fig.savefig(os.path.join(predictions_outdir, '%s_cat_0_probs_plot.pdf'%filename_str))
+
+	fig=plt.figure()
+	if plot_nn:
+		plt.plot(nn_predictions[:,0],'rx',label='NN predictions')
+	#plt.plot(bnn_predictions[:,0],'gx',label='BNN predictions')
+	plt.errorbar(np.arange(bnn_predictions[:,0].shape[0]),bnn_predictions[:,0], yerr=np.array([delta_lower,delta_upper]),
+	             fmt='gx',ecolor='black',elinewidth=1,capsize=2,label='BNN predictions')
+	plt.axhline(0.5,color='black')
+	plt.ylabel('Probability of cat 0')
+	plt.xlabel('Prediction instances')
+	plt.legend()
+	fig.savefig(os.path.join(predictions_outdir, '%s_cat_0_probs_hpd_bars_plot.pdf'%filename_str))
+
+def summarizeOutput(predictions_outdir, pred_features, w_file, nn_predictions_file, use_bias_node):
+	if not os.path.exists(predictions_outdir):
+		os.makedirs(predictions_outdir)
+	loaded_weights = np.array(load_obj(w_file))
+	predict_features = np.load(pred_features)
+	if use_bias_node:
+		predict_features = np.c_[np.ones(predict_features.shape[0]), predict_features]
+	# run prediction with these weights
+	post_predictions = []
+	for weights in loaded_weights:
+		pred =  RunPredict(predict_features, weights)
+		post_predictions.append(pred)
+	post_predictions = np.array(post_predictions)
+	out_name = os.path.splitext(w_file)[0]
+	out_name = os.path.basename(out_name)
+	
+	out_file_post_pr = os.path.join(predictions_outdir, out_name + '_pred_pr.npy')
+	out_file_mean_pr = os.path.join(predictions_outdir, out_name + '_pred_mean_pr.txt')
+	out_file_upper_pr = os.path.join(predictions_outdir, out_name + '_pred_upper_pr.txt')
+	out_file_lower_pr = os.path.join(predictions_outdir, out_name + '_pred_lower_pr.txt')
+
+	# print the arrays to file
+	np.save(out_file_post_pr, post_predictions)
+	np.savetxt(out_file_mean_pr, np.mean(post_predictions, axis=0), fmt='%.3f')
+
+	# just for plotting reasons, calculate the hpd interval of the first category predictions
+	lower = [calcHPD(point, 0.95)[0] for point in post_predictions[:, :, 0].T]
+	upper = [calcHPD(point, 0.95)[1] for point in post_predictions[:, :, 0].T]
+	np.savetxt(out_file_upper_pr, upper, fmt='%.3f')
+	np.savetxt(out_file_lower_pr, lower, fmt='%.3f')
+
+	plotResults(out_file_mean_pr, out_file_lower_pr, out_file_upper_pr, nn_predictions_file, predictions_outdir, out_name)
 import scipy.stats
 from numpy.random import MT19937
 
@@ -875,445 +1317,3 @@ class postLogger():
             self._wweight.writerow(row)
             self._w_file.flush()
 
-import numpy as np
-np.set_printoptions(suppress=True)
-import pandas as pd
-import matplotlib.pyplot as plt
-import os
-
-
-def plotResults(bnn_predictions_file, bnn_lower_file, bnn_upper_file, nn_predictions_file, predictions_outdir, filename_str):
-
-	filename_str = os.path.basename(filename_str)
-	try:
-		plot_nn = 1
-		nn_predictions = np.loadtxt(nn_predictions_file)
-	except:
-		plot_nn = 0
-		nn_predictions = 0
-	bnn_predictions = np.loadtxt(bnn_predictions_file)
-	bnn_lower = np.loadtxt(bnn_lower_file)
-	bnn_upper = np.loadtxt(bnn_upper_file)
-
-	delta_lower = np.abs(bnn_predictions[:,0]-bnn_lower)
-	delta_upper = np.abs(bnn_upper-bnn_predictions[:,0])
-
-	fig=plt.figure()
-	if plot_nn:
-		plt.plot(nn_predictions[:,0],'rx',label='NN predictions')
-	plt.plot(bnn_predictions[:,0],'gx',label='BNN predictions')
-	plt.axhline(0.5,color='black')
-	plt.ylabel('Probability of cat 0')
-	plt.xlabel('Prediction instances')
-	plt.legend()
-	fig.savefig(os.path.join(predictions_outdir, '%s_cat_0_probs_plot.pdf'%filename_str))
-
-	fig=plt.figure()
-	if plot_nn:
-		plt.plot(nn_predictions[:,0],'rx',label='NN predictions')
-	#plt.plot(bnn_predictions[:,0],'gx',label='BNN predictions')
-	plt.errorbar(np.arange(bnn_predictions[:,0].shape[0]),bnn_predictions[:,0], yerr=np.array([delta_lower,delta_upper]),
-	             fmt='gx',ecolor='black',elinewidth=1,capsize=2,label='BNN predictions')
-	plt.axhline(0.5,color='black')
-	plt.ylabel('Probability of cat 0')
-	plt.xlabel('Prediction instances')
-	plt.legend()
-	fig.savefig(os.path.join(predictions_outdir, '%s_cat_0_probs_hpd_bars_plot.pdf'%filename_str))
-
-def summarizeOutput(predictions_outdir, pred_features, w_file, nn_predictions_file, use_bias_node):
-	if not os.path.exists(predictions_outdir):
-		os.makedirs(predictions_outdir)
-	loaded_weights = np.array(load_obj(w_file))
-	predict_features = np.load(pred_features)
-	if use_bias_node:
-		predict_features = np.c_[np.ones(predict_features.shape[0]), predict_features]
-	# run prediction with these weights
-	post_predictions = []
-	for weights in loaded_weights:
-		pred =  RunPredict(predict_features, weights)
-		post_predictions.append(pred)
-	post_predictions = np.array(post_predictions)
-	out_name = os.path.splitext(w_file)[0]
-	out_name = os.path.basename(out_name)
-	
-	out_file_post_pr = os.path.join(predictions_outdir, out_name + '_pred_pr.npy')
-	out_file_mean_pr = os.path.join(predictions_outdir, out_name + '_pred_mean_pr.txt')
-	out_file_upper_pr = os.path.join(predictions_outdir, out_name + '_pred_upper_pr.txt')
-	out_file_lower_pr = os.path.join(predictions_outdir, out_name + '_pred_lower_pr.txt')
-
-	# print the arrays to file
-	np.save(out_file_post_pr, post_predictions)
-	np.savetxt(out_file_mean_pr, np.mean(post_predictions, axis=0), fmt='%.3f')
-
-	# just for plotting reasons, calculate the hpd interval of the first category predictions
-	lower = [calcHPD(point, 0.95)[0] for point in post_predictions[:, :, 0].T]
-	upper = [calcHPD(point, 0.95)[1] for point in post_predictions[:, :, 0].T]
-	np.savetxt(out_file_upper_pr, upper, fmt='%.3f')
-	np.savetxt(out_file_lower_pr, lower, fmt='%.3f')
-
-	plotResults(out_file_mean_pr, out_file_lower_pr, out_file_upper_pr, nn_predictions_file, predictions_outdir, out_name)
-import csv
-import glob
-import os
-import numpy as np
-
-
-# get data
-def get_data(f,l=None,testsize=0.1, batch_training=0,seed=1234, all_class_in_testset=1,
-             instance_id=0, header=0,feature_indx=None,randomize_order=True,from_file=True):
-    np.random.seed(seed)
-    inst_id = []
-    if from_file:
-        fname = os.path.splitext(os.path.basename(f))[0]
-        try:
-            tot_x = np.load(f)
-        except(ValueError):
-            if not instance_id:
-                tot_x = np.loadtxt(f)
-            else:
-                tmp = np.genfromtxt(f, skip_header=header, dtype=str)
-                tot_x = tmp[:,1:].astype(float)
-                inst_id = tmp[:,0].astype(str)
-            
-        if header:
-            feature_names = np.array(next(open(f)).split()[1:])
-        else:
-            feature_names = np.array(["feature_%s" % i for i in range(tot_x.shape[1])])
-    else:
-        f = pd.DataFrame(f)
-        fname = 'bnn'
-        if not instance_id:
-            feature_names = np.array(f.columns)
-            tot_x = f.values
-        else:
-            feature_names = np.array(f.columns[1:])
-            tot_x = f.values[:,1:]
-            inst_id = f.values[:,0].astype(str)
-
-    if feature_indx is not None:
-        feature_indx = np.array(feature_indx)
-        tot_x = tot_x[:,feature_indx]
-        feature_names = feature_names[feature_indx]
-
-    
-    try:
-        if not l.empty:
-            l = pd.DataFrame(l)
-            tot_labels = l.values.astype(str) # if l already is a dataframe
-    except:
-        if not l:
-            return {'data': np.array(tot_x).astype(float), 'labels': [], 'label_dict': [],
-                    'test_data': [], 'test_labels': [],
-                    'id_data': inst_id, 'id_test_data': [],
-                    'file_name': fname, 'feature_names': feature_names}
-        else:
-            tot_labels = np.loadtxt(l,skiprows=header,dtype=str)
-    
-    if instance_id:
-        tot_labels = tot_labels[:,1]
-    tot_labels_numeric = turn_labels_to_numeric(tot_labels, l)
-    x, labels, x_test, labels_test, inst_id_x, inst_id_x_test = randomize_data(tot_x, tot_labels_numeric,
-                                                                               testsize=testsize,
-                                                                               all_class_in_testset=all_class_in_testset,
-                                                                               inst_id=inst_id,
-                                                                               randomize=randomize_order)
-
-    if batch_training:
-        indx = np.random.randint(0,len(labels),batch_training)
-        x = x[indx]
-        labels = labels[indx]
-
-    return {'data': np.array(x).astype(float), 'labels': labels, 'label_dict': np.unique(tot_labels),
-            'test_data': np.array(x_test).astype(float), 'test_labels': labels_test,
-            'id_data': inst_id_x, 'id_test_data': inst_id_x_test,
-            'file_name': fname, 'feature_names': feature_names}
-
-
-def save_data(dat, lab, outname="data", test_dat=[], test_lab=[]):
-    np.savetxt(outname+"_features.txt", dat, delimiter="\t")
-    np.savetxt(outname+"_labeles.txt", lab.astype(int), delimiter="\t")
-    if len(test_dat) > 0:
-        np.savetxt(outname + "_test_features.txt", test_dat, delimiter="\t")
-        np.savetxt(outname + "_test_labeles.txt", test_lab.astype(int), delimiter="\t")
-
-def init_output_files(bnn_obj, filename="BNN", sample_from_prior=0, outpath="",add_prms=None,
-                      continue_logfile=False, log_all_weights=0):
-    'prior_f = 0, p_scale = 1, hyper_p = 0, freq_indicator = 0'
-    if bnn_obj._freq_indicator ==0:
-        ind = ""
-    else:
-        ind = "_ind"
-    if sample_from_prior:
-        ind = ind + "_prior"
-    ind =  ind + "_%s" % bnn_obj._seed
-    outname = "%s_p%s_h%s_l%s_s%s_b%s%s" % (filename, bnn_obj._prior,bnn_obj._hyper_p, "_".join(map(str,
-                                            bnn_obj._n_nodes)), bnn_obj._p_scale, bnn_obj._w_bound, ind)
-
-    logfile_name = os.path.join(outpath, outname + ".log")
-    if not log_all_weights:
-        w_file_name = os.path.join(outpath, outname + ".pkl")
-        wweights = None
-    else:
-        w_file_name = os.path.join(outpath, outname + "_W.log")
-        w_file_name = open(w_file_name, "w")
-        head_w = ["it"]
-
-    head = ["it", "posterior", "likelihood", "prior", "accuracy", "test_accuracy"]
-    for i in range(bnn_obj._size_output):
-        head.append("acc_C%s" % i)
-    for i in range(bnn_obj._n_layers):
-        head.append("mean_w%s" % i)
-        head.append("std_w%s" % i)
-        if bnn_obj._hyper_p:
-            if bnn_obj._hyper_p == 1:
-                head.append("prior_std_w%s" % i)
-            else:
-                head.append("mean_prior_std_w%s" % i)
-        if log_all_weights:
-            head_w = head_w + ["w_%s_%s" % (i, j) for j in range(bnn_obj._w_layers[i].size)]
-    if bnn_obj._freq_indicator:
-        head.append("mean_ind")
-    if add_prms:
-        head = head + add_prms
-
-    if bnn_obj._act_fun._trainable:
-        head = head + ["alpha_%s" % (i) for i in range(bnn_obj._n_layers-1)]
-    
-    head.append("acc_prob")
-    head.append("mcmc_id")
-    
-    if not continue_logfile:
-        logfile = open(logfile_name, "w")
-        wlog = csv.writer(logfile, delimiter='\t')
-        wlog.writerow(head)
-    else:
-        logfile = open(logfile_name, "a")
-        wlog = csv.writer(logfile, delimiter='\t')
-
-    if log_all_weights:
-        wweights = csv.writer(w_file_name, delimiter='\t')
-        wweights.writerow(head_w)
-
-    return wlog, logfile, w_file_name, wweights
-
-
-def randomize_data(tot_x, tot_labels, testsize=0.1, all_class_in_testset=1, inst_id=[], randomize=True):
-    if randomize:
-        if testsize:
-            rnd_order = np.random.choice(range(len(tot_labels)), len(tot_labels), replace=False)
-        else:
-            rnd_order = np.arange(len(tot_labels))
-    else:
-        rnd_order = np.arange(len(tot_labels))
-        all_class_in_testset=0
-    tot_x = tot_x[rnd_order]
-    tot_labels = tot_labels[rnd_order]
-    test_set_ind = int(testsize * len(tot_labels))
-    inst_id_x = []
-    inst_id_test = []
-    tot_inst_id = []
-    if len(inst_id):
-        tot_inst_id = inst_id[rnd_order]
-
-    if all_class_in_testset and testsize:
-        test_set_ind = []
-
-        for i in np.unique(tot_labels):
-            ind = np.where(tot_labels == i)[0]
-            test_set_ind = test_set_ind + list(np.random.choice(ind, np.max([1, int(testsize*len(ind))])))
-
-        test_set_ind = np.array(test_set_ind)
-        x_test = tot_x[test_set_ind]
-        labels_test = tot_labels[test_set_ind]
-        train_ind = np.array([z for z in range(tot_labels.size) if not z in test_set_ind])
-
-        x = tot_x[train_ind]
-        labels = tot_labels[train_ind]
-        if len(inst_id):
-            inst_id_x = tot_inst_id[train_ind]
-            inst_id_test = tot_inst_id[test_set_ind]
-    elif test_set_ind == 0:
-        x_test = []
-        labels_test = []
-        x = tot_x
-        labels = tot_labels
-        if len(inst_id):
-            inst_id_x = tot_inst_id
-            inst_id_test = []
-    else:
-        x_test = tot_x[-test_set_ind:, :]
-        labels_test = tot_labels[-test_set_ind:]
-        x = tot_x[:-test_set_ind, :]
-        labels = tot_labels[:-test_set_ind]
-        if len(inst_id):
-            inst_id_test = tot_inst_id[-test_set_ind:]
-            inst_id_x = tot_inst_id[:-test_set_ind]
-         
-    return x, labels, x_test, labels_test, inst_id_x, inst_id_test
-
-
-def load_obj(file_name):
-    try:
-        with open(file_name, 'rb') as f:
-            return pickle.load(f)
-    except:
-        import pickle5
-        with open(file_name, 'rb') as f:
-            return pickle5.load(f)
-
-def merge_dict(d1, d2):
-    from collections import defaultdict
-    d = defaultdict(list)
-    for a, b in d1.items() + d2.items():
-        d[a].append(b)
-    return d
-
-
-def combine_pkls(files=None, dir=None, tag=""):
-    if dir is not None:
-        files = glob.glob(os.path.join(dir, "*%s*.pkl" % tag))
-        print("Combining files: ", files)
-    comb_pkl = list()
-    for f in files:
-        w = load_obj(f)
-        comb_pkl = comb_pkl + w
-    return comb_pkl
-
-def turn_labels_to_numeric(labels,label_file,save_to_file=False):
-    numerical_labels = np.zeros(len(labels)).astype(int)
-    c = 0
-    for i in np.unique(labels):
-        numerical_labels[labels == i] = c
-        c += 1
-
-    if save_to_file:
-        outfile = label_file.replace('.txt','_numerical.txt')
-        np.savetxt(outfile,numerical_labels,fmt='%i')
-    return numerical_labels
-
-
-
-
-
-
-import numpy as np
-import scipy.special
-import scipy.stats
-
-np.set_printoptions(suppress=True, precision=3)
-small_number = 1e-10
-import random
-from numpy.random import MT19937
-from numpy.random import RandomState, SeedSequence
-
-
-def UpdateFixedNormal(i, d=1, n=1, Mb=100, mb= -100, rs=0):
-    if not rs:
-        rseed = random.randint(1000, 9999)
-        rs = RandomState(MT19937(SeedSequence(rseed)))
-    Ix = rs.randint(0, i.shape[0],n) # faster than np.random.choice
-    Iy = rs.randint(0, i.shape[1],n)
-    current_prm = i[Ix,Iy]
-    new_prm = rs.normal(0, d[Ix,Iy], n)
-    hastings = np.sum(scipy.stats.norm.logpdf(current_prm, 0, d[Ix,Iy]) - \
-               scipy.stats.norm.logpdf(new_prm, 0, d[Ix,Iy]))
-    z = np.zeros(i.shape) + i
-    z[Ix,Iy] = new_prm
-    z[z > Mb] = Mb- (z[z>Mb]-Mb)
-    z[z < mb] = mb- (z[z<mb]-mb)
-    return z, (Ix, Iy), hastings
-
-def UpdateNormal1D(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
-    if not rs:
-        rseed = random.randint(1000, 9999)
-        rs = RandomState(MT19937(SeedSequence(rseed)))
-    Ix = rs.randint(0, len(i),n) # faster than np.random.choice
-    z = np.zeros(i.shape) + i
-    z[Ix] = z[Ix] + rs.normal(0, d, n)
-    z[z > Mb] = Mb- (z[z>Mb]-Mb)
-    z[z < mb] = mb- (z[z<mb]-mb)
-    hastings = 0
-    return z, Ix, hastings
-
-def UpdateNormal(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
-    if not rs:
-        rseed = random.randint(1000, 9999)
-        rs = RandomState(MT19937(SeedSequence(rseed)))
-    Ix = rs.randint(0, i.shape[0],n) # faster than np.random.choice
-    Iy = rs.randint(0, i.shape[1],n)
-    z = np.zeros(i.shape) + i
-    z[Ix,Iy] = z[Ix,Iy] + rs.normal(0, d[Ix,Iy], n)
-    z[z > Mb] = Mb- (z[z>Mb]-Mb)
-    z[z < mb] = mb- (z[z<mb]-mb)
-    hastings = 0
-    return z, (Ix, Iy), hastings
-
-def UpdateNormalNormalized(i, d=0.01, n=1, Mb=100, mb= -100, rs=0):
-    if not rs:
-        rseed = random.randint(1000, 9999)
-        rs = RandomState(MT19937(SeedSequence(rseed)))
-    Ix = rs.randint(0, i.shape[0],n) # faster than np.random.choice
-    Iy = rs.randint(0, i.shape[1],n)
-    z = np.zeros(i.shape) + i
-    z[Ix,Iy] = z[Ix,Iy] + rs.normal(0, d[Ix,Iy], n)
-    z = z/np.sum(z)
-    hastings = 0
-    return z, (Ix, Iy), hastings
-
-
-
-def UpdateUniform(i, d=0.1, n=1, Mb=100, mb= -100):
-    Ix = np.random.randint(0, i.shape[0],n) # faster than np.random.choice
-    Iy = np.random.randint(0, i.shape[1],n)
-    z = np.zeros(i.shape) + i
-    z[Ix,Iy] = z[Ix,Iy] + np.random.uniform(-d[Ix,Iy], d[Ix,Iy], n)
-    z[z > Mb] = Mb- (z[z>Mb]-Mb)
-    z[z < mb] = mb- (z[z<mb]-mb)
-    hastings = 0
-    return z, (Ix, Iy), hastings
-
-
-def UpdateBinomial(ind,update_f,shape_out):
-    return np.abs(ind - np.random.binomial(1, np.random.random() * update_f, shape_out))
-
-
-def GibbsSampleNormStdGammaVector(x,a=2,b=0.1,mu=0):
-    Gamma_a = a + len(x)/2.
-    Gamma_b = b + np.sum((x-mu)**2)/2.
-    tau = np.random.gamma(Gamma_a, scale=1./Gamma_b)
-    return 1/np.sqrt(tau)
-
-
-def GibbsSampleNormStdGamma2D(x,a=1,b=0.1,mu=0):
-    Gamma_a = a + (x.shape[0])/2. #
-    Gamma_b = b + np.sum((x-mu)**2,axis=0)/2.
-    tau = np.random.gamma(Gamma_a, scale=1./Gamma_b)
-    return 1/np.sqrt(tau)
-
-def GibbsSampleNormStdGammaONE(x,a=1.5,b=0.1,mu=0):
-    Gamma_a = a + 1/2. # one observation for each value (1 Y for 1 s2)
-    Gamma_b = b + ((x-mu)**2)/2.
-    tau = np.random.gamma(Gamma_a, scale=1./Gamma_b)
-    return 1/np.sqrt(tau)
-
-def GibbsSampleGammaRateExp(sd,a,alpha_0=1.,beta_0=1.):
-    # prior is on precision tau
-    tau = 1./(sd**2) #np.array(tau_list)
-    conjugate_a = alpha_0 + len(tau)*a
-    conjugate_b = beta_0 + np.sum(tau)
-    return np.random.gamma(conjugate_a,scale=1./conjugate_b)
-
-
-def run_mcmc(bnn, mcmc, logger):
-    while True:
-        mcmc.mh_step(bnn)
-        # print some stats (iteration number, likelihood, training accuracy, test accuracy
-        if mcmc._current_iteration % mcmc._print_f == 0 or mcmc._current_iteration == 1:
-            print(mcmc._current_iteration, np.round([mcmc._logLik, mcmc._accuracy, mcmc._test_accuracy],3))
-        # save to file
-        if mcmc._current_iteration % mcmc._sampling_f == 0:
-            logger.log_sample(bnn,mcmc)
-            logger.log_weights(bnn,mcmc)
-        # stop MCMC after running desired number of iterations
-        if mcmc._current_iteration == mcmc._n_iterations:
-            break
