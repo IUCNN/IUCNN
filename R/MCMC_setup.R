@@ -1,6 +1,6 @@
 #' Set up MCMC for BNN
 #' @export
-#' @importFrom reticulate source_python
+#' @import reticulate
 
 MCMC_setup <- function(bnn_model,
                        update_f,

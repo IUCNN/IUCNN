@@ -1,12 +1,11 @@
 #' Run MCMC
 #' @export
-#' @importFrom reticulate source_python
+#' @import reticulate
 #'
 run_MCMC <- function(bnn_model,
                      mcmc_object,
                      filename_stem = "BNN",
-                     log_all_weights = FALSE
-){
+                     log_all_weights = FALSE){
 
   # source python function
   reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
@@ -22,4 +21,5 @@ run_MCMC <- function(bnn_model,
 
   # run MCMC
   run_mcmc(bnn_model, mcmc_object, logger)
+  return(logger)
 }

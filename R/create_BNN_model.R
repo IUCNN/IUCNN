@@ -1,6 +1,6 @@
 #' Set up BNN model structure
 #' @export
-#' @importFrom reticulate source_python
+#' @import reticulate
 
 create_BNN_model <- function(feature_data,
                              n_nodes_list,
