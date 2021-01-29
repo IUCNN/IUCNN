@@ -2,6 +2,7 @@
 
 export(bias_features)
 export(biome_features)
+export(bnn_load_data)
 export(clim_features)
 export(footprint_features)
 export(geo_features)
