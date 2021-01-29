@@ -160,7 +160,7 @@ train_iucnn <- function(x,
   
   named_res = NULL
   named_res$test_labels <- res[[1]]
-  named_res$test_predictions <- res[[2]]
+  named_res$test_predictions <- as.vector(res[[2]])
   named_res$training_loss  <- res[[3]][1]
   named_res$training_accuracy  <- res[[3]][2]
   named_res$validation_loss  <- res[[3]][3]
@@ -169,6 +169,4 @@ train_iucnn <- function(x,
   named_res$test_accuracy <- res[[3]][6]
   
   return(named_res)
-  #   # load python function
-  # reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
 }
