@@ -13,7 +13,6 @@ create_BNN_model <- function(feature_data,
 
   # source python function
   bn <- import("np_bnn")
-  reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.4.tar.gz", pip = TRUE)
   #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
 
   if(use_class_weight==TRUE){
