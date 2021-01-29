@@ -46,8 +46,9 @@ bnn_load_data <- function(features,
                           instance_id=TRUE, # input data includes column with names of instances
                           from_file=FALSE){
   # source python function
-  #bn <- import("np_bnn")
-  reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
+  bn <- import("np_bnn")
+  reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.4.tar.gz", pip = TRUE)
+  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
   if(all_class_in_testset==TRUE){
     all_class_in_testset_switch = as.integer(1)
   }else{
@@ -63,7 +64,7 @@ bnn_load_data <- function(features,
   }else{
     instance_id_switch = as.integer(0)
   }
-  dat = get_data(features,
+  dat = bn$get_data(features,
                     labels,
                     seed=as.integer(seed),
                     testsize=testsize, # 10% test set

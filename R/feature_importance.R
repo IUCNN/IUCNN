@@ -11,8 +11,9 @@ feature_importance <- function(bnn_data,
                                ){
 
   # source python function
-  #bn <- import("np_bnn")
-  reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
+  bn <- import("np_bnn")
+  reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.4.tar.gz", pip = TRUE)
+  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
 
   if (length(feature_blocks)>0){
     i=0
@@ -23,7 +24,7 @@ feature_importance <- function(bnn_data,
     }
   }
 
-  feature_importance_out = feature_importance(bnn_data$test_data,
+  feature_importance_out = bn$feature_importance(bnn_data$test_data,
                                               weights_pkl=py_get_attr(logger,'_w_file'),
                                               true_labels=bnn_data$test_labels,
                                               fname_stem=bnn_data$file_name,

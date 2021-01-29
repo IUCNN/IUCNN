@@ -14,7 +14,9 @@ MCMC_setup <- function(bnn_model,
                        sample_from_prior = FALSE){
 
   # source python function
-  reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
+  bn <- import("np_bnn")
+  reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.4.tar.gz", pip = TRUE)
+  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
 
   if(sample_from_prior==TRUE){
     sample_from_prior_switch = as.integer(1)
@@ -22,7 +24,7 @@ MCMC_setup <- function(bnn_model,
     sample_from_prior_switch = as.integer(0)
   }
 
-  mcmc = MCMC(bnn_model,
+  mcmc = bn$MCMC(bnn_model,
               update_f=update_f,
               update_ws=update_ws,
               temperature = MCMC_temperature,

@@ -16,7 +16,8 @@ train_iucnn(
   n_layers = c(60, 60, 20),
   use_bias = 1,
   act_f = "relu",
-  patience = 10
+  patience = 10,
+  randomize_instances = FALSE
 )
 }
 \arguments{

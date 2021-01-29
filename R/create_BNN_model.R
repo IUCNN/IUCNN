@@ -12,7 +12,9 @@ create_BNN_model <- function(feature_data,
                              init_std=0.1){ # st dev of the initial weights
 
   # source python function
-  reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
+  bn <- import("np_bnn")
+  reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.4.tar.gz", pip = TRUE)
+  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
 
   if(use_class_weight==TRUE){
     use_class_weight_switch = as.integer(1)
@@ -27,7 +29,7 @@ create_BNN_model <- function(feature_data,
 
   alphas = as.integer(c(0, 0))
 
-  bnn_model = npBNN(feature_data,
+  bnn_model = bn$npBNN(feature_data,
                     n_nodes = as.integer(n_nodes_list),
                     use_class_weights=use_class_weight_switch,
                     actFun=genReLU(prm=alphas, trainable=TRUE),
