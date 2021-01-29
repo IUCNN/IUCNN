@@ -46,7 +46,7 @@ install_miniconda()
 If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
 
 
-3. Install the tensorflow module
+3. Install the tensorflow Python module
 ```{r, eval = FALSE}
 reticulate::py_install("tensorflow~=2.2.0rc4", pip = TRUE)
 ```
@@ -104,29 +104,52 @@ labels_train <- prepare_labels(training_labels)
 ```
 
 ## Model training
-Based on the training features and labels, IUCNN trains a neural network, using the tensorflow module. The training is done vie the `train_iucnn` function. There are multiple options to change the design of the network, including among others the number of layers, and the fraction of records used for testing and validation. The `train_iucnn` function will write a folder to the working directory containing the model and print summary statistics to the screen.
+Based on the training features and labels, IUCNN trains a neural network, using the tensorflow module. The training is done vie the `train_iucnn` function. There are multiple options to change the design of the network, including among others the number of layers, and the fraction of records used for testing and validation. The `train_iucnn` function will write a folder to the working directory containing the model and return summary statistics including cross-entropy loss and accuracy for the validation set, which can be used to compare the performance of different models.
+
+The following code is used to set up and train a neural network model with 3 hidden layers of 60, 60, and 20 nodes, with ReLU activation function. By specifying a the seed (here: 1234) we make sure the same subsets of data are designated as training, validation and test sets across different runs and model configurations (see below). The model with estimated weights will be saved in the current worlking directory. 
 
 ```{r}
-train_iucnn(x = features_train,
-            labels = labels_train, 
-            model_name = "iuc_nn_model")
+res_1 <- train_iucnn(x = features_train,
+                     labels = labels_train, 
+                     model_name = "iucnn_model_1",
+                     seed = 1234,
+                     validation_split = 0.1,
+                     test_fraction = 0.1,
+                     max_epochs = 1000,
+                     n_layers = c(60, 60, 20),
+                     use_bias = 1,
+                     act_f = "relu",
+                     patience = 10)
 ```
+
+We then set up a different model with 1 hidden layer of 60 nodes, and a sigmoidal activation function in the hidden layer.
+
+```{r}
+res_2 <- train_iucnn(x = features_train,
+                   labels = labels_train, 
+                   model_name = "iucnn_model_2",
+                   seed = 1234,
+                   validation_split = 0.1,
+                   test_fraction = 0.1,
+                   max_epochs = 1000,
+                   n_layers = c(60),
+                   use_bias = 1,
+                   act_f = "sigmoid",
+                   patience = 10)
+```
+
+We can check validation accuracy and loss to compare models using `res_1$validation_loss` and `res_2$validation_loss`.
+Model 2 in this case yields a lower validation loss and is therefore preferred.
+Once we choose the model configuration based on validation loss, we can check test accuracy of best model: `res_2$test_accuracy`.
+
 
 
 # Predict IUCN Global Red List status
-The trained model can then predict the conservation status of Not Evaluated and Data Deficient species with the `predict_iucnn` function. The output is a a data.frame with species names and numeric labels (as generated with prepare_labels).
+The trained model can then be used to predict the conservation status of Not Evaluated and Data Deficient species with the `predict_iucnn` function. The output is a data frame with species names and numeric labels (as generated with prepare_labels).
 
 ```{r}
-res <- train_iucnn(x = features_train,
-            labels = labels_train, 
-            model_name = "iuc_nn_model",
-	    validation_split = 0.1,
-	    test_fraction = 0.1,
-	    max_epochs = 1000,
-	    n_layers = c(60, 60, 20),
-	    use_bias = 1,
-	    act_f = "relu",
-	    patience = 10)
+predictions = predict_iucnn(x = features_predict, 
+                            model_dir = "iuc_nn_model_2")
 ```
 
 It is important to remember the following points when using IUCNN:
