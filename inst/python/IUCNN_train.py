@@ -9,20 +9,6 @@ try:
 except:
     pass
 
-# def iucnn_train(dataset, labels,
-#                 path_to_output="",
-#                 validation_split=0.1,
-#                 test_fraction=0.1,
-#                 seed=1234,
-#                 verbose=0, #can be 0, 1, 2
-#                 model_name="iuc_nn_model",
-#                 max_epochs=1000,
-#                 n_layers=[60,60,20],
-#                 use_bias=1,
-#                 act_f="relu",
-#                 patience=500):
-
-
 def iucnn_train(dataset, 
                 labels,
                 path_to_output,
@@ -35,7 +21,8 @@ def iucnn_train(dataset,
                 n_layers,
                 use_bias,
                 act_f,
-                patience):
+                patience,
+                randomize_instances):
     
     def build_classification_model():
         architecture = [layers.Dense(n_layers[0], 
@@ -57,9 +44,13 @@ def iucnn_train(dataset,
     if seed > 0:
         np.random.seed(seed)
         tf.random.set_seed(seed)
-    rnd_indx = np.random.choice(range(len(labels)), len(labels), replace=False)
+    if randomize_instances:
+        rnd_indx = np.random.choice(range(len(labels)), len(labels), replace=False)
+    else:
+        rnd_indx = np.arange(len(labels))
     rnd_dataset = dataset[rnd_indx,:] 
-    rnd_labels  = tf.keras.utils.to_categorical(labels[rnd_indx])
+    reordered_labels = labels[rnd_indx]
+    rnd_labels  = tf.keras.utils.to_categorical(reordered_labels)
 
     test_size = int(len(labels)*test_fraction)
     train_set = rnd_dataset[:-test_size,:]
@@ -104,5 +95,5 @@ def iucnn_train(dataset,
     
     model.save( os.path.join(path_to_output, model_name) )
     print("IUC-NN model saved as:", model_name, "in", path_to_output)
-    return [test_labels, predictions, res]
+    return [reordered_labels[-test_size:], predictions, res]
 
