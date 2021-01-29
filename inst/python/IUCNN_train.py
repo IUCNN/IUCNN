@@ -81,17 +81,17 @@ def iucnn_train(dataset,
                         verbose=verbose,
                         callbacks=[early_stop])
 
-    print("\nVStopped after:", len(history.history['val_loss']), "epochs")
-    print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
-    print("Training accuracy: {:5.3f}".format(history.history['accuracy'][-1]))
-    print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
-    print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
+    # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
+    # print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
+    # print("Training accuracy: {:5.3f}".format(history.history['accuracy'][-1]))
+    # print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
+    # print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
 
     test_loss, test_acc = model.evaluate(test_set, 
                                test_labels, 
                                verbose=verbose)
 
-    print("\nTest accuracy: {:5.3f}".format(test_acc))
+    # print("\nTest accuracy: {:5.3f}".format(test_acc))
 
     prm_est = model.predict(test_set, verbose=verbose)
     predictions = np.argmax(prm_est, axis=1)
