@@ -78,7 +78,8 @@ train_iucnn <- function(x,
                         n_layers = c(60,60,20),
                         use_bias = 1,
                         act_f = "relu",
-                        patience = 10){
+                        patience = 10,
+                        randomize_instances = FALSE){
 
   # Check input
   if(!"species" %in% names(x)){
@@ -153,7 +154,8 @@ train_iucnn <- function(x,
                     n_layers = as.list(n_layers),
                     use_bias = use_bias,
                     act_f = act_f,
-                    patience = patience
+                    patience = patience,
+                    randomize_instances = as.integer(randomize_instances)
                     )
   
   named_res = NULL
