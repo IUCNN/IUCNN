@@ -149,10 +149,10 @@ Once we choose the model configuration based on validation loss, we can check te
 # Predict IUCN Global Red List status
 The trained model can then be used to predict the conservation status of Not Evaluated and Data Deficient species with the `predict_iucnn` function. The output is a data frame with species names and numeric labels (as generated with prepare_labels).
 
-```{r}
+\dontrun{```{r}
 predictions = predict_iucnn(x = features_predict, 
                             model_dir = "iuc_nn_model_2")
-```
+```}
 
 It is important to remember the following points when using IUCNN:
 
