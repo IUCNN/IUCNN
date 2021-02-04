@@ -151,7 +151,7 @@ The trained model can then be used to predict the conservation status of Not Eva
 
 \dontrun{```{r}
 predictions = predict_iucnn(x = features_predict, 
-                            model_dir = "iuc_nn_model_2")
+                            model_dir = "iucnn_model_2")
 ```}
 
 It is important to remember the following points when using IUCNN:
