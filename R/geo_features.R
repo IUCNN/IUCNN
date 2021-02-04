@@ -30,7 +30,8 @@
 
 #'
 #' @export
-#' @importFrom dplyr all_of .data distinct left_join mutate summarize group_by n select
+#' @importFrom tidyselect all_of
+#' @importFrom dplyr .data distinct left_join mutate summarize group_by n select
 #' @importFrom rCAT ConBatch
 #' @importFrom magrittr %>%
 #' @importFrom stats quantile
