@@ -8,7 +8,7 @@ prepare_labels(
   x,
   species = "species",
   labels = "labels",
-  accepted_labels = c("CR", "EN", "VU", "NT", "LC"),
+  accepted_labels = c("LC", "NT", "VU", "EN", "CR"),
   level = "detail",
   threatened = c("CR", "EN", "VU")
 )
@@ -25,10 +25,10 @@ the format as returned by \link[rredlist]{rl_search}.}
 \item{accepted_labels}{a character string. The labels to be converted in to numeric values.
 Entries with labels not mentioned (e.g. "DD") will be removed. The numeric labels returned by the
 function will correspond to the order in this argument.
-For instance with default settings, "CR ->0, LC -> 4.}
+For instance with default settings, LC -> 0, CR -> 4.}
 
 \item{level}{a character string. The level of output level detail. IF "detail"
-full iucn categories, if "broad" then 0 = Threatened, and 1 = Not threatened.}
+full iucn categories, if "broad" then 0 = Not threatened, and 1 = Threatened.}
 
 \item{threatened}{a character string. Only if level=="broad", Which labels to consider threatened.}
 }

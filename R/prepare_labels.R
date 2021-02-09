@@ -11,9 +11,9 @@
 #'@param accepted_labels a character string. The labels to be converted in to numeric values.
 #'Entries with labels not mentioned (e.g. "DD") will be removed. The numeric labels returned by the
 #'function will correspond to the order in this argument.
-#' For instance with default settings, "CR ->0, LC -> 4.
+#' For instance with default settings, LC -> 0, CR -> 4.
 #'@param level a character string. The level of output level detail. IF "detail"
-#'full iucn categories, if "broad" then 0 = Threatened, and 1 = Not threatened.
+#'full iucn categories, if "broad" then 0 = Not threatened, and 1 = Threatened.
 #'@param threatened a character string. Only if level=="broad", Which labels to consider threatened.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
@@ -33,7 +33,7 @@
 prepare_labels <- function(x,
                          species = "species",
                          labels = "labels",
-                         accepted_labels = c("CR", "EN", "VU", "NT", "LC"),
+                         accepted_labels = c('LC','NT','VU','EN','CR'),
                          level = "detail",
                          threatened = c("CR", "EN", "VU")){
 
@@ -59,13 +59,13 @@ prepare_labels <- function(x,
       distinct() %>%
       unlist()
 
-    warning("Removed species with the follwoing labels: ", paste(mis, "\n"))
+    warning("Removed species with the following labels: ", paste(mis, "\n"))
   }
 
   # if broad convert to broad categories
   if(level == "broad"){
     out <- out %>%
-      mutate(lab.num.z = ifelse(.data[[labels]] %in% threatened, 0, 1))
+      mutate(lab.num.z = ifelse(.data[[labels]] %in% threatened, 1, 0))
   }else{
     lookup <- data.frame(IUCN = accepted_labels,
                          lab.num.z = seq(0, (length(accepted_labels)-1)))

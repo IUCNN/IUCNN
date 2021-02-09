@@ -4,7 +4,10 @@
 \alias{translate_numeric_labels}
 \title{Translate numeric labels predicted by trained model into IUCN conservation status}
 \usage{
-translate_numeric_labels(predicted_labels)
+translate_numeric_labels(
+  predicted_labels,
+  label_order = c("LC", "NT", "VU", "EN", "CR")
+)
 }
 \description{
 Translate numeric labels predicted by trained model into IUCN conservation status
