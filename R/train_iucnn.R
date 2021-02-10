@@ -79,7 +79,11 @@ train_iucnn <- function(x,
                         use_bias = 1,
                         act_f = "relu",
                         patience = 10,
-                        randomize_instances = FALSE){
+                        randomize_instances = FALSE,
+                        mode='classification',
+                        rescale_features = FALSE,
+                        return_categorical = FALSE,
+                        plot_labels_against_features = FALSE){
 
   # Check input
   if(!"species" %in% names(x)){
@@ -141,6 +145,9 @@ train_iucnn <- function(x,
   # source python function
   reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
 
+  #write.table(as.matrix(dataset),'features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+  #write.table(as.matrix(labels),'labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+
   # run model via python script
   res = iucnn_train(dataset = as.matrix(dataset),
                     labels = as.matrix(labels),
@@ -155,11 +162,15 @@ train_iucnn <- function(x,
                     use_bias = use_bias,
                     act_f = act_f,
                     patience = patience,
-                    randomize_instances = as.integer(randomize_instances)
+                    randomize_instances = as.integer(randomize_instances),
+                    mode = mode,
+                    rescale_features = rescale_features,
+                    return_categorical = return_categorical,
+                    plot_labels_against_features = plot_labels_against_features
                     )
-  
+
   named_res = NULL
-  named_res$test_labels <- res[[1]]
+  named_res$test_labels <- as.vector(res[[1]])
   named_res$test_predictions <- as.vector(res[[2]])
   named_res$training_loss  <- res[[3]][1]
   named_res$training_accuracy  <- res[[3]][2]
@@ -167,6 +178,6 @@ train_iucnn <- function(x,
   named_res$validation_accuracy  <- res[[3]][4]
   named_res$test_loss  <- res[[3]][5]
   named_res$test_accuracy <- res[[3]][6]
-  
+
   return(named_res)
 }
