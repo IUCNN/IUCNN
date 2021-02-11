@@ -35,7 +35,9 @@ prepare_labels <- function(x,
                          labels = "labels",
                          accepted_labels = c('LC','NT','VU','EN','CR'),
                          level = "detail",
-                         threatened = c("CR", "EN", "VU")){
+                         threatened = c("CR", "EN", "VU"),
+                         rescale_labels = TRUE,
+                         rescale_range = 2){
 
   if(is.list(x) & !is.data.frame(x)){
     warning("x is list. Assuming input from rredlist")
@@ -78,6 +80,16 @@ prepare_labels <- function(x,
 
   out <- out %>%
     dplyr::select(species = .data[[species]], labels = .data$lab.num.z)
+
+  if (rescale_labels){
+    # add another column with rescaled labels, which are needed for NN regression
+    if (level == 'detail'){
+      n_labels = length(accepted_labels)
+    }else if (level == 'broad'){
+      n_labels = 2
+    }
+    out['rescaled_labels'] = ((out['labels']/(n_labels-1))-0.5)*rescale_range
+  }
 
   # return output
   return(out)

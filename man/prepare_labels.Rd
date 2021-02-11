@@ -10,7 +10,9 @@ prepare_labels(
   labels = "labels",
   accepted_labels = c("LC", "NT", "VU", "EN", "CR"),
   level = "detail",
-  threatened = c("CR", "EN", "VU")
+  threatened = c("CR", "EN", "VU"),
+  rescale_labels = TRUE,
+  rescale_range = 2
 )
 }
 \arguments{

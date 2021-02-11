@@ -55,10 +55,11 @@ def iucnn_train(dataset,
                                      use_bias=use_bias)]
         for i in n_layers[1:]:
             architecture.append(layers.Dense(i, activation=act_f))
-        architecture.append(layers.Dense(1, activation='relu'))
+        architecture.append(layers.Dense(1, activation='tanh'))    #sigmoid or tanh
         model = keras.Sequential(architecture)
         model.compile(loss='mean_squared_error',
-                      optimizer="adam")
+                      optimizer="adam",        #rmsprop
+                      metrics=['mae','mse'])
         return model
 
 
@@ -120,7 +121,7 @@ def iucnn_train(dataset,
         # format labels
         max_label = max(reordered_labels)
         train_labels = reordered_labels[:-test_size]
-        reordered_labels_scaled = reordered_labels/max_label
+        reordered_labels_scaled = ((reordered_labels/max_label)-0.5)*2
         train_labels_scaled = reordered_labels_scaled[:-test_size]
         test_labels_scaled = reordered_labels_scaled[-test_size:]
         
