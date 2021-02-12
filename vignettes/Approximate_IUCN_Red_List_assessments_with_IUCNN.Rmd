@@ -103,7 +103,7 @@ data("training_labels")
 labels_train <- prepare_labels(training_labels)
 ```
 
-## Model training
+## Model training - NN classifier
 Based on the training features and labels, IUCNN trains a neural network, using the tensorflow module. The training is done vie the `train_iucnn` function. There are multiple options to change the design of the network, including among others the number of layers, and the fraction of records used for testing and validation. The `train_iucnn` function will write a folder to the working directory containing the model and return summary statistics including cross-entropy loss and accuracy for the validation set, which can be used to compare the performance of different models.
 
 The following code is used to set up and train a neural network model with 3 hidden layers of 60, 60, and 20 nodes, with ReLU activation function. By specifying a the seed (here: 1234) we make sure the same subsets of data are designated as training, validation and test sets across different runs and model configurations (see below). The model with estimated weights will be saved in the current worlking directory. 
@@ -143,6 +143,36 @@ res_2 <- train_iucnn(x = features_train,
 We can check validation accuracy and loss to compare models using `res_1$validation_loss` and `res_2$validation_loss`.
 Model 2 in this case yields a lower validation loss and is therefore preferred.
 Once we choose the model configuration based on validation loss, we can check test accuracy of best model: `res_2$test_accuracy`.
+
+## Model training - NN regression model
+IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of categories that can be sorted by increasing threat level, we can model the task of estimating these categories as a regression problem. To prepare the labels for optimal performance in a regression model, we need to rescale them to range from a small negative to a small positive number. This can be easily accomplished with the `prepare_labels()` function by adding the argument `rescale_labels=TRUE` as shown below:
+
+
+```{r}
+data("training_labels")
+
+labels_train <- prepare_labels(training_labels, rescale_labels=TRUE)
+```
+
+You will see that the output dataframe `labels_train` now contains an extra column with the rescaled labels, and some additional information stored in the column header. Now we can run the `train_iucnn()` function, specifying this time that the want to train a regression model by setting `mode='regression'`. Further you can add the argument `return_categorical = TRUE` to round the regressed values to integers, which makes it easier to translate the predicted labels for the test set back to numeric IUCN categories:
+
+
+```{r}
+res_3 <- train_iucnn(x = features_train,
+                     labels = labels_train, 
+                     model_name = "iucnn_model_1",
+                     seed = 1234,
+                     validation_split = 0.1,
+                     test_fraction = 0.1,
+                     max_epochs = 1000,
+                     n_layers = c(60, 60, 20),
+                     use_bias = 1,
+                     act_f = "relu",
+                     patience = 10,
+                     randomize_instances = TRUE,
+                     mode='regression',
+                     return_categorical = TRUE)
+```
 
 
 

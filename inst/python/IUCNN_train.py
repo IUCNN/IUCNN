@@ -58,7 +58,7 @@ def iucnn_train(dataset,
                                      use_bias=use_bias)]
         for i in n_layers[1:]:
             architecture.append(layers.Dense(i, activation=act_f))
-        architecture.append(layers.Dense(1, activation='tanh'))    #sigmoid or tanh
+        architecture.append(layers.Dense(1, activation='sigmoid'))    #sigmoid or tanh
         model = keras.Sequential(architecture)
         optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
         model.compile(loss='mean_squared_error',
