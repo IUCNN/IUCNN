@@ -14,11 +14,14 @@ except:
 
 def iucnn_train(dataset, 
                 labels,
+                rescaled_labels,
                 path_to_output,
                 validation_split,
                 test_fraction,
                 seed,
-                verbose, 
+                verbose,
+                n_labels,
+                lab_range,
                 model_name,
                 max_epochs,
                 n_layers,
@@ -57,18 +60,27 @@ def iucnn_train(dataset,
             architecture.append(layers.Dense(i, activation=act_f))
         architecture.append(layers.Dense(1, activation='tanh'))    #sigmoid or tanh
         model = keras.Sequential(architecture)
+        optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
         model.compile(loss='mean_squared_error',
-                      optimizer="adam",        #rmsprop
+                      optimizer=optimizer,
                       metrics=['mae','mse'])
         return model
 
 
-    def get_regression_accuracy(model,features,labels,max_label):
-        prm_est = model.predict(features)*max_label
-        label_predictions = np.round(prm_est, 0).astype(int)
-        real_labels = (labels*max_label).astype(int)
+    def get_regression_accuracy(model,features,labels,n_labels,lab_range):
+        prm_est = model.predict(features).flatten()
+        prm_est_rescaled = rescale_labels(prm_est,n_labels,lab_range)
+        label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
+        real_labels = rescale_labels(labels,n_labels,lab_range).astype(int).flatten()
         cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
-        return cat_acc, prm_est
+        return cat_acc, prm_est_rescaled
+    
+    def rescale_labels(labels,n_labels,lab_range):
+        if n_labels == 0:
+            rescaled_labels = labels
+        else:
+            rescaled_labels = ((labels/lab_range) +0.5) * (n_labels-1)
+        return(rescaled_labels)
     
     
     if not os.path.exists(path_to_output):
@@ -83,7 +95,7 @@ def iucnn_train(dataset,
         rnd_indx = np.arange(len(labels))
     if rescale_features:
         dataset = (dataset - dataset.min(axis=0)) / (dataset.max(axis=0) - dataset.min(axis=0))
-    rnd_dataset = dataset[rnd_indx,:] 
+    rnd_dataset = dataset[rnd_indx,:]
     reordered_labels = labels[rnd_indx]
 
     test_size = int(len(labels)*test_fraction)
@@ -119,10 +131,9 @@ def iucnn_train(dataset,
 
     elif mode == 'regression':
         # format labels
-        max_label = max(reordered_labels)
-        train_labels = reordered_labels[:-test_size]
-        reordered_labels_scaled = ((reordered_labels/max_label)-0.5)*2
+        reordered_labels_scaled = rescaled_labels[rnd_indx]
         train_labels_scaled = reordered_labels_scaled[:-test_size]
+        train_labels = rescale_labels(train_labels_scaled,n_labels,lab_range).astype(int)
         test_labels_scaled = reordered_labels_scaled[-test_size:]
         
         model = build_regression_model()
@@ -135,11 +146,11 @@ def iucnn_train(dataset,
                             validation_split=validation_split, 
                             verbose=verbose,
                             callbacks=[early_stop])
-        test_acc,test_predictions = get_regression_accuracy(model,test_set,test_labels_scaled,max_label)
+        test_acc,test_predictions = get_regression_accuracy(model,test_set,test_labels_scaled,n_labels,lab_range)
         if return_categorical:
             test_predictions = np.round(test_predictions, 0).astype(int)
         test_loss = np.nan
-        train_acc, train_predictions = get_regression_accuracy(model,train_set,train_labels_scaled,max_label)
+        train_acc, train_predictions = get_regression_accuracy(model,train_set,train_labels_scaled,n_labels,lab_range)
         history.history['accuracy'] = [train_acc]
         history.history['val_accuracy'] = [np.nan]
 
@@ -159,6 +170,7 @@ def iucnn_train(dataset,
             if rescale_features:
                 plt.xlim(-0.04,1.04)
         fig.savefig(os.path.join(path_to_output,'predicted_labels_by_feature.png'),bbox_inches='tight', dpi = 200)
+        plt.close()
     
 
     # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
@@ -179,3 +191,4 @@ def iucnn_train(dataset,
     print("IUC-NN model saved as:", model_name, "in", path_to_output)
     return [reordered_labels[-test_size:], test_predictions, res]
 
+#plt.scatter(train_labels_scaled,model.predict(train_set).flatten())

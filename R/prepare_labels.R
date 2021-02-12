@@ -36,7 +36,7 @@ prepare_labels <- function(x,
                          accepted_labels = c('LC','NT','VU','EN','CR'),
                          level = "detail",
                          threatened = c("CR", "EN", "VU"),
-                         rescale_labels = TRUE,
+                         rescale_labels = FALSE,
                          rescale_range = 2){
 
   if(is.list(x) & !is.data.frame(x)){
@@ -88,9 +88,9 @@ prepare_labels <- function(x,
     }else if (level == 'broad'){
       n_labels = 2
     }
-    out['rescaled_labels'] = ((out['labels']/(n_labels-1))-0.5)*rescale_range
+    column_name = paste('rescaled_labels','nlab',n_labels,'range',rescale_range,sep='_')
+    out[column_name] = ((out['labels']/(n_labels-1))-0.5)*rescale_range
   }
-
   # return output
   return(out)
 }

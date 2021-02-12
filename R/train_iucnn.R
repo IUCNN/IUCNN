@@ -139,24 +139,41 @@ train_iucnn <- function(x,
       dplyr::mutate(labels = .data$labels - min(.data$labels))
   }
 
+  if (TRUE %in% startsWith(names(tmp),'rescaled_labels')){
+    colname = names(tmp)[startsWith(names(tmp),'rescaled_labels')]
+    nlab = as.integer(str_split(colname,'_')[[1]][4])
+    lab_range = as.numeric(str_split(colname,'_')[[1]][6])
+    rescaled_labels = as.numeric(tmp[[colname]])
+    dataset = dataset[,1:length(names(dataset))-1] #drop the last column which contains the rescaled labels
+  }else{
+    rescaled_labels = labels
+    nlab = 0
+    lab_range = 0
+  }
+
+
   # labels <- labels %>%
   #   dplyr::mutate(labels = .data$labels )
 
   # source python function
   reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
 
-  #write.table(as.matrix(dataset),'features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-  #write.table(as.matrix(labels),'labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+  #write.table(as.matrix(dataset),'manual_tests/features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+  #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+  #write.table(as.matrix(rescaled_labels),'manual_tests/rescaled_labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
 
   # run model via python script
   res = iucnn_train(dataset = as.matrix(dataset),
                     labels = as.matrix(labels),
+                    rescaled_labels = as.matrix(rescaled_labels),
                     path_to_output = path_to_output,
                     model_name = model_name,
                     validation_split = validation_split,
                     test_fraction = test_fraction,
                     seed = as.integer(seed),
                     verbose = 0,
+                    n_labels = nlab,
+                    lab_range = lab_range,
                     max_epochs = as.integer(max_epochs),
                     n_layers = as.list(n_layers),
                     use_bias = use_bias,

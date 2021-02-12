@@ -11,7 +11,7 @@ prepare_labels(
   accepted_labels = c("LC", "NT", "VU", "EN", "CR"),
   level = "detail",
   threatened = c("CR", "EN", "VU"),
-  rescale_labels = TRUE,
+  rescale_labels = FALSE,
   rescale_range = 2
 )
 }
