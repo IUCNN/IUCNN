@@ -160,7 +160,7 @@ You will see that the output dataframe `labels_train` now contains an extra colu
 ```{r}
 res_3 <- train_iucnn(x = features_train,
                      labels = labels_train, 
-                     model_name = "iucnn_model_1",
+                     model_name = "iucnn_model_3",
                      seed = 1234,
                      validation_split = 0.1,
                      test_fraction = 0.1,
