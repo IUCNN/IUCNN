@@ -69,7 +69,7 @@
 
 train_iucnn <- function(x,
                         labels,
-                        path_to_output="",
+                        path_to_output=".",
                         model_name = "iuc_nn_model",
                         validation_split = 0.1,
                         test_fraction = 0.1,
@@ -83,6 +83,7 @@ train_iucnn <- function(x,
                         mode='classification',
                         rescale_features = FALSE,
                         return_categorical = FALSE,
+                        plot_training_stats = TRUE,
                         plot_labels_against_features = FALSE){
 
   # Check input
@@ -183,6 +184,7 @@ train_iucnn <- function(x,
                     mode = mode,
                     rescale_features = rescale_features,
                     return_categorical = return_categorical,
+                    plot_training_stats = plot_training_stats,
                     plot_labels_against_features = plot_labels_against_features
                     )
 

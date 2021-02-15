@@ -32,6 +32,7 @@ def iucnn_train(dataset,
                 mode,
                 rescale_features,
                 return_categorical,
+                plot_training_stats,
                 plot_labels_against_features):
 
     
@@ -172,6 +173,16 @@ def iucnn_train(dataset,
         fig.savefig(os.path.join(path_to_output,'predicted_labels_by_feature.png'),bbox_inches='tight', dpi = 200)
         plt.close()
     
+    if plot_training_stats:
+        fig = plt.figure()
+        if mode == 'classification':
+            plt.plot(history.history['accuracy'],label='train')
+            plt.plot(history.history['val_accuracy'], label='val')
+        elif mode == 'regression':           
+            plt.plot(history.history['mae'],label='train')
+            plt.plot(history.history['val_mae'], label='val')
+        plt.legend()
+        fig.savefig(os.path.join(path_to_output,'training_stats.pdf'),bbox_inches='tight')
 
     # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
     # print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
@@ -192,3 +203,4 @@ def iucnn_train(dataset,
     return [reordered_labels[-test_size:], test_predictions, res]
 
 #plt.scatter(train_labels_scaled,model.predict(train_set).flatten())
+

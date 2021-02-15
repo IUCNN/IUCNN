@@ -49,6 +49,8 @@ If python has been installed before, you can specify the python version to sue w
 3. Install the tensorflow Python module
 ```{r, eval = FALSE}
 reticulate::py_install("tensorflow~=2.2.0rc4", pip = TRUE)
+reticulate::py_install("os", pip = TRUE)
+reticulate::py_install("matplotlib", pip = TRUE)
 ```
 
 # Usage

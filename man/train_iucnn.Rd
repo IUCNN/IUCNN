@@ -7,7 +7,7 @@
 train_iucnn(
   x,
   labels,
-  path_to_output = "",
+  path_to_output = ".",
   model_name = "iuc_nn_model",
   validation_split = 0.1,
   test_fraction = 0.1,
@@ -21,6 +21,7 @@ train_iucnn(
   mode = "classification",
   rescale_features = FALSE,
   return_categorical = FALSE,
+  plot_training_stats = TRUE,
   plot_labels_against_features = FALSE
 )
 }
