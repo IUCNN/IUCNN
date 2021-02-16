@@ -17,7 +17,7 @@ train_iucnn(
   use_bias = 1,
   act_f = "relu",
   patience = 10,
-  randomize_instances = FALSE,
+  randomize_instances = TRUE,
   mode = "classification",
   rescale_features = FALSE,
   return_categorical = FALSE,

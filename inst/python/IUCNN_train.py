@@ -113,14 +113,37 @@ def iucnn_train(dataset,
 
         model = build_classification_model()
         model.summary()
-        # The patience parameter is the amount of epochs to check for improvement
-        early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience)
-        history = model.fit(train_set, 
-                            train_labels_cat, 
-                            epochs=max_epochs,
-                            validation_split=validation_split, 
-                            verbose=verbose,
-                            callbacks=[early_stop])
+        if patience == 0:
+            # determining optimal number of epochs
+            history_fit = model.fit(train_set, 
+                                train_labels_cat, 
+                                epochs=max_epochs,
+                                validation_split=validation_split, 
+                                verbose=verbose)
+                                
+            best_epoch = np.argmin(history_fit.history["val_loss"])
+            loss_at_best_epoch = history_fit.history["val_loss"][best_epoch]
+            acc_at_best_epoch = history_fit.history["val_accuracy"][best_epoch]
+            model = build_classification_model()
+            model.summary()
+            history = model.fit(train_set, 
+                                train_labels_cat, 
+                                epochs=best_epoch,
+                                validation_split=validation_split, 
+                                verbose=verbose)
+        
+        else:
+            # The patience parameter is the amount of epochs to check for improvement
+            early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience)
+            history = model.fit(train_set, 
+                                train_labels_cat, 
+                                epochs=max_epochs,
+                                validation_split=validation_split, 
+                                verbose=verbose,
+                                callbacks=[early_stop])
+
+        
+                            
         test_loss, test_acc = model.evaluate(test_set, 
                                    test_labels, 
                                    verbose=verbose)
@@ -176,12 +199,31 @@ def iucnn_train(dataset,
     if plot_training_stats:
         fig = plt.figure()
         if mode == 'classification':
-            plt.plot(history.history['accuracy'],label='train')
-            plt.plot(history.history['val_accuracy'], label='val')
+            grid = gridspec.GridSpec(2, 1, wspace=0.2, hspace=0.4)
+            fig.add_subplot(grid[0])
+            if patience == 0:
+                plt.plot(history_fit.history['accuracy'],label='train')
+                plt.plot(history_fit.history['val_accuracy'], label='val')
+                plt.axvline(best_epoch,linestyle='--',color='red')
+                plt.axhline(acc_at_best_epoch,linestyle='--',color='red')
+            else:
+                plt.plot(history.history['accuracy'],label='train')
+                plt.plot(history.history['val_accuracy'], label='val')
+            plt.title('Accuracy')
+            fig.add_subplot(grid[1])
+            if patience == 0:
+                plt.plot(history_fit.history['loss'],label='train')
+                plt.plot(history_fit.history['val_loss'], label='val')
+                plt.axvline(best_epoch,linestyle='--',color='red')
+                plt.axhline(loss_at_best_epoch,linestyle='--',color='red')
+            else:
+                plt.plot(history.history['loss'],label='train')
+                plt.plot(history.history['val_loss'], label='val')                
+            plt.title('Loss')                
         elif mode == 'regression':           
             plt.plot(history.history['mae'],label='train')
             plt.plot(history.history['val_mae'], label='val')
-        plt.legend()
+        plt.legend(loc='lower right')
         fig.savefig(os.path.join(path_to_output,'training_stats.pdf'),bbox_inches='tight')
 
     # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
