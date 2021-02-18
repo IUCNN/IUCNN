@@ -7,6 +7,7 @@
 feature_importance(
   bnn_data,
   logger,
+  bnn_model,
   n_permutations = 100,
   predictions_outdir = "feature_importance",
   feature_blocks = list(c(0, 1, 2, 3, 4, 5, 6, 7), c(8, 9, 10), c(11, 12, 13, 14, 15,

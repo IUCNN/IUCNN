@@ -67,12 +67,22 @@ def iucnn_train(dataset,
                       metrics=['mae','mse'])
         return model
 
+    def determine_optim_rounding_boundary(regressed_labels,true_labels):
+        accs = []
+        values= np.linspace(-1,1,100)
+        for x in values:
+            label_predictions = np.round(regressed_labels + x, 0).astype(int).flatten()
+            cat_acc = np.sum(label_predictions==true_labels)/len(label_predictions)
+            accs.append(cat_acc)
+        plt.plot(values,accs)
+        add_value = values[np.where(accs==np.max(accs))[0][0]]
+        return(add_value)
 
     def get_regression_accuracy(model,features,labels,n_labels,lab_range):
         prm_est = model.predict(features).flatten()
         prm_est_rescaled = rescale_labels(prm_est,n_labels,lab_range)
-        label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
         real_labels = rescale_labels(labels,n_labels,lab_range).astype(int).flatten()
+        label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
         cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
         return cat_acc, prm_est_rescaled
     

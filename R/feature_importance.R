@@ -4,6 +4,7 @@
 
 feature_importance <- function(bnn_data,
                                logger,
+                               bnn_model,
                                n_permutations=100,
                                predictions_outdir='feature_importance',
                                feature_blocks = list(c(0,1,2,3,4,5,6,7),c(8,9,10),c(11,12,13,14,15,16,17,18,19,20)),
@@ -31,7 +32,8 @@ feature_importance <- function(bnn_data,
                                               n_permutations=as.integer(n_permutations),
                                               predictions_outdir=predictions_outdir,
                                               feature_blocks = formatted_feature_blocks,
-                                              unlink_features_within_block = unlink_features_within_block)
+                                              unlink_features_within_block = unlink_features_within_block,
+                                              actFun = py_get_attr(bnn_model,'_act_fun'))
   return(feature_importance_out)
 }
 

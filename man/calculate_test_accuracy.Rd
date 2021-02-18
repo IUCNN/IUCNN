@@ -4,7 +4,7 @@
 \alias{calculate_test_accuracy}
 \title{Calculate test accuracy}
 \usage{
-calculate_test_accuracy(bnn_data, logger, post_summary_mode = 0)
+calculate_test_accuracy(bnn_data, logger, bnn_model, post_summary_mode = 0)
 }
 \description{
 Calculate test accuracy
