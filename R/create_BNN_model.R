@@ -3,7 +3,7 @@
 #' @import reticulate
 
 create_BNN_model <- function(feature_data,
-                             n_nodes_list,
+                             as.list(n_nodes_list),
                              seed=1234,
                              use_class_weight=TRUE,
                              use_bias_node=TRUE,
