@@ -34,6 +34,7 @@ install.packages("devtools")
 library(devtools)
 
 install_github("azizka/IUCNN")
+library(IUCNN)
 ```
 
 2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
