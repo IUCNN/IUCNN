@@ -307,7 +307,7 @@ train_iucnn <- function(x,
 
   named_res$rescale_labels_boolean <- rescale_labels_boolean
   named_res$label_rescaling_factor <- label_rescaling_factor
-  named_res$min_max_label<- min_max_label
+  named_res$min_max_label_rescaled <- min_max_label
   named_res$stretch_factor_rescaled_labels <- stretch_factor_rescaled_labels
 
   named_res$activation_function <- activation_function
