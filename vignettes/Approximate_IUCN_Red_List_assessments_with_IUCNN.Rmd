@@ -173,7 +173,7 @@ res_3 <- train_iucnn(x = features_train,
                      act_f = "relu",
                      patience = 10,
                      randomize_instances = TRUE,
-                     mode='regression',
+                     mode='nn-reg',
                      return_categorical = TRUE)
 ```
 
