@@ -57,7 +57,11 @@ def iucnn_train(dataset,
                                      use_bias=use_bias)]
         for i in n_layers[1:]:
             architecture.append(layers.Dense(i, activation=act_f))
-        architecture.append(layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
+        
+        if act_f_out:
+            architecture.append(layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
+        else:
+            architecture.append(layers.Dense(1))
         model = keras.Sequential(architecture)
         optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
         model.compile(loss='mean_squared_error',
@@ -131,7 +135,9 @@ def iucnn_train(dataset,
         elif act_f_out == 'sigmoid':
             min_max_label = [0,1]
         else:
-            quit('Invalid activation function choice for output layer. Currently IUCNN only supports "tanh" or "sigmoid" as output layer activation functions for the regression model (set with act_f_out flag).')
+            min_max_label = [min(labels),max(labels)]
+            act_f_out == None
+            #quit('Invalid activation function choice for output layer. Currently IUCNN only supports "tanh" or "sigmoid" as output layer activation functions for the regression model (set with act_f_out flag).')
     elif mode == 'nn-class':
         rescale_labels_boolean = False
         min_max_label = [min(labels),max(labels)]
