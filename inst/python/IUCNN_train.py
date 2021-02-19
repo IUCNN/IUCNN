@@ -14,24 +14,22 @@ except:
 
 def iucnn_train(dataset, 
                 labels,
-                rescaled_labels,
+                mode,
                 path_to_output,
                 validation_split,
                 test_fraction,
                 seed,
                 verbose,
-                n_labels,
-                lab_range,
                 model_name,
                 max_epochs,
                 n_layers,
                 use_bias,
                 act_f,
+                act_f_out,
+                stretch_factor_rescaled_labels,
                 patience,
                 randomize_instances,
-                mode,
                 rescale_features,
-                return_categorical,
                 plot_training_stats,
                 plot_labels_against_features):
 
@@ -44,7 +42,7 @@ def iucnn_train(dataset,
         for i in n_layers[1:]:
             architecture.append(layers.Dense(i, activation=act_f))
         architecture.append(layers.Dense(n_class, 
-                                         activation='softmax'))
+                                         activation=act_f_out))
         model = keras.Sequential(architecture)
         model.compile(loss='categorical_crossentropy',
                       optimizer="adam",
@@ -59,7 +57,7 @@ def iucnn_train(dataset,
                                      use_bias=use_bias)]
         for i in n_layers[1:]:
             architecture.append(layers.Dense(i, activation=act_f))
-        architecture.append(layers.Dense(1, activation='tanh'))    #sigmoid or tanh
+        architecture.append(layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
         model = keras.Sequential(architecture)
         optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
         model.compile(loss='mean_squared_error',
@@ -78,27 +76,40 @@ def iucnn_train(dataset,
         add_value = values[np.where(accs==np.max(accs))[0][0]]
         return(add_value)
 
-    def get_regression_accuracy(model,features,labels,n_labels,lab_range):
+    def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels):
         prm_est = model.predict(features).flatten()
-        prm_est_rescaled = rescale_labels(prm_est,n_labels,lab_range)
-        real_labels = rescale_labels(labels,n_labels,lab_range).astype(int).flatten()
+        prm_est_rescaled = rescale_labels(prm_est,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
+        real_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True).astype(int).flatten()
         label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
         cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
-        return cat_acc, prm_est_rescaled
-    
-    def rescale_labels(labels,n_labels,lab_range):
-        if n_labels == 0:
-            rescaled_labels = labels
+        return cat_acc, label_predictions, prm_est_rescaled
+
+    def rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=False):
+        label_range = max(min_max_label)-min(min_max_label)
+        modified_range = stretch_factor_rescaled_labels*label_range
+        midpoint_range = np.mean(min_max_label)
+        if reverse:
+            rescaled_labels_tmp = (labels-midpoint_range)/modified_range
+            rescaled_labels = (rescaled_labels_tmp+0.5)*rescale_factor
         else:
-            rescaled_labels = ((labels/lab_range) +0.5) * (n_labels-1)
+            rescaled_labels_tmp = (labels/rescale_factor)-0.5
+            rescaled_labels = rescaled_labels_tmp*modified_range+midpoint_range
         return(rescaled_labels)
+    
+    # def rescale_labels(labels,n_labels,lab_range):
+    #     if n_labels == 0:
+    #         rescaled_labels = labels
+    #     else:
+    #         rescaled_labels = ((labels/lab_range) +0.5) * (n_labels-1)
+    #     return(rescaled_labels)
 
     def model_init(mode):
-        if mode == 'regression':
+        if mode == 'nn-reg':
             model = build_regression_model()
-        elif mode == 'classification':    
+        elif mode == 'nn-class':    
             model = build_classification_model()
         return model 
+    
     
     if not os.path.exists(path_to_output):
         os.makedirs(path_to_output)
@@ -112,8 +123,25 @@ def iucnn_train(dataset,
         rnd_indx = np.arange(len(labels))
     if rescale_features:
         dataset = (dataset - dataset.min(axis=0)) / (dataset.max(axis=0) - dataset.min(axis=0))
-    
-    
+
+    if mode == 'nn-reg':
+        rescale_labels_boolean = True
+        if act_f_out == 'tanh':
+            min_max_label = [-1,1]
+        elif act_f_out == 'sigmoid':
+            min_max_label = [0,1]
+        else:
+            quit('Invalid activation function choice for output layer. Currently IUCNN only supports "tanh" or "sigmoid" as output layer activation functions for the regression model (set with act_f_out flag).')
+    elif mode == 'nn-class':
+        rescale_labels_boolean = False
+        min_max_label = [min(labels),max(labels)]
+    else:
+        quit('Invalid mode provided. Choose from "nn-class", "nn-reg", or "bnn-class"')
+        
+
+    rescale_factor = max(labels)
+    rescaled_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
+
     rnd_dataset = dataset[rnd_indx,:]
     rnd_labels = labels[rnd_indx]
 
@@ -136,11 +164,11 @@ def iucnn_train(dataset,
     
     n_class = rnd_labels_cat.shape[1]
     
-    if mode == 'classification':
+    if mode == 'nn-class':
         labels_for_training = train_labels_cat
         labels_for_testing = test_labels_cat
         optimize_for_this = "val_loss"
-    elif mode == 'regression':
+    elif mode == 'nn-reg':
         labels_for_training = train_labels_scaled
         labels_for_testing = test_labels_scaled
         optimize_for_this = "val_mae"
@@ -178,29 +206,25 @@ def iucnn_train(dataset,
                             callbacks=[early_stop])
         
             
-    if mode == 'classification':
+    if mode == 'nn-class':
         test_loss, test_acc = model.evaluate(test_set, 
                                              labels_for_testing, 
                                              verbose=verbose)
-        train_predictions = np.argmax(model.predict(train_set, verbose=verbose), axis=1)
-        test_predictions = np.argmax(model.predict(test_set, verbose=verbose), axis=1)
+        train_predictions_raw = model.predict(train_set, verbose=verbose)
+        train_predictions = np.argmax(train_predictions_raw, axis=1)
+        test_predictions_raw = model.predict(test_set, verbose=verbose)
+        test_predictions = np.argmax(test_predictions_raw, axis=1)
         train_acc = history.history['accuracy'][-1]
         val_acc = history.history['val_accuracy'][-1]
-    elif mode == 'regression':
-        test_acc,test_predictions = get_regression_accuracy(model,test_set,labels_for_testing,n_labels,lab_range)
-        if return_categorical:
-            test_predictions = np.round(test_predictions, 0).astype(int)
-        train_acc, train_predictions = get_regression_accuracy(model,train_set,labels_for_training,n_labels,lab_range)
+        train_acc_history = np.array(history.history['accuracy'])
+        val_acc_history = np.array(history.history['val_accuracy'])
+    elif mode == 'nn-reg':
+        test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
+        train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
+        train_acc_history = np.array(history.history['mae'])
+        val_acc_history = np.array(history.history['val_mae'])
         test_loss = np.nan
         val_acc = np.nan
-
-
-    res = [history.history['loss'][-1],
-           train_acc,
-           history.history['val_loss'][-1],
-           val_acc,
-           test_loss,
-           test_acc]
     
 
     if plot_labels_against_features:    
@@ -222,7 +246,7 @@ def iucnn_train(dataset,
     
     if plot_training_stats:
         fig = plt.figure()
-        if mode == 'classification':            
+        if mode == 'nn-class':            
             grid = gridspec.GridSpec(2, 1, wspace=0.2, hspace=0.4)
             fig.add_subplot(grid[0])
             if patience == 0:
@@ -246,7 +270,7 @@ def iucnn_train(dataset,
                 plt.plot(history.history['loss'],label='train')
                 plt.plot(history.history['val_loss'], label='val')                
             plt.title('Loss')                
-        elif mode == 'regression':
+        elif mode == 'nn-reg':
             if patience == 0:
                 mae_at_best_epoch = history_fit.history["val_mae"][stopping_point]
                 plt.plot(history_fit.history['mae'],label='train')
@@ -268,9 +292,38 @@ def iucnn_train(dataset,
 
     # print("\nTest accuracy: {:5.3f}".format(test_acc))
     
-    model.save( os.path.join(path_to_output, model_name) )
+    model_outpath = os.path.join(path_to_output, model_name)
+    model.save( model_outpath )
     print("IUC-NN model saved as:", model_name, "in", path_to_output)
-    return [test_labels, test_predictions, res]
+    
+    output = [
+                test_labels,
+                test_predictions,
+                test_predictions_raw,
+                
+                history.history['loss'][-1],
+                train_acc,
+                np.array(history.history['loss']),
+                train_acc_history,
+                
+                history.history['val_loss'][-1],
+                val_acc,
+                np.array(history.history['val_loss']),
+                val_acc_history,
+                
+                test_loss,
+                test_acc,
+                
+                rescale_labels_boolean,
+                rescale_factor,
+                np.array(min_max_label),
+                stretch_factor_rescaled_labels,
+                
+                act_f_out,
+                model_outpath
+                ]
+    
+    return output
 
 #plt.scatter(train_labels_scaled,model.predict(train_set).flatten())
 

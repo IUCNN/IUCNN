@@ -78,9 +78,11 @@ train_iucnn <- function(x,
                         n_layers = c(60,60,20),
                         use_bias = 1,
                         act_f = "relu",
+                        act_f_out = "auto",
+                        stretch_factor_rescaled_labels = 1.0, # float between 0 and 1
                         patience = 10,
                         randomize_instances = TRUE,
-                        mode='classification',
+                        mode='nn-class', # nn-class, nn-reg, bnn-class
                         rescale_features = FALSE,
                         return_categorical = FALSE,
                         plot_training_stats = TRUE,
@@ -139,64 +141,179 @@ train_iucnn <- function(x,
     labels <-  labels %>%
       dplyr::mutate(labels = .data$labels - min(.data$labels))
   }
-
-  if (TRUE %in% startsWith(names(tmp),'rescaled_labels')){
-    colname = names(tmp)[startsWith(names(tmp),'rescaled_labels')]
-    nlab = as.integer(str_split(colname,'_')[[1]][4])
-    lab_range = as.numeric(str_split(colname,'_')[[1]][6])
-    rescaled_labels = as.numeric(tmp[[colname]])
-    dataset = dataset[,1:length(names(dataset))-1] #drop the last column which contains the rescaled labels
-  }else{
-    rescaled_labels = labels
-    nlab = 0
-    lab_range = 0
+  # set out act fun if chosen auto
+  if (act_f_out == 'auto'){
+    if (mode == 'nn-reg'){
+      act_f_out = 'tanh'
+    }else if(mode == 'bnn-class'){
+      act_f_out = 'swish'
+    }else{
+      act_f_out = 'softmax'
+    }
   }
 
+  if (mode=='bnn-class'){
+    # in the current npbnn function we need to add a dummy column of instance names
+    labels[['names']] = replicate(length(labels$labels),'sp.')
+    labels = labels[,c('names','labels')]
+    # transform the data into BNN compatible format
+    bnn_data = bnn_load_data(as.matrix(dataset),
+                             labels,
+                             seed=as.integer(seed),
+                             testsize=test_fraction,
+                             all_class_in_testset=TRUE,
+                             header=TRUE, # input data has a header
+                             instance_id=TRUE, # input data includes names of instances
+                             from_file=FALSE
+    )
 
-  # labels <- labels %>%
-  #   dplyr::mutate(labels = .data$labels )
+    # define number of layers and nodes per layer for BNN
+    n_nodes_list = c(5,5) # 2 hidden layers with 5 nodes each
+    # define the BNN model
+    bnn_model = create_BNN_model(bnn_data,
+                                 n_nodes_list,
+                                 actfun = act_f_out,
+                                 seed=1234
+    )
 
-  # source python function
-  reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
+    # set up the MCMC environment
+    update_frequencies = c(0.05, 0.05, 0.07)
+    update_window_sizes = c(0.075, 0.075, 0.075)
+    mcmc_object = MCMC_setup(bnn_model,
+                             update_frequencies,
+                             update_window_sizes,
+                             n_iteration = as.integer(max_epochs),
+                             sampling_f = 10
+    )
 
-  #write.table(as.matrix(dataset),'manual_tests/features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-  #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-  #write.table(as.matrix(rescaled_labels),'manual_tests/rescaled_labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+    # run the MCMC and write output to file
+    logger = run_MCMC(bnn_model,
+                      mcmc_object,
+                      filename_stem = 'BNN'
+    )
 
-  # run model via python script
-  res = iucnn_train(dataset = as.matrix(dataset),
-                    labels = as.matrix(labels),
-                    rescaled_labels = as.matrix(rescaled_labels),
-                    path_to_output = path_to_output,
-                    model_name = model_name,
-                    validation_split = validation_split,
-                    test_fraction = test_fraction,
-                    seed = as.integer(seed),
-                    verbose = 0,
-                    n_labels = nlab,
-                    lab_range = lab_range,
-                    max_epochs = as.integer(max_epochs),
-                    n_layers = as.list(n_layers),
-                    use_bias = use_bias,
-                    act_f = act_f,
-                    patience = patience,
-                    randomize_instances = as.integer(randomize_instances),
-                    mode = mode,
-                    rescale_features = rescale_features,
-                    return_categorical = return_categorical,
-                    plot_training_stats = plot_training_stats,
-                    plot_labels_against_features = plot_labels_against_features
-                    )
+    # calculate test accuracy
+    post_pr_test = calculate_accuracy(bnn_data,
+                                           logger,
+                                           bnn_model,
+                                           post_summary_mode=0
+    )
+
+    logfile_path = as.character(py_get_attr(py_get_attr(logger,'_logfile'),'name'))
+    log_file_content = read.table(logfile_path,sep = '\t',header = TRUE)
+
+    test_labels = bnn_data$test_labels
+    test_predictions = apply(post_pr_test$post_prob_predictions,1,which.max)-1
+    test_predictions_raw = post_pr_test$post_prob_predictions
+
+    training_loss = log_file_content$likelihood[length(log_file_content$likelihood)]
+    training_accuracy = log_file_content$accuracy[length(log_file_content$accuracy)]
+    training_loss_history = log_file_content$likelihood
+    training_accuracy_history = log_file_content$accuracy
+
+    validation_loss = NaN
+    validation_accuracy = NaN
+    validation_loss_history = NaN
+    validation_accuracy_history = NaN
+
+    test_loss = NaN
+    test_accuracy = post_pr_test$mean_accuracy
+
+    rescale_labels_boolean = FALSE
+    label_rescaling_factor = as.integer(max(labels$labels))
+    min_max_label = as.vector(c(min(labels$labels),max(labels$labels)))
+    stretch_factor_rescaled_labels = stretch_factor_rescaled_labels
+
+    activation_function = act_f_out
+    trained_model_path = logfile_path
+
+  }else{
+
+    # source python function
+    reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
+
+    #write.table(as.matrix(dataset),'manual_tests/features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+    #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+    #write.table(as.matrix(rescaled_labels),'manual_tests/rescaled_labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+
+      # run model via python script
+    res = iucnn_train(dataset = as.matrix(dataset),
+                      labels = as.matrix(labels),
+                      mode = mode,
+                      path_to_output = path_to_output,
+                      model_name = model_name,
+                      validation_split = validation_split,
+                      test_fraction = test_fraction,
+                      seed = as.integer(seed),
+                      verbose = 0,
+                      max_epochs = as.integer(max_epochs),
+                      n_layers = as.list(n_layers),
+                      use_bias = use_bias,
+                      act_f = act_f,
+                      act_f_out = act_f_out,
+                      stretch_factor_rescaled_labels = stretch_factor_rescaled_labels,
+                      patience = patience,
+                      randomize_instances = as.integer(randomize_instances),
+                      rescale_features = rescale_features,
+                      plot_training_stats = plot_training_stats,
+                      plot_labels_against_features = plot_labels_against_features
+    )
+
+    test_labels = as.vector(res[[1]])
+    test_predictions = as.vector(res[[2]])
+    test_predictions_raw = res[[3]]
+
+    training_loss = res[[4]]
+    training_accuracy = res[[5]]
+    training_loss_history = as.vector(res[[6]])
+    training_accuracy_history = as.vector(res[[7]])
+
+    validation_loss = res[[8]]
+    validation_accuracy = res[[9]]
+    validation_loss_history = as.vector(res[[10]])
+    validation_accuracy_history = as.vector(res[[11]])
+
+    test_loss = res[[12]]
+    test_accuracy = res[[13]]
+
+    rescale_labels_boolean = res[[14]]
+    label_rescaling_factor = res[[15]]
+    min_max_label = as.vector(res[[16]])
+    stretch_factor_rescaled_labels = res[[17]]
+
+    activation_function = res[[18]]
+    trained_model_path = res[[19]]
+  }
 
   named_res = NULL
-  named_res$test_labels <- as.vector(res[[1]])
-  named_res$test_predictions <- as.vector(res[[2]])
-  named_res$training_loss  <- res[[3]][1]
-  named_res$training_accuracy  <- res[[3]][2]
-  named_res$validation_loss  <- res[[3]][3]
-  named_res$validation_accuracy  <- res[[3]][4]
-  named_res$test_loss  <- res[[3]][5]
-  named_res$test_accuracy <- res[[3]][6]
+
+
+  named_res$test_labels <- test_labels
+  named_res$test_predictions <- test_predictions
+  named_res$test_predictions_raw <- test_predictions_raw #softmax probs, posterior probs, or regressed values
+
+  named_res$training_loss  <- training_loss
+  named_res$training_accuracy  <- training_accuracy
+  named_res$training_loss_history <- training_loss_history
+  named_res$training_accuracy_history <- training_accuracy_history
+
+  named_res$validation_loss  <- validation_loss
+  named_res$validation_accuracy  <- validation_accuracy
+  named_res$validation_loss_history <- validation_loss_history
+  named_res$validation_accuracy_history <- validation_accuracy_history
+
+  named_res$test_loss  <- test_loss
+  named_res$test_accuracy <- test_accuracy
+
+  named_res$rescale_labels_boolean <- rescale_labels_boolean
+  named_res$label_rescaling_factor <- label_rescaling_factor
+  named_res$min_max_label<- min_max_label
+  named_res$stretch_factor_rescaled_labels <- stretch_factor_rescaled_labels
+
+  named_res$activation_function <- activation_function
+  named_res$trained_model_path <- trained_model_path
+
+  named_res$model <- mode
 
   return(named_res)
 }

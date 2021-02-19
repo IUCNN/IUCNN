@@ -10,6 +10,7 @@ create_BNN_model(
   seed = 1234,
   use_class_weight = TRUE,
   use_bias_node = TRUE,
+  actfun = "swish",
   prior = 1,
   p_scale = 1,
   init_std = 0.1

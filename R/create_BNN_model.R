@@ -3,10 +3,11 @@
 #' @import reticulate
 
 create_BNN_model <- function(feature_data,
-                             as.list(n_nodes_list),
+                             n_nodes_list,
                              seed=1234,
                              use_class_weight=TRUE,
                              use_bias_node=TRUE,
+                             actfun = 'swish',
                              prior = 1, # 0) uniform, 1) normal, 2) Cauchy, 3) Laplace
                              p_scale = 1, # std for Normal, scale parameter for Cauchy and Laplace, boundaries for Uniform
                              init_std=0.1){ # st dev of the initial weights
@@ -29,9 +30,9 @@ create_BNN_model <- function(feature_data,
   alphas = as.integer(c(0, 0))
 
   bnn_model = bn$npBNN(feature_data,
-                    n_nodes = as.integer(n_nodes_list),
+                    n_nodes = as.integer(as.list(n_nodes_list)),
                     use_class_weights=use_class_weight_switch,
-                    actFun=bn$ActFun(fun="swish"),
+                    actFun=bn$ActFun(fun=actfun),
                     use_bias_node=use_bias_node_switch,
                     prior_f=as.integer(prior),
                     p_scale=as.integer(p_scale),
