@@ -206,18 +206,22 @@ train_iucnn <- function(x,
     test_predictions = apply(post_pr_test$post_prob_predictions,1,which.max)-1
     test_predictions_raw = post_pr_test$post_prob_predictions
 
-    training_loss = log_file_content$likelihood[length(log_file_content$likelihood)]
     training_accuracy = log_file_content$accuracy[length(log_file_content$accuracy)]
-    training_loss_history = log_file_content$likelihood
-    training_accuracy_history = log_file_content$accuracy
-
-    validation_loss = NaN
     validation_accuracy = NaN
+    test_accuracy = post_pr_test$mean_accuracy
+
+    training_loss = log_file_content$likelihood[length(log_file_content$likelihood)]
+    validation_loss = NaN
+    test_loss = NaN
+
+    training_loss_history = log_file_content$likelihood
     validation_loss_history = NaN
+
+    training_accuracy_history = log_file_content$accuracy
     validation_accuracy_history = NaN
 
-    test_loss = NaN
-    test_accuracy = post_pr_test$mean_accuracy
+    training_mae_history = NaN
+    validation_mae_history = NaN
 
     rescale_labels_boolean = FALSE
     label_rescaling_factor = as.integer(max(labels$labels))
@@ -263,47 +267,33 @@ train_iucnn <- function(x,
     test_predictions = as.vector(res[[2]])
     test_predictions_raw = res[[3]]
 
-    training_loss = res[[4]]
-    training_accuracy = res[[5]]
-    training_loss_history = as.vector(res[[6]])
-    training_accuracy_history = as.vector(res[[7]])
+    training_accuracy = res[[4]]
+    validation_accuracy = res[[5]]
+    test_accuracy = res[[6]]
 
+    training_loss = res[[7]]
     validation_loss = res[[8]]
-    validation_accuracy = res[[9]]
-    validation_loss_history = as.vector(res[[10]])
-    validation_accuracy_history = as.vector(res[[11]])
+    test_loss = res[[9]]
 
-    test_loss = res[[12]]
-    test_accuracy = res[[13]]
+    training_loss_history = as.vector(res[[10]])
+    validation_loss_history = as.vector(res[[11]])
 
-    rescale_labels_boolean = res[[14]]
-    label_rescaling_factor = res[[15]]
-    min_max_label = as.vector(res[[16]])
-    stretch_factor_rescaled_labels = res[[17]]
+    training_accuracy_history = as.vector(res[[12]])
+    validation_accuracy_history = as.vector(res[[13]])
 
-    activation_function = res[[18]]
-    trained_model_path = res[[19]]
+    training_mae_history = as.vector(res[[14]])
+    validation_mae_history = as.vector(res[[15]])
+
+    rescale_labels_boolean = res[[16]]
+    label_rescaling_factor = res[[17]]
+    min_max_label = as.vector(res[[18]])
+    stretch_factor_rescaled_labels = res[[19]]
+
+    activation_function = res[[20]]
+    trained_model_path = res[[21]]
   }
 
   named_res = NULL
-
-
-  named_res$test_labels <- test_labels
-  named_res$test_predictions <- test_predictions
-  named_res$test_predictions_raw <- test_predictions_raw #softmax probs, posterior probs, or regressed values
-
-  named_res$training_loss  <- training_loss
-  named_res$training_accuracy  <- training_accuracy
-  named_res$training_loss_history <- training_loss_history
-  named_res$training_accuracy_history <- training_accuracy_history
-
-  named_res$validation_loss  <- validation_loss
-  named_res$validation_accuracy  <- validation_accuracy
-  named_res$validation_loss_history <- validation_loss_history
-  named_res$validation_accuracy_history <- validation_accuracy_history
-
-  named_res$test_loss  <- test_loss
-  named_res$test_accuracy <- test_accuracy
 
   named_res$rescale_labels_boolean <- rescale_labels_boolean
   named_res$label_rescaling_factor <- label_rescaling_factor
@@ -314,6 +304,24 @@ train_iucnn <- function(x,
   named_res$trained_model_path <- trained_model_path
 
   named_res$model <- mode
+
+  named_res$training_loss_history <- training_loss_history
+  named_res$validation_loss_history <- validation_loss_history
+
+  named_res$training_accuracy_history <- training_accuracy_history
+  named_res$validation_accuracy_history <- validation_accuracy_history
+
+  named_res$training_loss <- training_loss
+  named_res$validation_loss <- validation_loss
+  named_res$test_loss  <- test_loss
+
+  named_res$test_predictions_raw <- test_predictions_raw #softmax probs, posterior probs, or regressed values
+  named_res$test_predictions <- test_predictions
+  named_res$test_labels <- test_labels
+
+  named_res$training_accuracy <- training_accuracy
+  named_res$validation_accuracy <- validation_accuracy
+  named_res$test_accuracy <- test_accuracy
 
   return(named_res)
 }

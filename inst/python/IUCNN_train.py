@@ -224,13 +224,22 @@ def iucnn_train(dataset,
         val_acc = history.history['val_accuracy'][-1]
         train_acc_history = np.array(history.history['accuracy'])
         val_acc_history = np.array(history.history['val_accuracy'])
+        train_mae_history = np.nan
+        val_mae_history = np.nan
+        
     elif mode == 'nn-reg':
         test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
-        train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
-        train_acc_history = np.array(history.history['mae'])
-        val_acc_history = np.array(history.history['val_mae'])
         test_loss = np.nan
-        val_acc = np.nan
+        train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
+        val_set_cutoff = int(np.round(train_set.shape[0]*validation_split))
+        validation_set = train_set[-val_set_cutoff:,:]
+        validation_labels = labels_for_training[-val_set_cutoff:]
+        val_acc, __, __ = get_regression_accuracy(model,validation_set,validation_labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
+        train_acc_history = np.nan
+        val_acc_history = np.nan
+        train_mae_history = np.array(history.history['mae'])
+        val_mae_history = np.array(history.history['val_mae'])
+
     
 
     if plot_labels_against_features:    
@@ -307,18 +316,22 @@ def iucnn_train(dataset,
                 test_predictions,
                 test_predictions_raw,
                 
-                history.history['loss'][-1],
                 train_acc,
-                np.array(history.history['loss']),
-                train_acc_history,
-                
-                history.history['val_loss'][-1],
                 val_acc,
+                test_acc,
+
+                history.history['loss'][-1],
+                history.history['val_loss'][-1],
+                test_loss,
+                
+                np.array(history.history['loss']),
                 np.array(history.history['val_loss']),
+
+                train_acc_history,
                 val_acc_history,
                 
-                test_loss,
-                test_acc,
+                train_mae_history,
+                val_mae_history,
                 
                 rescale_labels_boolean,
                 rescale_factor,
