@@ -32,7 +32,8 @@ def iucnn_train(dataset,
                 rescale_features,
                 plot_training_stats,
                 plot_labels_against_features):
-
+    #dropout=True
+    #dropout_rate=0.1
     
     def build_classification_model():
         architecture = [layers.Dense(n_layers[0], 
@@ -48,7 +49,6 @@ def iucnn_train(dataset,
                       optimizer="adam",
                       metrics=['accuracy'])
         return model
-
 
     def build_regression_model():
         architecture = [layers.Dense(n_layers[0],
@@ -68,6 +68,28 @@ def iucnn_train(dataset,
                       optimizer=optimizer,
                       metrics=['mae','mse'])
         return model
+
+    # def build_regression_model():
+    #     inputs = layers.Input(shape=(train_set.shape[1],))
+    #     x = layers.Dense(n_layers[0],activation=act_f,use_bias=use_bias)(inputs)
+    #     if dropout:
+    #         x = layers.Dropout(dropout_rate)(x,training=True)
+    #     for i in n_layers[1:]:
+    #         x = layers.Dense(i, activation=act_f)(x)
+    #         if dropout:
+    #             x = layers.Dropout(dropout_rate)(x,training=True)
+    #     if act_f_out:
+    #         outputs = layers.Dense(1, activation=act_f_out)(x)    #sigmoid or tanh
+    #     else:
+    #         outputs = layers.Dense(1)(x)
+    #     #my_loss = keras.losses.mean_squared_error
+    #     #my_metric = [keras.metrics.mean_absolute_error,keras.metrics.mean_squared_error]
+    #     model = keras.models.Sequential(inputs,outputs)
+    #     optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
+    #     model.compile(loss='mae',
+    #                   optimizer=optimizer,
+    #                   metrics=['mae','mse'])
+    #     return model
 
     def determine_optim_rounding_boundary(regressed_labels,true_labels):
         accs = []
@@ -189,7 +211,7 @@ def iucnn_train(dataset,
                                 epochs=max_epochs,
                                 validation_split=validation_split, 
                                 verbose=verbose)
-        stopping_point = np.argmin(history_fit.history[optimize_for_this])
+        stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
         # train model
         model = model_init(mode)
         model.summary()
@@ -204,12 +226,22 @@ def iucnn_train(dataset,
         model.summary()
         # The patience parameter is the amount of epochs to check for improvement
         early_stop = keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience)
-        history = model.fit(train_set, 
+        history_fit = model.fit(train_set, 
                             labels_for_training, 
                             epochs=max_epochs,
                             validation_split=validation_split, 
                             verbose=verbose,
                             callbacks=[early_stop])
+        stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
+        # train model
+        model = model_init(mode)
+        model.summary()
+        history = model.fit(train_set, 
+                            labels_for_training, 
+                            epochs=stopping_point,
+                            validation_split=validation_split, 
+                            verbose=verbose)        
+
         
             
     if mode == 'nn-class':

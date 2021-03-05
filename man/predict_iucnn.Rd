@@ -4,7 +4,13 @@
 \alias{predict_iucnn}
 \title{Predict IUCN Categories from Features}
 \usage{
-predict_iucnn(x, model_dir, return_prob = FALSE)
+predict_iucnn(
+  x,
+  model,
+  filename = "prediction",
+  verbose = 0,
+  return_raw = FALSE
+)
 }
 \arguments{
 \item{x}{a data.set, containing a column "species" with the species names, and

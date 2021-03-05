@@ -50,7 +50,6 @@ geo_features(dat)
 Other Feature preparation: 
 \code{\link{bias_features}()},
 \code{\link{biome_features}()},
-\code{\link{bnn_load_data}()},
 \code{\link{clim_features}()},
 \code{\link{footprint_features}()}
 }

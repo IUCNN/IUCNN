@@ -50,8 +50,10 @@
 #' @importFrom stats complete.cases
 
 predict_iucnn <- function(x,
-                          model_dir,
-                          return_prob = FALSE){
+                          model,
+                          filename = 'prediction',
+                          verbose = 0,
+                          return_raw = FALSE){
 
 
   message("Preparing input data")
@@ -63,6 +65,7 @@ predict_iucnn <- function(x,
     warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
   }
 
+  instance_id = tmp.in$species
   #prepare input data
   tmp <- tmp.in %>%
     dplyr::select(-.data$species)
@@ -74,21 +77,47 @@ predict_iucnn <- function(x,
 
   message("Predicting conservation status")
 
-  # run predict function
-  out <- iucnn_predict(feature_set = as.matrix(tmp),
-                       model_dir = model_dir,
-                       verbose = 0,
-                       return_prob = return_prob)
+  if(model$model == 'bnn-class'){
+    postpr = bnn_predict( features = as.matrix(tmp),
+                          instance_id = as.matrix(instance_id),
+                          model_path = model$trained_model_path,
+                          filename = filename,
+                          post_summary_mode=0
+                          )
 
-  names(out) <- "predicted_IUCN_categories"
+    if (return_raw==TRUE){
+      return(postpr)
+    }else{
+      test_predictions = apply(postpr$post_prob_predictions,1,which.max)-1
+      return(test_predictions)
+    }
 
-  #return output object
-  out <- bind_cols(tmp.in %>% select(.data$species),
-                    out)
 
-  message("Done")
+  }else{
+    # run predict function
+    out <- iucnn_predict(feature_set = as.matrix(tmp),
+                         model_dir = model$trained_model_path,
+                         verbose = verbose,
+                         return_raw = return_raw,
+                         iucnn_mode = model$model,
+                         rescale_labels_boolean = model$rescale_labels_boolean,
+                         rescale_factor = model$label_rescaling_factor,
+                         min_max_label = model$min_max_label_rescaled,
+                         stretch_factor_rescaled_labels = model$label_stretch_factor)
 
-  return(out)
+    return(out[[1]])
+  }
+
+
+#  names(out) <- "predicted_IUCN_categories"
+
+#  #return output object
+#  out <- bind_cols(tmp.in %>% select(.data$species),
+#                    out)
+
+#  message("Done")
+
+#  return(out)
 }
 
 

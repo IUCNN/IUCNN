@@ -79,8 +79,8 @@ train_iucnn <- function(x,
                         use_bias = 1,
                         act_f = "relu",
                         act_f_out = "auto",
-                        stretch_factor_rescaled_labels = 1.0, # float between 0 and 1
-                        patience = 10,
+                        label_stretch_factor = 1.0, # float between 0 and 1
+                        patience = 200,
                         randomize_instances = TRUE,
                         mode='nn-class', # nn-class, nn-reg, bnn-class
                         rescale_features = FALSE,
@@ -189,7 +189,7 @@ train_iucnn <- function(x,
     # run the MCMC and write output to file
     logger = run_MCMC(bnn_model,
                       mcmc_object,
-                      filename_stem = 'BNN'
+                      filename_stem = paste0(path_to_output,'/','BNN')
     )
 
     # calculate test accuracy
@@ -199,8 +199,9 @@ train_iucnn <- function(x,
                                            post_summary_mode=0
     )
 
-    logfile_path = as.character(py_get_attr(py_get_attr(logger,'_logfile'),'name'))
+    logfile_path = as.character(py_get_attr(logger,'_logfile'))
     log_file_content = read.table(logfile_path,sep = '\t',header = TRUE)
+    pklfile_path = as.character(py_get_attr(logger,'_pklfile'))
 
     test_labels = bnn_data$test_labels
     test_predictions = apply(post_pr_test$post_prob_predictions,1,which.max)-1
@@ -210,11 +211,11 @@ train_iucnn <- function(x,
     validation_accuracy = NaN
     test_accuracy = post_pr_test$mean_accuracy
 
-    training_loss = log_file_content$likelihood[length(log_file_content$likelihood)]
+    training_loss = (-log_file_content$likelihood[length(log_file_content$likelihood)])/length(bnn_data$labels)
     validation_loss = NaN
     test_loss = NaN
 
-    training_loss_history = log_file_content$likelihood
+    training_loss_history = (-log_file_content$likelihood)/length(bnn_data$labels)
     validation_loss_history = NaN
 
     training_accuracy_history = log_file_content$accuracy
@@ -226,10 +227,10 @@ train_iucnn <- function(x,
     rescale_labels_boolean = FALSE
     label_rescaling_factor = as.integer(max(labels$labels))
     min_max_label = as.vector(c(min(labels$labels),max(labels$labels)))
-    stretch_factor_rescaled_labels = stretch_factor_rescaled_labels
+    label_stretch_factor = label_stretch_factor
 
     activation_function = act_f_out
-    trained_model_path = logfile_path
+    trained_model_path = pklfile_path
 
   }else{
 
@@ -238,9 +239,8 @@ train_iucnn <- function(x,
 
     #write.table(as.matrix(dataset),'manual_tests/features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
     #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-    #write.table(as.matrix(rescaled_labels),'manual_tests/rescaled_labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
 
-      # run model via python script
+    # run model via python script
     res = iucnn_train(dataset = as.matrix(dataset),
                       labels = as.matrix(labels),
                       mode = mode,
@@ -255,7 +255,7 @@ train_iucnn <- function(x,
                       use_bias = use_bias,
                       act_f = act_f,
                       act_f_out = act_f_out,
-                      stretch_factor_rescaled_labels = stretch_factor_rescaled_labels,
+                      stretch_factor_rescaled_labels = label_stretch_factor,
                       patience = patience,
                       randomize_instances = as.integer(randomize_instances),
                       rescale_features = rescale_features,
@@ -287,7 +287,7 @@ train_iucnn <- function(x,
     rescale_labels_boolean = res[[16]]
     label_rescaling_factor = res[[17]]
     min_max_label = as.vector(res[[18]])
-    stretch_factor_rescaled_labels = res[[19]]
+    label_stretch_factor = res[[19]]
 
     activation_function = res[[20]]
     trained_model_path = res[[21]]
@@ -298,7 +298,7 @@ train_iucnn <- function(x,
   named_res$rescale_labels_boolean <- rescale_labels_boolean
   named_res$label_rescaling_factor <- label_rescaling_factor
   named_res$min_max_label_rescaled <- min_max_label
-  named_res$stretch_factor_rescaled_labels <- stretch_factor_rescaled_labels
+  named_res$label_stretch_factor <- label_stretch_factor
 
   named_res$activation_function <- activation_function
   named_res$trained_model_path <- trained_model_path
