@@ -131,8 +131,7 @@ train_iucnn <- function(x,
   dataset <- tmp %>%
     dplyr::select(-.data$species, -.data$labels)
 
-  dataset_bnn <- tmp %>%
-    dplyr::select(-.data$labels)
+  dataset_bnn <- tmp[,1:length(names(tmp))-1]
 
   instance_names <- tmp %>%
     dplyr::select(species)
@@ -163,7 +162,7 @@ train_iucnn <- function(x,
     labels[['names']] = replicate(length(labels$labels),'sp.')
     labels = labels[,c('names','labels')]
     # transform the data into BNN compatible format
-    bnn_data = bnn_load_data(as.matrix(dataset_bnn),
+    bnn_data = bnn_load_data(dataset_bnn,
                              labels,
                              seed=as.integer(seed),
                              testsize=test_fraction,
@@ -258,6 +257,7 @@ train_iucnn <- function(x,
                       test_fraction = test_fraction,
                       seed = as.integer(seed),
                       instance_names = as.matrix(instance_names),
+                      feature_names = names(dataset),
                       verbose = 0,
                       max_epochs = as.integer(max_epochs),
                       n_layers = as.list(n_layers),

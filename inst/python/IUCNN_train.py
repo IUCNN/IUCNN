@@ -20,6 +20,7 @@ def iucnn_train(dataset,
                 test_fraction,
                 seed,
                 instance_names,
+                feature_names,
                 verbose,
                 model_name,
                 max_epochs,
@@ -385,7 +386,7 @@ def iucnn_train(dataset,
                  "id_data":train_instance_names,
                  "id_test_data":test_instance_names,
                  "file_name":model_name,
-                 "feature_names":np.arange(dataset.shape[1])+1
+                 "feature_names":feature_names
                  }
                 ]
     
