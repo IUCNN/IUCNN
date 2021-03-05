@@ -131,6 +131,12 @@ train_iucnn <- function(x,
   dataset <- tmp %>%
     dplyr::select(-.data$species, -.data$labels)
 
+  dataset_bnn <- tmp %>%
+    dplyr::select(-.data$labels)
+
+  instance_names <- tmp %>%
+    dplyr::select(species)
+
   labels <- tmp %>%
     dplyr::select(labels)
 
@@ -157,11 +163,11 @@ train_iucnn <- function(x,
     labels[['names']] = replicate(length(labels$labels),'sp.')
     labels = labels[,c('names','labels')]
     # transform the data into BNN compatible format
-    bnn_data = bnn_load_data(as.matrix(dataset),
+    bnn_data = bnn_load_data(as.matrix(dataset_bnn),
                              labels,
                              seed=as.integer(seed),
                              testsize=test_fraction,
-                             all_class_in_testset=TRUE,
+                             all_class_in_testset=FALSE,
                              header=TRUE, # input data has a header
                              instance_id=TRUE, # input data includes names of instances
                              from_file=FALSE
@@ -198,6 +204,8 @@ train_iucnn <- function(x,
                                            bnn_model,
                                            post_summary_mode=0
     )
+
+    input_data = bnn_data
 
     logfile_path = as.character(py_get_attr(logger,'_logfile'))
     log_file_content = read.table(logfile_path,sep = '\t',header = TRUE)
@@ -249,6 +257,7 @@ train_iucnn <- function(x,
                       validation_split = validation_split,
                       test_fraction = test_fraction,
                       seed = as.integer(seed),
+                      instance_names = as.matrix(instance_names),
                       verbose = 0,
                       max_epochs = as.integer(max_epochs),
                       n_layers = as.list(n_layers),
@@ -291,9 +300,13 @@ train_iucnn <- function(x,
 
     activation_function = res[[20]]
     trained_model_path = res[[21]]
-  }
+
+    input_data = res[[22]]
+    }
 
   named_res = NULL
+
+  named_res$input_data = input_data
 
   named_res$rescale_labels_boolean <- rescale_labels_boolean
   named_res$label_rescaling_factor <- label_rescaling_factor

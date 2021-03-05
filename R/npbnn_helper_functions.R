@@ -191,8 +191,7 @@ bnn_predict <- function(features,
 
 
 feature_importance_bnn <- function(bnn_data,
-                                   logger,
-                                   bnn_model,
+                                   model_path,
                                    n_permutations=100,
                                    predictions_outdir='feature_importance',
                                    feature_blocks = list(c(0,1,2,3,4,5,6,7),c(8,9,10),c(11,12,13,14,15,16,17,18,19,20)),
@@ -212,15 +211,14 @@ feature_importance_bnn <- function(bnn_data,
   }
 
   feature_importance_out = bn$feature_importance(bnn_data$test_data,
-                                                 weights_pkl=py_get_attr(logger,'_w_file'),
+                                                 weights_pkl=model_path,
                                                  true_labels=bnn_data$test_labels,
                                                  fname_stem=bnn_data$file_name,
                                                  feature_names=bnn_data$feature_names,
                                                  n_permutations=as.integer(n_permutations),
                                                  predictions_outdir=predictions_outdir,
                                                  feature_blocks = formatted_feature_blocks,
-                                                 unlink_features_within_block = unlink_features_within_block,
-                                                 actFun = py_get_attr(bnn_model,'_act_fun'))
+                                                 unlink_features_within_block = unlink_features_within_block)
   return(feature_importance_out)
 }
 

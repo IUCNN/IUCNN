@@ -19,6 +19,7 @@ def iucnn_train(dataset,
                 validation_split,
                 test_fraction,
                 seed,
+                instance_names,
                 verbose,
                 model_name,
                 max_epochs,
@@ -172,6 +173,7 @@ def iucnn_train(dataset,
 
     rnd_dataset = dataset[rnd_indx,:]
     rnd_labels = labels[rnd_indx]
+    rnd_instance_names = instance_names[rnd_indx]
 
     test_size = int(len(labels)*test_fraction)
     train_set = rnd_dataset[:-test_size,:]
@@ -185,10 +187,12 @@ def iucnn_train(dataset,
     train_labels_cat = rnd_labels_cat[:-test_size,:]
     train_labels_scaled = rnd_labels_scaled[:-test_size]
     train_labels = rnd_labels[:-test_size]
+    train_instance_names = rnd_instance_names[:-test_size]
 
     test_labels_cat = rnd_labels_cat[-test_size:,:]
     test_labels_scaled = rnd_labels_scaled[-test_size:]
     test_labels = rnd_labels[-test_size:]
+    test_instance_names = rnd_instance_names[-test_size:]
     
     n_class = rnd_labels_cat.shape[1]
     
@@ -371,7 +375,18 @@ def iucnn_train(dataset,
                 stretch_factor_rescaled_labels,
                 
                 act_f_out,
-                model_outpath
+                model_outpath,
+                
+                {"data":train_set,
+                 "labels":train_labels,
+                 "label_dict":np.unique(labels).astype(str),
+                 "test_data":test_set,
+                 "test_labels":test_labels,
+                 "id_data":train_instance_names,
+                 "id_test_data":test_instance_names,
+                 "file_name":model_name,
+                 "feature_names":np.arange(dataset.shape[1])+1
+                 }
                 ]
     
     return output
