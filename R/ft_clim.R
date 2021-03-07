@@ -14,7 +14,7 @@
 #'@param type character string. A selection of which variables to return. If "all" all 19 bioclim variables
 #'if "selected" only Annual Mean Temperature, Temperature Seasonality, Mean temperature of the Coldest Quarter,
 #'Annual Precipitation, Precipitation seasonality and Precipitation of the Driest Quarter are returned
-#'@inheritParams geo_features
+#'@inheritParams ft_geo
 #'
 #'@return a data.frame of climatic features
 #'
@@ -27,7 +27,7 @@
 #'                 decimallongitude = runif (200,-5,5),
 #'                 decimallatitude = runif (200,-5,5))
 #'
-#'clim_features(dat)
+#'ft_clim(dat)
 #'}
 #'
 #'
@@ -36,16 +36,26 @@
 #' @importFrom raster extract getData
 #' @importFrom magrittr %>%
 #' @importFrom stats median
-clim_features <- function(x,
-                          climate.input = NULL,
-                          species = "species",
-                          lon = "decimallongitude",
-                          lat = "decimallatitude",
-                          rescale = TRUE,
-                          res = 10,
-                          type = "selected"){
+#' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
 
-  # check a rguments for the type
+ft_clim <- function(x,
+                    climate.input = NULL,
+                    species = "species",
+                    lon = "decimallongitude",
+                    lat = "decimallatitude",
+                    rescale = TRUE,
+                    res = 10,
+                    type = "selected"){
+
+  # assertions
+  assert_data_frame(x)
+  assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
+  assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
+  assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
+  assert_logical(rescale)
+  assert_numeric(res)
+
+  # check arguments for the type
   match.arg(arg = type, choices = c("selected", "all"))
 
   # Get climate data if non is provided

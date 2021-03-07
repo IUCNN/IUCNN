@@ -65,6 +65,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select left_join mutate
 #' @importFrom stats complete.cases
+#' @importFrom checkmate assert_data_frame assert_character assert_logical assert_numeric
 
 
 train_iucnn <- function(x,
@@ -79,16 +80,38 @@ train_iucnn <- function(x,
                         use_bias = 1,
                         act_f = "relu",
                         act_f_out = "auto",
-                        label_stretch_factor = 1.0, # float between 0 and 1
+                        label_stretch_factor = 1.0,
                         patience = 200,
                         randomize_instances = TRUE,
-                        mode='nn-class', # nn-class, nn-reg, bnn-class
+                        mode='nn-class',
                         rescale_features = FALSE,
                         return_categorical = FALSE,
                         plot_training_stats = TRUE,
                         plot_labels_against_features = FALSE){
 
   # Check input
+  ## assertion
+  assert_data_frame(x)
+  assert_data_frame(labels)
+  assert_character(path_to_output)
+  assert_numeric(validation_split, lower = 0, upper = 1)
+  assert_numeric(test_fraction, lower = 0, upper = 1)
+  assert_numeric(seed)
+  assert_numeric(max_epochs)
+  assert_numeric(n_layers)
+  assert_numeric(use_bias)
+  assert_character(act_f)
+  assert_character(act_f_out)
+  assert_numeric(label_stretch_factor, lower = 0, upper = 1)
+  assert_numeric(patience)
+  assert_logical(randomize_instances)
+  assert_character(mode)
+  assert_logical(rescale_features)
+  assert_logical(return_categorical)
+  assert_logical(plot_training_stats)
+  assert_logical(plot_labels_against_features)
+
+  ## specific checks
   if(!"species" %in% names(x)){
     stop("species column not found in x.
          The features input need a column named 'species'
@@ -106,7 +129,9 @@ train_iucnn <- function(x,
          The label input need a column named 'labels'")
   }
 
-  # merge speces and labels to match order
+  match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
+
+  # merge species and labels to match order
   tmp.in <- left_join(x, labels, by = "species")
 
   if(nrow(tmp.in) != nrow(x)){
@@ -304,7 +329,7 @@ train_iucnn <- function(x,
     input_data = res[[22]]
     }
 
-  named_res = NULL
+  named_res <- NULL
 
   named_res$input_data = input_data
 
@@ -335,6 +360,8 @@ train_iucnn <- function(x,
   named_res$training_accuracy <- training_accuracy
   named_res$validation_accuracy <- validation_accuracy
   named_res$test_accuracy <- test_accuracy
+
+  class(named_res) <- "iucnn_model"
 
   return(named_res)
 }

@@ -22,11 +22,11 @@
 #'
 #' @examples
 #'
-#'dat <- data.frame(species = "A",
-#'                 decimallongitude = runif (200,-5,5),
+#' dat <- data.frame(species = "A",
+#'                decimallongitude = runif (200,-5,5),
 #'                 decimallatitude = runif (200,-5,5))
 #'
-#'geo_features(dat)
+#'ft_geo(dat)
 
 #'
 #' @export
@@ -35,13 +35,20 @@
 #' @importFrom rCAT ConBatch
 #' @importFrom magrittr %>%
 #' @importFrom stats quantile
+#' @importFrom checkmate assert_character assert_data_frame assert_logical
 
+ft_geo <- function(x,
+                   species = "species",
+                   lon = "decimallongitude",
+                   lat = "decimallatitude",
+                   rescale = TRUE){
 
-geo_features <- function(x,
-                         species = "species",
-                         lon = "decimallongitude",
-                         lat = "decimallatitude",
-                         rescale = TRUE){
+  # assertions
+  assert_data_frame(x)
+  assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
+  assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
+  assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
+  assert_logical(rescale)
 
   # Total occurrences
   tot_occ <- x %>%
@@ -91,8 +98,8 @@ geo_features <- function(x,
 
     # combine
      out <- tot_occ %>%
-       left_join(geos) %>%
-       left_join(spa)
+       left_join(geos, by = species) %>%
+       left_join(spa, by = species)
 
     # rescale
      if(rescale){

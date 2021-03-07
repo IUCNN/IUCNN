@@ -182,10 +182,10 @@ res_3 <- train_iucnn(x = features_train,
 # Predict IUCN Global Red List status
 The trained model can then be used to predict the conservation status of Not Evaluated and Data Deficient species with the `predict_iucnn` function. The output is a data frame with species names and numeric labels (as generated with prepare_labels).
 
-\dontrun{```{r}
+```{r, eval = FALSE}
 predictions = predict_iucnn(x = features_predict, 
                             model_dir = "iucnn_model_2")
-```}
+```
 
 It is important to remember the following points when using IUCNN:
 
@@ -193,11 +193,8 @@ It is important to remember the following points when using IUCNN:
 
 2. IUCNN is indifferent to the provided features. On the one hand this means that any species traits for which data is available can bes used, but on the other hand this means that thought is needed in the choice of the features. The default features of IUCNN are usually a safe choice. The number of features is not limited, but currently IUCNN does not support missing values in the feature table and removes species with missing values. 
 
-3. IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guilt or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended. 
+3. IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guilt or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended.
 
 4. The amount of training data is important. The more the better. Minimum several hundred training species with a more or less equal distribution on the label classes should be included. If training data is limited, the broader Threatened/Not threatened level is recommended. 
 
 5. IUCNN predictions are not equivalent to full IUCN Red List assessments. We see the main purpose of IUCNN in 1) identifying species that will likely need conservation action to trigger a full IUCN assessment , and 2) provide large-scale overviews on the extinction risk in a given taxonomic group, for instance in a macro-ecological and macro-evolutionary context.
-
-
-

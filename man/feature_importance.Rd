@@ -5,7 +5,7 @@
 \title{Evaluate importance of training features}
 \usage{
 feature_importance(
-  input_model,
+  x,
   n_permutations = 100,
   predictions_outdir = "",
   verbose = FALSE,
