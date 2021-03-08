@@ -10,5 +10,7 @@ vignettes/wc10
 vignettes/WWF_ecoregions
 vignettes/iuc_nn_model
 manual_tests
+training_stats.pdf
 HFP*
+iuc_nn_model_feature_importance.txt
 

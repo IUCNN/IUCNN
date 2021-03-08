@@ -75,6 +75,8 @@ prep_labels <- function(x,
   if(level == "broad"){
     out <- out %>%
       mutate(lab.num.z = ifelse(.data[[labels]] %in% threatened, 1, 0))
+    lookup <- data.frame(labels = c("Not Threatened", "Threatened"),
+                         lab.num.z = c(0,1))
   }else{
     lookup <- data.frame(IUCN = accepted_labels,
                          lab.num.z = seq(0, (length(accepted_labels)-1)))
@@ -87,6 +89,14 @@ prep_labels <- function(x,
 
   out <- out %>%
     dplyr::select(species = .data[[species]], labels = .data$lab.num.z)
+
+  out <- list(
+    labels = out,
+    lookup = lookup
+  )
+
+  # set class
+  class(out) <- "iucnn_labels"
 
   # return output
   return(out)

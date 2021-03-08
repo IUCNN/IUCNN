@@ -52,7 +52,7 @@ labels_train <- prep_labels(training_labels)
 
 ## train the model
 m1 <- train_iucnn(x = features,
-                  labels = labels_train)
+                  lab = labels_train)
             
 ## Look at model summary and diagnostics
 summary(m1)

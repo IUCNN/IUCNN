@@ -1,8 +1,11 @@
 ---
 title: "Using IUCNN threat status estimates for future predictions with `iucnsim`"
 author: "Tobias Andermann"
-date: "2/18/2021"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Approximate_IUCN_Red_List_assessments_with_IUCNN}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -106,7 +109,7 @@ transition_rates_out = estimate_transition_rates(all_target_species_status,
                                                 possibly_extinct_list = c())
 ```
 
-Now we are ready to run the future simulations. Set a number of years you want to simulate into the future and `iucnsim` will run empirical simulations based on the estimated status transition rates and based on extinction probabilities that are associated with each IUCN status. See the [`iucnsim` tutorial](https://github.com/tobiashofmann88/iucnsim) for more info how extinction probabilities are modelled.
+Now we are ready to run the future simulations. Set a number of years you want to simulate into the future and `iucnsim` will run empirical simulations based on the estimated status transition rates and based on extinction probabilities that are associated with each IUCN status. See the [`iucnsim` tutorial](https://github.com/tobiashofmann88/iucnsim) for more info how extinction probabilities are modeled.
 
 ```{r}
 sim_years = 50

@@ -3,11 +3,11 @@
 #' Uses a model generated with \code{\link{train_iucnn}} to evaluate how much each feature or
 #' group of features contributes to the accuracy of the test set predictions. The function
 #' implements the concept of permutation feature importance, in which the values in a given
-#' feature column of the test set are shuffled randomely among all samples. Then the feature
+#' feature column of the test set are shuffled randomly among all samples. Then the feature
 #' data manipulated in this manner are used to predict labels for the test set and the accuracy
 #' is compared to that of the original feature data. The difference (delta accuracy) can be
 #' interpreted as a measure of how important a given feature or group of features is for the
-#' trained NN to make accuracte predictions.
+#' trained NN to make accurate predictions.
 #'
 #' By default this function groups the features into geographic, climatic, biome, and human
 #' footprint features and determines the importance of each of these blocks of features. The
@@ -21,9 +21,12 @@
 #'@param n_permutations an integer. Defines how many iterations of shuffling feature values and
 #'predicting the resulting accuracy are being executed. The mean and standard deviation of the
 #'delta accuracy are being summarized from these permutations.
-#'@param provide_indices logical. Set to TRUE if custom \code{feature_blocks} are provided as indices. Default is FALSE.
-#'@param verbose logical. Set to TRUE to print screen output while calculating feature importance. Default is FALSE.
-#'@param unlink_features_within_block logical. If TRUE, the features within each defined block arre shuffled independently.
+#'@param provide_indices logical. Set to TRUE if custom \code{feature_blocks}
+#'are provided as indices. Default is FALSE.
+#'@param verbose logical. Set to TRUE to print screen output while calculating
+#'feature importance. Default is FALSE.
+#'@param unlink_features_within_block logical. If TRUE, the features within each
+#'defined block are shuffled independently.
 #'If FALSE, each feature column within a block is resorted in the same manner. Default is TRUE
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
