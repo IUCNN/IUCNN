@@ -55,7 +55,6 @@
 predict_iucnn <- function(x,
                           model,
                           model_dir = "iuc_nn_model",
-                          filename = 'prediction',
                           verbose = 0,
                           return_raw = FALSE){
 
@@ -87,7 +86,7 @@ predict_iucnn <- function(x,
     postpr = bnn_predict( features = as.matrix(tmp),
                           instance_id = as.matrix(instance_id),
                           model_path = model$trained_model_path,
-                          filename = filename,
+                          filename = 'prediction',
                           post_summary_mode=0
                           )
 
