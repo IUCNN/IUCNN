@@ -5,7 +5,7 @@ from tensorflow.keras import layers
 import os
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-
+from tensorflow import math 
 
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
@@ -378,11 +378,13 @@ def iucnn_train(dataset,
                 act_f_out,
                 model_outpath,
                 
+                np.array(math.confusion_matrix(test_labels,test_predictions)),
+                
                 {"data":train_set,
-                 "labels":train_labels,
+                 "labels":train_labels.flatten(),
                  "label_dict":np.unique(labels).astype(str),
                  "test_data":test_set,
-                 "test_labels":test_labels,
+                 "test_labels":test_labels.flatten(),
                  "id_data":train_instance_names,
                  "id_test_data":test_instance_names,
                  "file_name":model_name,

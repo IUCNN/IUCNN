@@ -214,6 +214,9 @@ train_iucnn <- function(x,
     test_predictions = apply(post_pr_test$post_prob_predictions,1,which.max)-1
     test_predictions_raw = post_pr_test$post_prob_predictions
 
+    confusion_matrix = post_pr_test$confusion_matrix
+    confusion_matrix = confusion_matrix[1:dim(confusion_matrix)[1]-1,1:dim(confusion_matrix)[2]-1] #remove the sum row and column
+
     training_accuracy = log_file_content$accuracy[length(log_file_content$accuracy)]
     validation_accuracy = NaN
     test_accuracy = post_pr_test$mean_accuracy
@@ -301,7 +304,9 @@ train_iucnn <- function(x,
     activation_function = res[[20]]
     trained_model_path = res[[21]]
 
-    input_data = res[[22]]
+    confusion_matrix = res[[22]]
+
+    input_data = res[[23]]
     }
 
   named_res = NULL
@@ -331,6 +336,8 @@ train_iucnn <- function(x,
   named_res$test_predictions_raw <- test_predictions_raw #softmax probs, posterior probs, or regressed values
   named_res$test_predictions <- test_predictions
   named_res$test_labels <- test_labels
+
+  named_res$confusion_matrix = confusion_matrix
 
   named_res$training_accuracy <- training_accuracy
   named_res$validation_accuracy <- validation_accuracy
