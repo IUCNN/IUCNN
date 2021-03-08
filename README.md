@@ -25,13 +25,14 @@ install_miniconda()
 If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
 
 
-3. Install the tensorflow module
+3. Install the tensorflow and matplotlib modules
 ```{r}
 reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
+reticulate::py_install("matplotlib", pip = TRUE)
 ```
 
 # Usage
-A vignette with a detailed tutorial on how to use IUCNN is available as part of the package: `vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")`. Running IUCNN will write files to your working directory.
+There are multiple models and features avaialble in IUCNN. A vignette with a detailed tutorial on how to use those is available as part of the package: `vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")`. Running IUCNN will write files to your working directory.
 
 ```{r}
 library(tidyverse)
@@ -44,32 +45,26 @@ data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # Training
 ## Generate features
-geo <- geo_features(training_occ) #geographic
-cli <- clim_features(training_occ) #climate
-bme <- biome_features(training_occ) #biomes
+features <- prep_features(training_occ)
 
-features <- geo %>% 
-  left_join(cli) %>% 
-  left_join(bme)
+## Prepare training labels
+labels_train <- prep_labels(training_labels)
 
-# Prepare training labels
-labels_train <- prepare_labels(training_labels)
-
-# train the model
-train_iucnn(x = features,
-            labels = labels_train)
+## train the model
+m1 <- train_iucnn(x = features,
+                  labels = labels_train)
+            
+## Look at model summary and diagnostics
+summary(m1)
+plot(m1)
 
 #Prediction
 ## Generate features
-geo <- geo_features(prediction_occ)
-cli <- clim_features(prediction_occ)
-bme <- biome_features(prediction_occ)
+features_predict <- prep_features(prediction_occ)
 
-features_predict <- geo %>% 
-  left_join(cli) %>% 
-  left_join(bme)
-
+## predict IUCN conservation status
 predict_iucnn(x = features_predict,
+              model = m1,
               model_dir = "iuc_nn_model")
 ```
 

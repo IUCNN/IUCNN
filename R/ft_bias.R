@@ -9,7 +9,7 @@
 #'@param ras a raster object. Alternative to res, a sample raster to calculate sampling bias. Needs to use the same CRS as
 #'the coordinates in x.
 #''@param plot logical. Should the results of the sampbias analysis be plotted for diagnostics?
-#'@inheritParams geo_features
+#'@inheritParams ft_geo
 #'
 #'@return a data.frame of bias features
 #'
@@ -22,7 +22,7 @@
 #'                 decimallongitude = runif (200,-5,5),
 #'                 decimallatitude = runif (200,-5,5))
 #'
-#'bias_features(dat)
+#'ft_bias(dat)
 #'}
 #'
 #'
@@ -34,19 +34,19 @@
 #' @importFrom stats median quantile
 #' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
 
-bias_features <- function(x,
-                          species = "species",
-                          lon = "decimallongitude",
-                          lat = "decimallatitude",
-                          res = 0.5,
-                          ras = NULL,
-                          plot = TRUE){
+ft_bias <- function(x,
+                    species = "species",
+                    lon = "decimallongitude",
+                    lat = "decimallatitude",
+                    res = 0.5,
+                    ras = NULL,
+                    plot = TRUE){
 
   # assertions
   assert_data_frame(x)
-  assert_character(species)
-  assert_character(lon)
-  assert_character(lat)
+  assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
+  assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
+  assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_numeric(res)
   assert_logical(plot)
 

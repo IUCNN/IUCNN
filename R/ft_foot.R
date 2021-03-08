@@ -21,7 +21,7 @@
 #' @param breaks numerical. The breaks to bin the human footprint index for the final features. The defaults are
 #' empirical values for the global footprint and rescale=TRUE. For custom values ensure that they
 #' cover the whole value range and are adapted to the value of rescale.
-#' @inheritParams geo_features
+#' @inheritParams ft_geo
 #'
 #' @source https://wcshumanfootprint.org/
 #'
@@ -36,7 +36,7 @@
 #'                 decimallongitude = runif (200,-5,5),
 #'                 decimallatitude = runif (200,-5,5))
 #'
-#'footprint_features(dat)
+#'ft_foot(dat)
 #'}
 #'
 #'
@@ -48,16 +48,27 @@
 #' @importFrom curl has_internet
 #' @importFrom readr parse_number
 #' @importFrom tidyr pivot_longer pivot_wider
+#' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
 #'
-footprint_features <- function(x,
-                               footp_input = NULL,
-                               species = "species",
-                               lon = "decimallongitude",
-                               lat = "decimallatitude",
-                               rescale = TRUE,
-                               year = c(1993, 2009),
-                               file_path = NULL,
-                               breaks = c(0, 0.81, 1.6, 2.3, 100)){
+ft_foot <- function(x,
+                   footp_input = NULL,
+                   species = "species",
+                   lon = "decimallongitude",
+                   lat = "decimallatitude",
+                   rescale = TRUE,
+                   year = c(1993, 2009),
+                   file_path = NULL,
+                   breaks = c(0, 0.81, 1.6, 2.3, 100)){
+
+  #assertions
+  assert_data_frame(x)
+  assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
+  assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
+  assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
+  assert_logical(rescale)
+  assert_numeric(year)
+  assert_character(file_path, null.ok = TRUE)
+  assert_numeric(breaks)
 
   # get human footprint
   if(is.null(footp_input)){

@@ -13,7 +13,7 @@
 #'function will correspond to the order in this argument.
 #' For instance with default settings, LC -> 0, CR -> 4.
 #'@param level a character string. The level of output level detail. IF "detail"
-#'full iucn categories, if "broad" then 0 = Not threatened, and 1 = Threatened.
+#'full IUCN categories, if "broad" then 0 = Not threatened, and 1 = Threatened.
 #'@param threatened a character string. Only if level=="broad", Which labels to consider threatened.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
@@ -23,20 +23,29 @@
 #'
 #' @examples
 #'data("training_labels")
-#'prepare_labels(training_labels)
+#'prep_labels(training_labels)
 #'
 #' @export
 #' @importFrom magrittr %>%
 #' @importFrom dplyr bind_rows distinct filter left_join mutate select
+#' @importFrom checkmate assert_character
 
 
-prepare_labels <- function(x,
-                         species = "species",
-                         labels = "labels",
-                         accepted_labels = c('LC','NT','VU','EN','CR'),
-                         level = "detail",
-                         threatened = c("CR", "EN", "VU")){
+prep_labels <- function(x,
+                       species = "species",
+                       labels = "labels",
+                       accepted_labels = c('LC','NT','VU','EN','CR'),
+                       level = "detail",
+                       threatened = c("CR", "EN", "VU")){
 
+ # assertions
+  assert_character(species)
+  assert_character(labels)
+  assert_character(accepted_labels)
+  assert_character(level)
+  assert_character(threatened)
+
+ # check for input from rredlist
   if(is.list(x) & !is.data.frame(x)){
     warning("x is list. Assuming input from rredlist")
 

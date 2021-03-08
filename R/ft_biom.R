@@ -18,12 +18,7 @@
 #'if biome.input is NULL. Default is the working directory
 #'@param remove_zeros logical. If TRUE biomes without occurrence of any species are removed from the features.
 #'Default = FALSE
-#'@inheritParams geo_features
-#'
-#'
-## biomes from
-#'@inheritParams geo_features
-#'
+#'@inheritParams ft_geo
 #'
 #'@return a data.frame of climatic features
 #'
@@ -36,7 +31,7 @@
 #'                 decimallongitude = runif (200,-5,5),
 #'                 decimallatitude = runif (200,-5,5))
 #'
-#'biom_features(dat)
+#'ft_biom(dat)
 #'}
 #'
 #'
@@ -46,14 +41,25 @@
 #' @importFrom magrittr %>%
 #' @importFrom tidyr pivot_wider
 #' @importFrom utils download.file unzip
-biome_features <- function(x,
-                           species = "species",
-                           lon = "decimallongitude",
-                           lat = "decimallatitude",
-                           biome.input = NULL,
-                           biome.id = "BIOME",
-                           download.path = NULL,
-                           remove_zeros = FALSE){
+#' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
+
+ft_biom <- function(x,
+                     species = "species",
+                     lon = "decimallongitude",
+                     lat = "decimallatitude",
+                     biome.input = NULL,
+                     biome.id = "BIOME",
+                     download.path = NULL,
+                     remove_zeros = FALSE){
+
+  #assertions
+  assert_data_frame(x)
+  assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
+  assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
+  assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
+  assert_character(biome.id, null.ok = TRUE)
+  assert_character(download.path, null.ok = TRUE)
+  assert_logical(remove_zeros)
 
   # get biome data if necessary
   if(is.null(biome.input)){
@@ -72,7 +78,7 @@ biome_features <- function(x,
     }
     #load biomes
     biome.input <- sf::st_read(dsn = file.path(download.path, "WWF_ecoregions", "official"),
-                               layer = "wwf_terr_ecos")
+                               layer = "wwf_terr_ecos", quiet = TRUE)
   }
 
   # The point in polygon test for the point records
@@ -80,7 +86,7 @@ biome_features <- function(x,
                       coords = c(lon, lat),
                       crs= st_crs(biome.input))
 
-  biom <- sf::st_intersects(pts, biome.input) # this gives the rownames of each point in wwf
+  biom <- suppressMessages(sf::st_intersects(pts, biome.input)) # this gives the rownames of each point in wwf
 
   sf::st_geometry(biome.input) <- NULL
   biom2 <-biome.input[as.numeric(biom), biome.id]
