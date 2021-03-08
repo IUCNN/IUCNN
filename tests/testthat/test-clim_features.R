@@ -1,5 +1,5 @@
 data("prediction_occ")
-orchid<- clim_features(prediction_occ)
+orchid<- ft_clim(prediction_occ)
 
 test_that("is a data,frame", {
   expect_true(is.data.frame(orchid))

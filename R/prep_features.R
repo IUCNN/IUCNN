@@ -1,12 +1,12 @@
 #'Prepare features for an IUCNN model
 #'
-#'A wrapper function to prepare all default features included in IUcNN:
+#'A wrapper function to prepare all default features included in IUCNN:
 #'geographic, biomes, climate, human footprint.
-#'If desired, bias features need to be calculated seperately with ft_bias.
+#'If desired, bias features need to be calculated separately with ft_bias.
 #'For more control over feature preparation, you can use the
 #'\code{\link{ft_geo}}, \code{\link{ft_biom}}, \code{\link{ft_clim}},\code{\link{ft_foot}} functions.
 #'
-#'Without internet access, only geographic features are calcualted,
+#'Without internet access, only geographic features are calculated,
 #'if the sampbias package is not installed, the bias features are skipped.
 #'
 #'@inheritParams ft_geo
@@ -42,7 +42,7 @@ prep_features <- function(x,
 
 
   #prepare geographic features
-  message("Calcualting geographic features.")
+  message("Calculating geographic features.")
   out <- ft_geo(x,
                 species = species,
                 lon = lon,
@@ -50,19 +50,19 @@ prep_features <- function(x,
 
   #if internet run biomes, climate and footprint
   if(curl::has_internet()){
-    message("Calcualting biome features.")
+    message("Calculating biome features.")
     bio <- ft_biom(x,
                    species = species,
                    lon = lon,
                    lat = lat)
 
-    message("Calcualting climate features.")
+    message("Calculating climate features.")
     clim <- ft_clim(x,
                     species = species,
                     lon = lon,
                     lat = lat)
 
-    message("Calcualting human footprint features.")
+    message("Calculating human footprint features.")
     foot <- ft_foot(x,
                     species = species,
                     lon = lon,

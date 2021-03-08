@@ -2,7 +2,7 @@
 #'
 #' Uses a model generated with \code{\link{train_iucnn}} to predict the IUCN status of
 #' Not Evaluated or Data Deficient species based on features, for instance generated
-#' from species occurrence records with \code{\link{geo_features}}, \code{\link{clim_features}}, and \code{\link{biome_features}}.
+#' from species occurrence records with \code{\link{ft_geo}}, \code{\link{ft_clim}}, and \code{\link{ft_biom}}.
 #' The same features in the same order must be used for training and fitting.
 #'
 #'

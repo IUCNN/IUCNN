@@ -1,5 +1,5 @@
 data("prediction_occ")
-orchid<- geo_features(prediction_occ)
+orchid<- ft_geo(prediction_occ)
 
 test_that("is a data,frame", {
   expect_true(is.data.frame(orchid))

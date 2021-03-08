@@ -31,13 +31,13 @@ First let us load the tutorial data. here we will only use geographic features.
 ```{r tutorial_data, echo=TRUE}
 data("training_occ") #geographic occurrences of species with IUCN assessment
 ## Generate features
-geo <- geo_features(training_occ) #geographic
+geo <- ft_geo(training_occ) #geographic
 
 features <- geo 
 
 # Prepare training labels
 data("training_labels") # the corresponding IUCN assessments
-labels_train <- prepare_labels(training_labels)
+labels_train <- prep_labels(training_labels)
 ```
 
 ## Train IUCNN model
@@ -57,7 +57,7 @@ Now we want to predict IUCN categories for our species that lack an IUCN assessm
 
 ```{r prediction_data, echo=TRUE}
 data("prediction_occ") #occurrences from Not Evaluated species to predict
-geo <- geo_features(prediction_occ)
+geo <- ft_geo(prediction_occ)
 features_predict <- geo
 ```
 
@@ -106,7 +106,7 @@ transition_rates_out = estimate_transition_rates(all_target_species_status,
                                                 possibly_extinct_list = c())
 ```
 
-Now we are ready to run the future simulations. Set a number of years you want to simulate into the future and `iucnsim` will run empirical simulations based on the estimated status transition rates and based on extinction probabilities that are associated with each IUCN status. See the [`iucnsim` tutorial](https://github.com/tobiashofmann88/iucnsim) for more info how extinction probabilties are modeled.
+Now we are ready to run the future simulations. Set a number of years you want to simulate into the future and `iucnsim` will run empirical simulations based on the estimated status transition rates and based on extinction probabilities that are associated with each IUCN status. See the [`iucnsim` tutorial](https://github.com/tobiashofmann88/iucnsim) for more info how extinction probabilities are modelled.
 
 ```{r}
 sim_years = 50
@@ -122,7 +122,7 @@ status_through_time_trajectories = future_sim_output[[3]]
 
 In the output folder you will find some summary plots, but you can also plot the output objects returned by the `run_future_sim()` directly in R (e.g. plot the diversity through time trajectory, including confidence intervals `future_div_min_max`).
 
-You can also estimate species specific extinction rates using `iucnsim`, using the simulation output. For precise estimates of these rates it is recommendable to run the simulations produced in the previous step for at least 10,000 repititions (set `n_sim=10000`). This will take several minutes up to hours to finish, so here for demonstration purposes we stick to our 100 simulation repitions produced above. Let's now estimate the species-specific extinction rates. This will take several minutes as iucnsim runs a separate MCMC for each species in the dataset to estimate the extinction rates.
+You can also estimate species specific extinction rates using `iucnsim`, using the simulation output. For precise estimates of these rates it is recommendable to run the simulations produced in the previous step for at least 10,000 repetitions (set `n_sim=10000`). This will take several minutes up to hours to finish, so here for demonstration purposes we stick to our 100 simulation repetitions produced above. Let's now estimate the species-specific extinction rates. This will take several minutes as iucnsim runs a separate MCMC for each species in the dataset to estimate the extinction rates.
 
 ```{r}
 ext_rates = estimate_extinction_rates(extinction_times,

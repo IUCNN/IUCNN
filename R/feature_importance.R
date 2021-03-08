@@ -32,7 +32,7 @@ feature_importance <- function(x,
     )
 
   }else{
-    if (provide_indices == TRUE){
+    if (provide_indices){
       i = 0
       ffb= NULL
       for (block in feature_blocks){
@@ -54,7 +54,7 @@ feature_importance <- function(x,
     for (fname in feature_names){
       all_selected_feature_names = c(all_selected_feature_names, fname)
       findex = which(x$input_data$feature_names == fname)
-      feature_indices = c(feature_indices, as.integer(findex-1)) #-1 is necessary because of indexing discrepancy between python and r
+      feature_indices = c(feature_indices, as.integer(findex - 1)) #-1 is necessary because of indexing discrepancy between python and r
     }
     feature_block_indices[i] = list(feature_indices)
   }
@@ -64,7 +64,7 @@ feature_importance <- function(x,
                                all_selected_feature_names)
   for (fname in remaining_features){
     findex = which(x$input_data$feature_names == fname)
-    feature_block_indices[fname] = as.integer(findex-1)
+    feature_block_indices[fname] = as.integer(findex - 1)
   }
   if (x$model == 'bnn-class'){
     # source python function

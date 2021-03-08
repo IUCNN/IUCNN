@@ -27,8 +27,9 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{res}{numeric. The resolution of the default resolution to calculate sampling bias. In decimal degrees.}
 
 \item{ras}{a raster object. Alternative to res, a sample raster to calculate sampling bias. Needs to use the same CRS as
-the coordinates in x.
-'@param plot logical. Should the results of the sampbias analysis be plotted for diagnostics?}
+the coordinates in x.}
+
+\item{plot}{logical. Should the results of the sampbias analysis be plotted for diagnostics?}
 }
 \value{
 a data.frame of bias features
@@ -38,7 +39,7 @@ Use the sampbias method to assess the geographic sampling bias at the locations 
 sampling bias for all records per species.Values summarized per species are the median and the 0.05 to 0.95 percentiles.
 }
 \details{
-See the ?sampbias::calcualte_bias for details.
+See the ?sampbias::calculate_bias for details.
 }
 \examples{
 \dontrun{

@@ -32,7 +32,7 @@ reticulate::py_install("matplotlib", pip = TRUE)
 ```
 
 # Usage
-There are multiple models and features avaialble in IUCNN. A vignette with a detailed tutorial on how to use those is available as part of the package: `vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")`. Running IUCNN will write files to your working directory.
+There are multiple models and features available in IUCNN. A vignette with a detailed tutorial on how to use those is available as part of the package: `vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")`. Running IUCNN will write files to your working directory.
 
 ```{r}
 library(tidyverse)

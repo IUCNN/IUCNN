@@ -92,7 +92,7 @@ ft_geo <- function(x,
        dplyr::select(species = .data$taxa,
                      eoo = .data$EOOkm2,
                      aoo = .data$AOO2km) %>%
-       mutate(eoo = ifelse(eoo == 0, aoo, eoo)) %>% # set EOO to AOO
+       mutate(eoo = ifelse(.data$eoo == 0, .data$aoo, .data$eoo)) %>% # set EOO to AOO
        mutate(eoo = round(as.numeric(.data$eoo), 3)) %>%
        mutate(aoo = round(as.numeric(.data$aoo), 3))
 
