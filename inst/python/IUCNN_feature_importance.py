@@ -76,6 +76,10 @@ def feature_importance_nn( input_features,
     # go through features and shuffle one at a time
     accuracies_wo_feature = []
     for block_id,feature_block in enumerate(selected_features):
+        try: # see if we have an actual list or single element
+            feature_block = list(feature_block)
+        except TypeError:
+            feature_block = [feature_block]
         if verbose:
             print('Processing feature block %i'%(int(block_id)+1),flush=True)
         n_accuracies = []

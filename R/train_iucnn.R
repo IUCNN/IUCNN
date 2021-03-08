@@ -61,7 +61,7 @@
 #'
 #'
 #' @export
-#' @importFrom reticulate source_python
+#' @import reticulate
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select left_join mutate
 #' @importFrom stats complete.cases
@@ -85,9 +85,7 @@ train_iucnn <- function(x,
                         randomize_instances = TRUE,
                         mode='nn-class',
                         rescale_features = FALSE,
-                        return_categorical = FALSE,
-                        plot_training_stats = TRUE,
-                        plot_labels_against_features = FALSE){
+                        return_categorical = FALSE){
 
   # Check input
   ## assertion
@@ -108,8 +106,6 @@ train_iucnn <- function(x,
   assert_character(mode)
   assert_logical(rescale_features)
   assert_logical(return_categorical)
-  assert_logical(plot_training_stats)
-  assert_logical(plot_labels_against_features)
 
   ## specific checks
   if(!"species" %in% names(x)){
@@ -295,9 +291,7 @@ train_iucnn <- function(x,
                       stretch_factor_rescaled_labels = label_stretch_factor,
                       patience = patience,
                       randomize_instances = as.integer(randomize_instances),
-                      rescale_features = rescale_features,
-                      plot_training_stats = plot_training_stats,
-                      plot_labels_against_features = plot_labels_against_features
+                      rescale_features = rescale_features
     )
 
     test_labels = as.vector(res[[1]])
