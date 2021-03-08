@@ -1,0 +1,5 @@
+feature_block_index	feature_name	delta_acc_mean	delta_acc_std	acc_with_feature_randomized_mean	acc_with_feature_randomized_std
+0	geographic	0.174432	0.036800463	0.393750	0.036800466
+1	human_footprint	0.000000	0.0	0.568182	0.0
+2	climate	0.000000	0.0	0.568182	0.0
+3	biomes	0.000000	0.0	0.568182	0.0

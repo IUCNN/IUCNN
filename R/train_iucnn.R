@@ -86,9 +86,7 @@ train_iucnn <- function(x,
                         randomize_instances = TRUE,
                         mode='nn-class',
                         rescale_features = FALSE,
-                        return_categorical = FALSE,
-                        plot_training_stats = TRUE,
-                        plot_labels_against_features = FALSE){
+                        return_categorical = FALSE){
 
   # Check input
   ## assertion
@@ -109,8 +107,6 @@ train_iucnn <- function(x,
   assert_character(mode)
   assert_logical(rescale_features)
   assert_logical(return_categorical)
-  assert_logical(plot_training_stats)
-  assert_logical(plot_labels_against_features)
 
   ## specific checks
   if(!"species" %in% names(x)){
@@ -240,6 +236,9 @@ train_iucnn <- function(x,
     test_predictions = apply(post_pr_test$post_prob_predictions,1,which.max)-1
     test_predictions_raw = post_pr_test$post_prob_predictions
 
+    confusion_matrix = post_pr_test$confusion_matrix
+    confusion_matrix = confusion_matrix[1:dim(confusion_matrix)[1]-1,1:dim(confusion_matrix)[2]-1] #remove the sum row and column
+
     training_accuracy = log_file_content$accuracy[length(log_file_content$accuracy)]
     validation_accuracy = NaN
     test_accuracy = post_pr_test$mean_accuracy
@@ -293,9 +292,7 @@ train_iucnn <- function(x,
                       stretch_factor_rescaled_labels = label_stretch_factor,
                       patience = patience,
                       randomize_instances = as.integer(randomize_instances),
-                      rescale_features = rescale_features,
-                      plot_training_stats = plot_training_stats,
-                      plot_labels_against_features = plot_labels_against_features
+                      rescale_features = rescale_features
     )
 
     test_labels = as.vector(res[[1]])
@@ -327,7 +324,9 @@ train_iucnn <- function(x,
     activation_function = res[[20]]
     trained_model_path = res[[21]]
 
-    input_data = res[[22]]
+    confusion_matrix = res[[22]]
+
+    input_data = res[[23]]
     }
 
   named_res <- NULL
@@ -357,6 +356,8 @@ train_iucnn <- function(x,
   named_res$test_predictions_raw <- test_predictions_raw #softmax probs, posterior probs, or regressed values
   named_res$test_predictions <- test_predictions
   named_res$test_labels <- test_labels
+
+  named_res$confusion_matrix = confusion_matrix
 
   named_res$training_accuracy <- training_accuracy
   named_res$validation_accuracy <- validation_accuracy

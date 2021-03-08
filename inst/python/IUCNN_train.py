@@ -1,12 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from tensorflow import keras
-from tensorflow.keras import layers
 import os
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-
-
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
 except:
@@ -31,40 +25,39 @@ def iucnn_train(dataset,
                 stretch_factor_rescaled_labels,
                 patience,
                 randomize_instances,
-                rescale_features,
-                plot_training_stats,
-                plot_labels_against_features):
+                rescale_features):
+
     #dropout=True
     #dropout_rate=0.1
     
     def build_classification_model():
-        architecture = [layers.Dense(n_layers[0], 
+        architecture = [tf.keras.layers.Dense(n_layers[0], 
                                      activation=act_f, 
                                      input_shape=[train_set.shape[1]], 
                                      use_bias=use_bias)]
         for i in n_layers[1:]:
-            architecture.append(layers.Dense(i, activation=act_f))
-        architecture.append(layers.Dense(n_class, 
+            architecture.append(tf.keras.layers.Dense(i, activation=act_f))
+        architecture.append(tf.keras.layers.Dense(n_class, 
                                          activation=act_f_out))
-        model = keras.Sequential(architecture)
+        model = tf.keras.Sequential(architecture)
         model.compile(loss='categorical_crossentropy',
                       optimizer="adam",
                       metrics=['accuracy'])
         return model
 
     def build_regression_model():
-        architecture = [layers.Dense(n_layers[0],
+        architecture = [tf.keras.layers.Dense(n_layers[0],
                                      activation=act_f,
                                      input_shape=[train_set.shape[1]], 
                                      use_bias=use_bias)]
         for i in n_layers[1:]:
-            architecture.append(layers.Dense(i, activation=act_f))
+            architecture.append(tf.keras.layers.Dense(i, activation=act_f))
         
         if act_f_out:
-            architecture.append(layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
+            architecture.append(tf.keras.layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
         else:
-            architecture.append(layers.Dense(1))
-        model = keras.Sequential(architecture)
+            architecture.append(tf.keras.layers.Dense(1))
+        model = tf.keras.Sequential(architecture)
         optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
         model.compile(loss='mean_squared_error',
                       optimizer=optimizer,
@@ -100,7 +93,7 @@ def iucnn_train(dataset,
             label_predictions = np.round(regressed_labels + x, 0).astype(int).flatten()
             cat_acc = np.sum(label_predictions==true_labels)/len(label_predictions)
             accs.append(cat_acc)
-        plt.plot(values,accs)
+        #plt.plot(values,accs)
         add_value = values[np.where(accs==np.max(accs))[0][0]]
         return(add_value)
 
@@ -138,7 +131,6 @@ def iucnn_train(dataset,
             model = build_classification_model()
         return model 
     
-    
     if not os.path.exists(path_to_output):
         os.makedirs(path_to_output)
     # randomize data
@@ -168,7 +160,6 @@ def iucnn_train(dataset,
     else:
         quit('Invalid mode provided. Choose from "nn-class", "nn-reg", or "bnn-class"')
         
-
     rescale_factor = max(labels)
     rescaled_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
 
@@ -179,7 +170,6 @@ def iucnn_train(dataset,
     test_size = int(len(labels)*test_fraction)
     train_set = rnd_dataset[:-test_size,:]
     test_set = rnd_dataset[-test_size:,:]
-
 
     # format labels
     rnd_labels_cat  = tf.keras.utils.to_categorical(rnd_labels)
@@ -230,7 +220,7 @@ def iucnn_train(dataset,
         model = model_init(mode)
         model.summary()
         # The patience parameter is the amount of epochs to check for improvement
-        early_stop = keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience)
+        early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience)
         history_fit = model.fit(train_set, 
                             labels_for_training, 
                             epochs=max_epochs,
@@ -246,8 +236,6 @@ def iucnn_train(dataset,
                             epochs=stopping_point,
                             validation_split=validation_split, 
                             verbose=verbose)        
-
-        
             
     if mode == 'nn-class':
         test_loss, test_acc = model.evaluate(test_set, 
@@ -276,73 +264,6 @@ def iucnn_train(dataset,
         val_acc_history = np.nan
         train_mae_history = np.array(history.history['mae'])
         val_mae_history = np.array(history.history['val_mae'])
-
-    
-
-    if plot_labels_against_features:    
-        # define figure dimensions
-        n_features = train_set.shape[1]
-        n_cols = 4
-        n_rows = int(n_features/n_cols)+1
-        fig = plt.figure(figsize=(n_cols*2, n_rows*2))
-        # specify grid
-        grid = gridspec.GridSpec(n_rows, n_cols, wspace=0.2, hspace=0.2)
-        for i,feature in enumerate(train_set.T):
-            fig.add_subplot(grid[i])
-            plt.scatter(feature,train_labels,c='black',ec=None,s=10)
-            plt.scatter(feature,train_predictions,c='red',ec=None,s=10,alpha=0.5)
-            if rescale_features:
-                plt.xlim(-0.04,1.04)
-        fig.savefig(os.path.join(path_to_output,'predicted_labels_by_feature.png'),bbox_inches='tight', dpi = 200)
-        plt.close()
-    
-    if plot_training_stats:
-        fig = plt.figure()
-        if mode == 'nn-class':            
-            grid = gridspec.GridSpec(2, 1, wspace=0.2, hspace=0.4)
-            fig.add_subplot(grid[0])
-            if patience == 0:
-                acc_at_best_epoch = history_fit.history["val_accuracy"][stopping_point]
-                plt.plot(history_fit.history['accuracy'],label='train')
-                plt.plot(history_fit.history['val_accuracy'], label='val')
-                plt.axvline(stopping_point,linestyle='--',color='red')
-                plt.axhline(acc_at_best_epoch,linestyle='--',color='red')
-            else:
-                plt.plot(history.history['accuracy'],label='train')
-                plt.plot(history.history['val_accuracy'], label='val')
-            plt.title('Accuracy')
-            fig.add_subplot(grid[1])
-            if patience == 0:
-                loss_at_best_epoch = history_fit.history["val_loss"][stopping_point]
-                plt.plot(history_fit.history['loss'],label='train')
-                plt.plot(history_fit.history['val_loss'], label='val')
-                plt.axvline(stopping_point,linestyle='--',color='red')
-                plt.axhline(loss_at_best_epoch,linestyle='--',color='red')
-            else:
-                plt.plot(history.history['loss'],label='train')
-                plt.plot(history.history['val_loss'], label='val')                
-            plt.title('Loss')                
-        elif mode == 'nn-reg':
-            if patience == 0:
-                mae_at_best_epoch = history_fit.history["val_mae"][stopping_point]
-                plt.plot(history_fit.history['mae'],label='train')
-                plt.plot(history_fit.history['val_mae'], label='val')
-                plt.axvline(stopping_point,linestyle='--',color='red')
-                plt.axhline(mae_at_best_epoch,linestyle='--',color='red')
-            else:
-                plt.plot(history.history['mae'],label='train')
-                plt.plot(history.history['val_mae'], label='val')
-            plt.title('Mean Average Error') 
-        plt.legend(loc='lower right')
-        fig.savefig(os.path.join(path_to_output,'training_stats.pdf'),bbox_inches='tight')
-
-    # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
-    # print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
-    # print("Training accuracy: {:5.3f}".format(history.history['accuracy'][-1]))
-    # print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
-    # print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
-
-    # print("\nTest accuracy: {:5.3f}".format(test_acc))
     
     model_outpath = os.path.join(path_to_output, model_name)
     model.save( model_outpath )
@@ -378,11 +299,13 @@ def iucnn_train(dataset,
                 act_f_out,
                 model_outpath,
                 
+                np.array(tf.math.confusion_matrix(test_labels,test_predictions)),
+                
                 {"data":train_set,
-                 "labels":train_labels,
+                 "labels":train_labels.flatten(),
                  "label_dict":np.unique(labels).astype(str),
                  "test_data":test_set,
-                 "test_labels":test_labels,
+                 "test_labels":test_labels.flatten(),
                  "id_data":train_instance_names,
                  "id_test_data":test_instance_names,
                  "file_name":model_name,
@@ -392,5 +315,77 @@ def iucnn_train(dataset,
     
     return output
 
+
+
+
+    # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
+    # print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
+    # print("Training accuracy: {:5.3f}".format(history.history['accuracy'][-1]))
+    # print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
+    # print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
+
+    # print("\nTest accuracy: {:5.3f}".format(test_acc))
+
+
 #plt.scatter(train_labels_scaled,model.predict(train_set).flatten())
+
+#import matplotlib.pyplot as plt
+#import matplotlib.gridspec as gridspec
+
+    # if plot_labels_against_features:    
+    #     # define figure dimensions
+    #     n_features = train_set.shape[1]
+    #     n_cols = 4
+    #     n_rows = int(n_features/n_cols)+1
+    #     fig = plt.figure(figsize=(n_cols*2, n_rows*2))
+    #     # specify grid
+    #     grid = gridspec.GridSpec(n_rows, n_cols, wspace=0.2, hspace=0.2)
+    #     for i,feature in enumerate(train_set.T):
+    #         fig.add_subplot(grid[i])
+    #         plt.scatter(feature,train_labels,c='black',ec=None,s=10)
+    #         plt.scatter(feature,train_predictions,c='red',ec=None,s=10,alpha=0.5)
+    #         if rescale_features:
+    #             plt.xlim(-0.04,1.04)
+    #     fig.savefig(os.path.join(path_to_output,'predicted_labels_by_feature.png'),bbox_inches='tight', dpi = 200)
+    #     plt.close()
+    
+    # if plot_training_stats:
+    #     fig = plt.figure()
+    #     if mode == 'nn-class':            
+    #         grid = gridspec.GridSpec(2, 1, wspace=0.2, hspace=0.4)
+    #         fig.add_subplot(grid[0])
+    #         if patience == 0:
+    #             acc_at_best_epoch = history_fit.history["val_accuracy"][stopping_point]
+    #             plt.plot(history_fit.history['accuracy'],label='train')
+    #             plt.plot(history_fit.history['val_accuracy'], label='val')
+    #             plt.axvline(stopping_point,linestyle='--',color='red')
+    #             plt.axhline(acc_at_best_epoch,linestyle='--',color='red')
+    #         else:
+    #             plt.plot(history.history['accuracy'],label='train')
+    #             plt.plot(history.history['val_accuracy'], label='val')
+    #         plt.title('Accuracy')
+    #         fig.add_subplot(grid[1])
+    #         if patience == 0:
+    #             loss_at_best_epoch = history_fit.history["val_loss"][stopping_point]
+    #             plt.plot(history_fit.history['loss'],label='train')
+    #             plt.plot(history_fit.history['val_loss'], label='val')
+    #             plt.axvline(stopping_point,linestyle='--',color='red')
+    #             plt.axhline(loss_at_best_epoch,linestyle='--',color='red')
+    #         else:
+    #             plt.plot(history.history['loss'],label='train')
+    #             plt.plot(history.history['val_loss'], label='val')                
+    #         plt.title('Loss')                
+    #     elif mode == 'nn-reg':
+    #         if patience == 0:
+    #             mae_at_best_epoch = history_fit.history["val_mae"][stopping_point]
+    #             plt.plot(history_fit.history['mae'],label='train')
+    #             plt.plot(history_fit.history['val_mae'], label='val')
+    #             plt.axvline(stopping_point,linestyle='--',color='red')
+    #             plt.axhline(mae_at_best_epoch,linestyle='--',color='red')
+    #         else:
+    #             plt.plot(history.history['mae'],label='train')
+    #             plt.plot(history.history['val_mae'], label='val')
+    #         plt.title('Mean Average Error') 
+    #     plt.legend(loc='lower right')
+    #     fig.savefig(os.path.join(path_to_output,'training_stats.pdf'),bbox_inches='tight')
 

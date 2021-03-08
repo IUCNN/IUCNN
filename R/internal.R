@@ -1,3 +1,4 @@
+#' @import reticulate
 
 get_footp <- function(x, file_path){
   test <- file.exists(file.path(file_path, paste("HFP", x, ".tif", sep = "")))

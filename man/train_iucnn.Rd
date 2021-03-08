@@ -22,9 +22,7 @@ train_iucnn(
   randomize_instances = TRUE,
   mode = "nn-class",
   rescale_features = FALSE,
-  return_categorical = FALSE,
-  plot_training_stats = TRUE,
-  plot_labels_against_features = FALSE
+  return_categorical = FALSE
 )
 }
 \arguments{
