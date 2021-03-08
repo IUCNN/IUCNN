@@ -6,9 +6,8 @@
 \usage{
 feature_importance(
   iucnn_model,
-  n_permutations = 100,
-  predictions_outdir = "",
   feature_blocks = list(),
+  n_permutations = 100,
   provide_indices = FALSE,
   verbose = FALSE,
   unlink_features_within_block = TRUE
@@ -17,17 +16,14 @@ feature_importance(
 \arguments{
 \item{iucnn_model}{iucnn_model object, as produced as output when running \code{\link{train_iucnn}}}
 
-\item{n_permutations}{an integer. Defines how many iterations of shuffling feature values and
-predicting the resulting accuracy are being executed. The mean and standard deviation of the
-delta accuracy are being summarized from these permutations.}
-
-\item{predictions_outdir}{a character string. The path to the output folder where feature importance
-dataframe will be stored.}
-
 \item{feature_blocks}{a list. Default behaviour is to group the features into geographic, climatic,
 biome, and human footprint features. Provide custom list of feature names or indices to define other
 feature blocks, e.g. \code{feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8))}. If feature
 indices are provided as in this example, turn provide_indices flag to TRUE.}
+
+\item{n_permutations}{an integer. Defines how many iterations of shuffling feature values and
+predicting the resulting accuracy are being executed. The mean and standard deviation of the
+delta accuracy are being summarized from these permutations.}
 
 \item{provide_indices}{logical. Set to TRUE if custom \code{feature_blocks} are provided as indices. Default is FALSE.}
 

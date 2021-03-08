@@ -7,8 +7,6 @@ Created on Fri Mar  5 17:25:09 2021
 """
 
 import numpy as np
-import pandas as pd
-import os
 import tensorflow as tf
 
 def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels):
@@ -43,7 +41,6 @@ def feature_importance_nn( input_features,
                            verbose,
                            n_permutations,
                            feature_blocks,
-                           predictions_outdir,
                            unlink_features_within_block):
 
 
@@ -105,23 +102,28 @@ def feature_importance_nn( input_features,
     delta_accs_stds = np.std(delta_accs,axis=1)
     accuracies_wo_feature_means = np.mean(accuracies_wo_feature,axis=1)
     accuracies_wo_feature_stds = np.std(accuracies_wo_feature,axis=1)
-    feature_importance_df = pd.DataFrame(np.array([np.arange(0,len(selected_features)),feature_block_names,
-                                                   delta_accs_means,delta_accs_stds,
-                                                   accuracies_wo_feature_means,accuracies_wo_feature_stds]).T,
-                                         columns=['feature_block_index','feature_name','delta_acc_mean','delta_acc_std',
-                                                  'acc_with_feature_randomized_mean','acc_with_feature_randomized_std'])
-    feature_importance_df.iloc[:,2:] = feature_importance_df.iloc[:,2:].astype(float)
-    feature_importance_df_sorted = feature_importance_df.sort_values('delta_acc_mean',ascending=False)
-    # define outfile name
-    if predictions_outdir == "":
-        predictions_outdir = os.path.dirname(model_dir)
-    if not os.path.exists(predictions_outdir) and predictions_outdir != "":
-        os.makedirs(predictions_outdir)
-    fname_stem = os.path.basename(model_dir)
-    feature_importance_df_filename = os.path.join(predictions_outdir, fname_stem + '_feature_importance.txt')
+    d = dict(zip(feature_block_names,zip(delta_accs_means,delta_accs_stds,accuracies_wo_feature_means,accuracies_wo_feature_stds)))
+    feature_importance_sorted = dict(sorted(d.items(), key=lambda item: item[1],reverse=True))
+    
+    
+    # feature_importance_df = pd.DataFrame(np.array([np.arange(0,len(selected_features)),feature_block_names,
+    #                                                delta_accs_means,delta_accs_stds,
+    #                                                accuracies_wo_feature_means,accuracies_wo_feature_stds]).T,
+    #                                      columns=['feature_block_index','feature_name','delta_acc_mean','delta_acc_std',
+    #                                               'acc_with_feature_randomized_mean','acc_with_feature_randomized_std'])
+    # feature_importance_df.iloc[:,2:] = feature_importance_df.iloc[:,2:].astype(float)
+    # feature_importance_df_sorted = feature_importance_df.sort_values('delta_acc_mean',ascending=False)
+    # feature_importance_df_sorted['delta_acc_mean'] = pd.to_numeric(feature_importance_df_sorted['delta_acc_mean'])
+    # feature_importance_df_sorted['acc_with_feature_randomized_mean'] = pd.to_numeric(feature_importance_df_sorted['acc_with_feature_randomized_mean'])    
+    # # define outfile name
+    # if predictions_outdir == "":
+    #     predictions_outdir = os.path.dirname(model_dir)
+    # if not os.path.exists(predictions_outdir) and predictions_outdir != "":
+    #     os.makedirs(predictions_outdir)
+    # fname_stem = os.path.basename(model_dir)
+    # feature_importance_df_filename = os.path.join(predictions_outdir, fname_stem + '_feature_importance.txt')
     # format the last two columns as numeric for applyign float printing formatting options
-    feature_importance_df_sorted['delta_acc_mean'] = pd.to_numeric(feature_importance_df_sorted['delta_acc_mean'])
-    feature_importance_df_sorted['acc_with_feature_randomized_mean'] = pd.to_numeric(feature_importance_df_sorted['acc_with_feature_randomized_mean'])
-    feature_importance_df_sorted.to_csv(feature_importance_df_filename,sep='\t',index=False,header=True,float_format='%.6f')
-    print("Output saved in: %s" % feature_importance_df_filename)
-    return feature_importance_df_sorted
+    # feature_importance_df_sorted.to_csv(feature_importance_df_filename,sep='\t',index=False,header=True,float_format='%.6f')
+    # print("Output saved in: %s" % feature_importance_df_filename)
+
+    return feature_importance_sorted

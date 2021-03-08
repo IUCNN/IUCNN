@@ -14,15 +14,13 @@
 #' feature blocks can be manually defined using the feature_blocks argument.
 #'
 #'@param iucnn_model iucnn_model object, as produced as output when running \code{\link{train_iucnn}}
-#'@param n_permutations an integer. Defines how many iterations of shuffling feature values and
-#'predicting the resulting accuracy are being executed. The mean and standard deviation of the
-#'delta accuracy are being summarized from these permutations.
-#'@param predictions_outdir a character string. The path to the output folder where feature importance
-#'dataframe will be stored.
 #'@param feature_blocks a list. Default behaviour is to group the features into geographic, climatic,
 #'biome, and human footprint features. Provide custom list of feature names or indices to define other
 #'feature blocks, e.g. \code{feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8))}. If feature
 #'indices are provided as in this example, turn provide_indices flag to TRUE.
+#'@param n_permutations an integer. Defines how many iterations of shuffling feature values and
+#'predicting the resulting accuracy are being executed. The mean and standard deviation of the
+#'delta accuracy are being summarized from these permutations.
 #'@param provide_indices logical. Set to TRUE if custom \code{feature_blocks} are provided as indices. Default is FALSE.
 #'@param verbose logical. Set to TRUE to print screen output while calculating feature importance. Default is FALSE.
 #'@param unlink_features_within_block logical. If TRUE, the features within each defined block arre shuffled independently.
@@ -55,16 +53,14 @@
 #' @importFrom checkmate assert_class assert_numeric assert_character assert_logical
 
 feature_importance <- function(iucnn_model,
-                               n_permutations=100,
-                               predictions_outdir ='',
                                feature_blocks = list(),
+                               n_permutations=100,
                                provide_indices = FALSE,
                                verbose = FALSE,
                                unlink_features_within_block = TRUE){
   # assertions
   assert_class(iucnn_model, "iucnn_model")
   assert_numeric(n_permutations)
-  assert_character(predictions_outdir)
   assert_logical(verbose)
   assert_class(feature_blocks, "list")
   assert_logical(provide_indices)
@@ -125,10 +121,10 @@ feature_importance <- function(iucnn_model,
                                                    fname_stem = iucnn_model$input_data$file_name,
                                                    feature_names = iucnn_model$input_data$feature_names,
                                                    n_permutations = as.integer(n_permutations),
-                                                   predictions_outdir = predictions_outdir,
+                                                   write_to_file = FALSE,
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
-
+    selected_cols = feature_importance_out[,2:4]
   }else{
     reticulate::source_python(system.file("python", "IUCNN_feature_importance.py", package = "IUCNN"))
     feature_importance_out = feature_importance_nn(input_features = iucnn_model$input_data$test_data,
@@ -142,8 +138,11 @@ feature_importance <- function(iucnn_model,
                                                    verbose=verbose,
                                                    n_permutations = as.integer(n_permutations),
                                                    feature_blocks = feature_block_indices,
-                                                   predictions_outdir = predictions_outdir,
                                                    unlink_features_within_block = unlink_features_within_block)
+    d = data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE))
+    d['feature_block'] = names(feature_importance_out)
+    selected_cols = d[c('feature_block','X1','X2')]
   }
-  return(feature_importance_out)
+  names(selected_cols) = c('feature_block','feat_imp_mean','feat_imp_std')
+  return(selected_cols)
 }
