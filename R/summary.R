@@ -16,7 +16,7 @@ cat(sprintf("Label detail: %s Classes (%s)\n\n",
               ifelse(length(x$input_data$label_dict) > 2, "detailed", "Threatened/Not Threatened")))
 
 
-cat("Confusion matrix:\n\n")
+cat("Confusion matrix (rows test data and columns predicted):\n\n")
 
 cm <- data.frame(x$confusion_matrix,
                  row.names = x$input_data$lookup.labels)
@@ -25,4 +25,3 @@ names(cm) <- x$input_data$lookup.labels
 
 print(cm)
 }
-
