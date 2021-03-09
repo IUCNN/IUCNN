@@ -3,7 +3,7 @@
 language: R
 cache: packages
 env:
- - CODECOV_TOKEN='4dea778a-b555-43b5-a8c0-971e75a4c26b'
+  - CODECOV_TOKEN='4dea778a-b555-43b5-a8c0-971e75a4c26b'
 
 before_install:
   - pip install --progress-bar off --user numpy tensorflow
