@@ -2,12 +2,19 @@
 
 language: R
 cache: packages
+
+r_packages: covr
+
 env:
-  - CODECOV_TOKEN='4dea778a-b555-43b5-a8c0-971e75a4c26b'
+   global:
+     - CODECOV_TOKEN='4dea778a-b555-43b5-a8c0-971e75a4c26b'
 
 before_install:
   - pip install --progress-bar off --user numpy tensorflow
   - sudo apt-get install gdal-bin proj-bin libgdal-dev libproj-dev
+
+after_success:
+- Rscript -e 'library(covr); codecov()'
 
 addons:
   apt:
@@ -18,9 +25,3 @@ addons:
       - proj-data
       - proj-bin
       - libgeos-dev
-
-r_packages:
-  - covr
-
-after_success:
-  - Rscript -e 'library(covr); codecov()'
