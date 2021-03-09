@@ -100,7 +100,7 @@ The following code is used to set up and train a neural network model with 3 hid
 
 ```{r}
 res_1 <- train_iucnn(x = features_train,
-                     labels = labels_train, 
+                     lab = labels_train, 
                      model_name = "iucnn_model_1",
                      seed = 1234,
                      validation_split = 0.1,
@@ -117,7 +117,7 @@ We then set up a different model with 1 hidden layer of 60 nodes, and a sigmoida
 
 ```{r}
 res_2 <- train_iucnn(x = features_train,
-                   labels = labels_train, 
+                   lab = labels_train, 
                    model_name = "iucnn_model_2",
                    seed = 1234,
                    validation_split = 0.1,
@@ -149,7 +149,7 @@ You will see that the output dataframe `labels_train` now contains an extra colu
 
 ```{r, eval = FALSE}
 res_3 <- train_iucnn(x = features_train,
-                     labels = labels_train, 
+                     lab = labels_train, 
                      model_name = "iucnn_model_3",
                      seed = 1234,
                      validation_split = 0.1,
