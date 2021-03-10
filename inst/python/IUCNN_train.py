@@ -198,6 +198,7 @@ def iucnn_train(dataset,
 
     # determine stopping point
     if patience == 0:
+        tf.random.set_seed(seed)
         # determining optimal number of epochs
         model = model_init(mode)
         #model.summary()
@@ -205,17 +206,9 @@ def iucnn_train(dataset,
                                 labels_for_training, 
                                 epochs=max_epochs,
                                 validation_split=validation_split, 
-                                verbose=verbose)
-        stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
-        # train model
-        model = model_init(mode)
-        model.summary()
-        history = model.fit(train_set, 
-                            labels_for_training, 
-                            epochs=stopping_point,
-                            validation_split=validation_split, 
-                            verbose=verbose)        
+                                verbose=verbose)    
     else:
+        tf.random.set_seed(seed)
         # train model
         model = model_init(mode)
         model.summary()
@@ -227,15 +220,16 @@ def iucnn_train(dataset,
                             validation_split=validation_split, 
                             verbose=verbose,
                             callbacks=[early_stop])
-        stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
-        # train model
-        model = model_init(mode)
-        model.summary()
-        history = model.fit(train_set, 
-                            labels_for_training, 
-                            epochs=stopping_point,
-                            validation_split=validation_split, 
-                            verbose=verbose)        
+    stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
+    # train model
+    tf.random.set_seed(seed)
+    model = model_init(mode)
+    model.summary()
+    history = model.fit(train_set, 
+                        labels_for_training, 
+                        epochs=stopping_point,
+                        validation_split=validation_split, 
+                        verbose=verbose)        
             
     if mode == 'nn-class':
         test_loss, test_acc = model.evaluate(test_set, 

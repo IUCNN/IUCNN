@@ -14,7 +14,7 @@ train_iucnn(
   seed = 1234,
   max_epochs = 1000,
   n_layers = c(60, 60, 20),
-  use_bias = 1,
+  use_bias = TRUE,
   act_f = "relu",
   act_f_out = "auto",
   label_stretch_factor = 1,

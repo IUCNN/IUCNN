@@ -77,7 +77,7 @@ train_iucnn <- function(x,
                         seed = 1234,
                         max_epochs = 1000,
                         n_layers = c(60,60,20),
-                        use_bias = 1,
+                        use_bias = TRUE,
                         act_f = "relu",
                         act_f_out = "auto",
                         label_stretch_factor = 1.0,
@@ -97,7 +97,7 @@ train_iucnn <- function(x,
   assert_numeric(seed)
   assert_numeric(max_epochs)
   assert_numeric(n_layers)
-  assert_numeric(use_bias)
+  assert_logical(use_bias)
   assert_character(act_f)
   assert_character(act_f_out)
   assert_numeric(label_stretch_factor, lower = 0, upper = 1)
@@ -183,17 +183,16 @@ train_iucnn <- function(x,
     )
 
     # define number of layers and nodes per layer for BNN
-    n_nodes_list = c(5,5) # 2 hidden layers with 5 nodes each
     # define the BNN model
     bnn_model = create_BNN_model(bnn_data,
-                                 n_nodes_list,
+                                 n_layers,
                                  actfun = act_f_out,
                                  seed=1234
     )
 
     # set up the MCMC environment
-    update_frequencies = c(0.05, 0.05, 0.07)
-    update_window_sizes = c(0.075, 0.075, 0.075)
+    update_frequencies = rep(0.05,length(n_layers)+1)
+    update_window_sizes = rep(0.075,length(n_layers)+1)
     mcmc_object = MCMC_setup(bnn_model,
                              update_frequencies,
                              update_window_sizes,
@@ -259,6 +258,8 @@ train_iucnn <- function(x,
 
     #write.table(as.matrix(dataset),'manual_tests/features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
     #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+    #write.table(as.matrix(instance_names),'manual_tests/instance_names_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
+    #write.table(names(dataset),'manual_tests/feature_names_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
 
     # run model via python script
     res = iucnn_train(dataset = as.matrix(dataset),
@@ -336,6 +337,9 @@ train_iucnn <- function(x,
 
   named_res$training_accuracy_history <- training_accuracy_history
   named_res$validation_accuracy_history <- validation_accuracy_history
+
+  named_res$training_mae_history <- training_mae_history
+  named_res$validation_mae_history <- validation_mae_history
 
   named_res$training_loss <- training_loss
   named_res$validation_loss <- validation_loss
