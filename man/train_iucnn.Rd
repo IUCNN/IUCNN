@@ -22,6 +22,7 @@ train_iucnn(
   randomize_instances = TRUE,
   mode = "nn-class",
   dropout_rate = 0,
+  label_noise_factor = 0,
   rescale_features = FALSE,
   return_categorical = FALSE
 )
