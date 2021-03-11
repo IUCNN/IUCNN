@@ -21,6 +21,7 @@ train_iucnn(
   patience = 200,
   randomize_instances = TRUE,
   mode = "nn-class",
+  dropout_rate = 0,
   rescale_features = FALSE,
   return_categorical = FALSE
 )

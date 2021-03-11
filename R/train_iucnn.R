@@ -84,6 +84,7 @@ train_iucnn <- function(x,
                         patience = 200,
                         randomize_instances = TRUE,
                         mode='nn-class',
+                        dropout_rate = 0.0,
                         rescale_features = FALSE,
                         return_categorical = FALSE){
 
@@ -104,6 +105,7 @@ train_iucnn <- function(x,
   assert_numeric(patience)
   assert_logical(randomize_instances)
   assert_character(mode)
+  assert_numeric(dropout_rate, lower = 0, upper = 1)
   assert_logical(rescale_features)
   assert_logical(return_categorical)
 
@@ -281,7 +283,9 @@ train_iucnn <- function(x,
                       stretch_factor_rescaled_labels = label_stretch_factor,
                       patience = patience,
                       randomize_instances = as.integer(randomize_instances),
-                      rescale_features = rescale_features
+                      rescale_features = rescale_features,
+                      dropout_rate = dropout_rate,
+                      dropout_reps = 100
     )
 
     test_labels = as.vector(res[[1]])
