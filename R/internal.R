@@ -156,7 +156,7 @@ calculate_accuracy <- function(bnn_data,
                                logger,
                                bnn_model,
                                data = 'test',
-                               post_summary_mode=0){
+                               post_summary_mode=1){
 
   # source python function
   bn <- import("np_bnn")
@@ -183,8 +183,9 @@ calculate_accuracy <- function(bnn_data,
 bnn_predict <- function(features,
                         instance_id,
                         model_path,
+                        target_acc,
                         filename,
-                        post_summary_mode=0){
+                        post_summary_mode=1){
 
   # source python function
   bn <- import("np_bnn")
@@ -194,6 +195,7 @@ bnn_predict <- function(features,
                           pickle_file = model_path,
                           instance_id = instance_id,
                           fname = filename,
+                          target_acc = target_acc,
                           post_summary_mode = post_summary_mode
   )
 

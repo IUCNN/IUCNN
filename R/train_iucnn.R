@@ -107,7 +107,7 @@ train_iucnn <- function(x,
   assert_logical(randomize_instances)
   assert_character(mode)
   assert_numeric(dropout_rate, lower = 0, upper = 1)
-  #assert_numeric(label_noise_factor, lower = 0, upper = 1)
+  assert_numeric(label_noise_factor, lower = 0, upper = 1)
   assert_logical(rescale_features)
   assert_logical(return_categorical)
 
@@ -170,6 +170,13 @@ train_iucnn <- function(x,
       act_f_out = 'softmax'
     }
   }
+
+  if (dropout_rate > 0.0){
+    dropout_boolean = TRUE
+  }else{
+    dropout_boolean = FALSE
+  }
+
 
   if (mode=='bnn-class'){
     # in the current npbnn function we need to add a dummy column of instance names
@@ -338,6 +345,7 @@ train_iucnn <- function(x,
   named_res$trained_model_path <- trained_model_path
 
   named_res$model <- mode
+  named_res$dropout <- dropout_boolean
 
   named_res$training_loss_history <- training_loss_history
   named_res$validation_loss_history <- validation_loss_history

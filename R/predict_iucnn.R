@@ -55,6 +55,7 @@
 
 predict_iucnn <- function(x,
                           model,
+                          target_acc = 0.0,
                           model_dir = "iuc_nn_model",
                           verbose = 0,
                           return_raw = FALSE){
@@ -87,15 +88,19 @@ predict_iucnn <- function(x,
     postpr = bnn_predict( features = as.matrix(tmp),
                           instance_id = as.matrix(instance_id),
                           model_path = model$trained_model_path,
+                          target_acc = target_acc,
                           filename = 'prediction',
-                          post_summary_mode=0
+                          post_summary_mode=1
                           )
 
     if (return_raw==TRUE){
-      return(postpr)
+      return(postpr$post_prob_predictions)
     }else{
-      test_predictions = apply(postpr$post_prob_predictions,1,which.max)-1
-      return(test_predictions)
+      not_nan_boolean = complete.cases(postpr$post_prob_predictions)
+      predictions_tmp = apply(postpr$post_prob_predictions[not_nan_boolean,],1,which.max)-1
+      predictions = rep(NA, dim(postpr$post_prob_predictions)[1])
+      predictions[not_nan_boolean] = predictions_tmp
+      return(predictions)
     }
 
 
@@ -104,14 +109,29 @@ predict_iucnn <- function(x,
     out <- iucnn_predict(feature_set = as.matrix(tmp),
                          model_dir = model$trained_model_path,
                          verbose = verbose,
-                         return_raw = return_raw,
                          iucnn_mode = model$model,
+                         dropout = model$dropout,
+                         dropout_reps = 100,
+                         target_acc = target_acc,
+                         test_data = model$input_data$test_data,
+                         test_labels = model$input_data$test_labels,
                          rescale_labels_boolean = model$rescale_labels_boolean,
                          rescale_factor = model$label_rescaling_factor,
                          min_max_label = model$min_max_label_rescaled,
                          stretch_factor_rescaled_labels = model$label_stretch_factor)
-
-    return(out[[1]])
+    if (return_raw==TRUE){
+      return(out)
+    }else{
+      if (model$model == 'nn-reg'){
+        predictions = round(out)
+      }else{
+        not_nan_boolean = complete.cases(out)
+        predictions_tmp = apply(out[not_nan_boolean,],1,which.max)-1
+        predictions = rep(NA, dim(out)[1])
+        predictions[not_nan_boolean] = predictions_tmp
+      }
+      return(predictions)
+    }
   }
 
 

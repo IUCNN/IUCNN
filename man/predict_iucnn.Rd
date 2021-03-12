@@ -7,6 +7,7 @@
 predict_iucnn(
   x,
   model,
+  target_acc = 0,
   model_dir = "iuc_nn_model",
   verbose = 0,
   return_raw = FALSE
