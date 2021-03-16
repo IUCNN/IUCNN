@@ -23,10 +23,8 @@ test_that("nn-class detailed works", {
                      model = m,
                      model_dir = "iuc_nn_model")
 
-  expect_equal(length(m), 22)
-  expect_s3_class(m, "iucnn-model")
-
-  expect_true(all(p <5))
+  expect_equal(length(m), 25)
+  expect_s3_class(m, "iucnn_model")
 })
 
 test_that("nn-class broad works", {
@@ -53,8 +51,8 @@ test_that("nn-class broad works", {
                      model = m,
                      model_dir = "iuc_nn_model")
 
-  expect_equal(length(m), 22)
-  expect_s3_class(m, "iucnn-model")
+  expect_equal(length(m), 25)
+  expect_s3_class(m, "iucnn_model")
 })
 
 

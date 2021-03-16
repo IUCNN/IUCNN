@@ -17,11 +17,21 @@ cat(sprintf("Validation accuracy: %s\n\n",
             round(object$validation_accuracy, 3)))
 
 cat(sprintf("Label detail: %s Classes (%s)\n\n",
-              length(object$input_data$label_dict),
-              ifelse(length(object$input_data$label_dict) > 2, "detailed", "Threatened/Not Threatened")))
+            length(object$input_data$label_dict),
+            ifelse(length(object$input_data$label_dict) > 2, "detailed", "Threatened/Not Threatened")))
 
+cat("Label representation\n")
 
-cat("Confusion matrix (rows test data and columns predicted):\n\n")
+tel <- data.frame(table(object$test_labels))
+trl <- data.frame(table(object$input_data$labels))
+lab <- merge(trl,tel, by = "Var1")
+
+names(lab) <- c("Label", "Input_freq", "Test_freq")
+
+print(lab)
+cat("\n")
+
+cat("Confusion matrix (rows test data and columns predicted):\n")
 
 cm <- data.frame(object$confusion_matrix,
                  row.names = object$input_data$lookup.labels)

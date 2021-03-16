@@ -144,7 +144,7 @@ feature_importance <- function(x,
                                                    n_permutations = as.integer(n_permutations),
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
-    d = data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE))
+    d = round(data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE)), 3)
     d['feature_block'] = names(feature_importance_out)
     selected_cols = d[c('feature_block','X1','X2')]
   }
