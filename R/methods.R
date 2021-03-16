@@ -7,9 +7,14 @@ cat(sprintf("A model of type %s, trained on %s species and %s features.\n\n",
               length(object$input_data$id_data),
               length(object$input_data$feature_names)))
 
-cat(sprintf("Training accuracy: %s, test-accuracy: %s\n\n",
-              round(object$training_accuracy, 3),
-              round(object$test_accuracy, 3)))
+cat(sprintf("Training accuracy: %s\n",
+            round(object$training_accuracy, 3)))
+
+cat(sprintf("Test accuracy: %s\n",
+            round(object$test_accuracy, 3)))
+
+cat(sprintf("Validation accuracy: %s\n\n",
+            round(object$validation_accuracy, 3)))
 
 cat(sprintf("Label detail: %s Classes (%s)\n\n",
               length(object$input_data$label_dict),
