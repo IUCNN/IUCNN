@@ -191,7 +191,6 @@ It is important to remember the following points when using IUCNN:
 
 
 # Prepare features individually
-
 ```{r, eval = TRUE, results='hide'}
 # prepare features for training data
 # invisible(geo <- geo_features(training_occ)) #geographic

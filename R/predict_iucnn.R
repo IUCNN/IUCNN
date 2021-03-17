@@ -67,6 +67,20 @@ predict_iucnn <- function(x,
   assert_class(x, classes = "data.frame")
 
   message("Preparing input data")
+
+  # check that the same features are in training and prediction
+  test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
+    if(!test1){
+    mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
+    stop("Feature mismatch, missing in training features: \n", paste0(mis, collapse = ", "))
+  }
+
+  test2 <- all(model$input_data$feature_names %in% names(x))
+  if(!test2){
+    mis <- model$input_data$feature_names[!model$input_data$feature_names %in% names(x)]
+    stop("Feature mismatch, missing in prediction features: \n", paste0(mis, collapse = ", "))
+  }
+
   # complete cases only
   tmp.in <- x[complete.cases(x),]
 

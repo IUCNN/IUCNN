@@ -66,6 +66,7 @@ features_predict <- prep_features(prediction_occ)
 predict_iucnn(x = features_predict,
               model = m1,
               model_dir = "iuc_nn_model")
+
 ```
 
 # Citation

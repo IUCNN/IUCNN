@@ -24,7 +24,8 @@ train_iucnn(
   dropout_rate = 0,
   label_noise_factor = 0,
   rescale_features = FALSE,
-  return_categorical = FALSE
+  return_categorical = FALSE,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -59,6 +60,8 @@ the number of unique labels in the training set.}
 Available options are: "relu" (default), "tanh", "sigmoid"}
 
 \item{patience}{integer. Number of epochs with no improvement after which training will be stopped.}
+
+\item{overwrite}{logical. If TRUE existing models are overwritten. Default is to FALSE,}
 }
 \value{
 a folder in the working directory (or as specified with path_to_output) with the trained model,
