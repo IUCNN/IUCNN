@@ -23,9 +23,9 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{lat}{a character string. The name of the column with the latitude.}
 
 \item{type}{character. The type of features to calculate. Possible options are
-\dquote{geographic}, \dquote{biome}, \dquote{climate}, \dquote{umanfootprint}, \dquote{bias}.
+\dQuote{geographic}, \dQuote{biome}, \dQuote{climate}, \dQuote{umanfootprint}, \dQuote{bias}.
 All except bias are the default.
-"\dquote{bias} is only recommended up to the regional scale or below.}
+"\dQuote{bias} is only recommended up to the regional scale or below.}
 }
 \value{
 a data.frame of bias features

@@ -84,6 +84,9 @@ features_predict <- prep_features(prediction_occ)
 
 ```
 
+Default features and rationale for including them:
+| Feature | Block | Rationale |
+
 ## Label preparation
 IUCNN expects the labels for training as numerical categories. So, to use IUCN Red List categories, those need to be converted to numeric in the right way. This can be done using the `prepare_labels` function. The function can use with detailed categories or with broader threatened not threatened categories. See `?prepare_labels` for more information. The labels will be converted into numeric categories following the `accepted_labels` argument, so for instance, in the default case: CR -> 0 and LC -> 4. If you change the accepted labels, the match will change accordingly.
 
@@ -226,3 +229,5 @@ There is also a function to generate bias features, but this is only recommended
 # Feature importance
 
 # Detailed vs broad labels
+
+# How to chose the training data

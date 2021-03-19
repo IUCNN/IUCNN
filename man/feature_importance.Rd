@@ -16,7 +16,7 @@ feature_importance(
 \arguments{
 \item{x}{iucnn_model object, as produced as output when running \code{\link{train_iucnn}}}
 
-\item{feature_blocks}{a list. Default behavior is to group the features into geographic, climatic,
+\item{feature_blocks}{a list. Default behaviour is to group the features into geographic, climatic,
 biome, and human footprint features. Provide custom list of feature names or indices to define other
 feature blocks, e.g. \code{feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8))}. If feature
 indices are provided as in this example, turn provide_indices flag to TRUE.}
