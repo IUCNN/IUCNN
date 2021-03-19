@@ -81,11 +81,13 @@ prep_labels <- function(x,
     lookup <- data.frame(IUCN = accepted_labels,
                          lab.num.z = seq(0, (length(accepted_labels)-1)))
 
-    names(lookup) <- c("labels", "lab.num.z")
+    names(lookup) <- c(labels, "lab.num.z")
 
     out <- out %>%
       left_join(lookup, by = labels)
-    }
+  }
+
+  names(lookup) <- c("labels", "lab.num.z")
 
   out <- out %>%
     dplyr::select(species = .data[[species]], labels = .data$lab.num.z)
