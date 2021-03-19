@@ -14,7 +14,7 @@
 #' feature blocks can be manually defined using the feature_blocks argument.
 #'
 #'@param x iucnn_model object, as produced as output when running \code{\link{train_iucnn}}
-#'@param feature_blocks a list. Default behavior is to group the features into geographic, climatic,
+#'@param feature_blocks a list. Default behaviour is to group the features into geographic, climatic,
 #'biome, and human footprint features. Provide custom list of feature names or indices to define other
 #'feature blocks, e.g. \code{feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8))}. If feature
 #'indices are provided as in this example, turn provide_indices flag to TRUE.
@@ -74,12 +74,17 @@ feature_importance <- function(x,
   #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
   if (length(feature_blocks) == 0){
     ffb <- list(
-      geographic = c("tot_occ","uni_occ","mean_lat","mean_lon","lat_range","lon_range","lat_hemisphere","eoo","aoo"),
-      human_footprint = c("humanfootprint_1993_1","humanfootprint_1993_2","humanfootprint_1993_3","humanfootprint_1993_4",
-                          "humanfootprint_2009_1","humanfootprint_2009_2","humanfootprint_2009_3","humanfootprint_2009_4"),
+      geographic = c("tot_occ","uni_occ","mean_lat","mean_lon","lat_range",
+                     "lon_range","lat_hemisphere","eoo","aoo"),
+      human_footprint = c("humanfootprint_1993_1","humanfootprint_1993_2",
+                          "humanfootprint_1993_3","humanfootprint_1993_4",
+                          "humanfootprint_2009_1","humanfootprint_2009_2",
+                          "humanfootprint_2009_3","humanfootprint_2009_4"),
       climate = c("bio1","bio4","bio11","bio12","bio15","bio17","range_bio1",
-                  "range_bio4","range_bio11","range_bio12","range_bio15","range_bio17"),
-      biomes = c("1","2","7","10","13","3","4","5","6","11","98","8","12","9","14","99")
+                  "range_bio4","range_bio11","range_bio12",
+                  "range_bio15","range_bio17"),
+      biomes = c("1","2","7","10","13","3","4","5",
+                 "6","11","98","8","12","9","14","99")
     )
 
   }else{
