@@ -201,3 +201,18 @@ bnn_predict <- function(features,
 
   return(post_pr)
 }
+
+subsample_n_per_class <- function(features,
+                                  labels,
+                                  n_samples){
+  # select same of each class
+  a = sample(which(labels$labels$labels==0),n_samples)
+  a = append(a,sample(which(labels$labels$labels==1),n_samples))
+  a = append(a,sample(which(labels$labels$labels==2),n_samples))
+  a = append(a,sample(which(labels$labels$labels==3),n_samples))
+  a = append(a,sample(which(labels$labels$labels==4),n_samples))
+  labels$labels = labels$labels[a,]
+  target_sp = labels$labels$species
+  features = features[match(target_sp,features$species),]
+  return(list(features, labels))
+}

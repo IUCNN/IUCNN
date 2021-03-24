@@ -285,7 +285,7 @@ def iucnn_train(dataset,
         val_mae_history = np.nan
 
     elif mode == 'nn-reg':
-        test_acc,test_predictions,test_predictions_raw,test_predictions_raw_std = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps,return_std=True)
+        test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
         train_loss = history.history['loss'][-1]
         test_loss = np.nan
         train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
