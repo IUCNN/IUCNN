@@ -16,6 +16,8 @@
 #'@param path_to_output character string. The path to the location
 #'where the IUCNN model shall be saved
 #'@param model_name character string. The name used to save the trained model.
+#'@param mode character string. Choose between the IUCNN models "nn-class" (default, tensorflow neural network classifier),
+#' "nn-reg" (tensorflow neural network regression), or "bnn-class" (Bayesian neural network classifier)
 #'@param validation_split numeric. The fraction of the input data used as validation set.
 #'@param test_fraction numeric. The fraction of the input data used as test set.
 #'@param seed reset the python random seed.
@@ -25,9 +27,21 @@
 #'layers. For example, n_layers = c(60, 10) defines a model with two hidden layers with 60 and 10 nodes
 #' respectively. Note that the number of nodes in the output layer is automatically determined based on
 #'the number of unique labels in the training set.
-#'@param use_bias integer (1/0). Specifies if a bias node is used in the first hidden layer.
+#'@param use_bias logical. Specifies if a bias node is used in the first hidden layer (default=TRUE).
 #'@param act_f character string. Specifies the activation function should be used in the hidden layers.
 #'Available options are: "relu" (default), "tanh", "sigmoid"
+#'@param act_f_out character string. Similar to act_f, this specifies the activation function for the output
+#' layer. When setting to "auto" (default), a suitable output activation function will be chosen based on the
+#' chosen mode. Other valid options are "softmax" (nn-class), "tanh" (nn-reg), "sigmoid" (nn-reg), "swish" (bnn-class)
+#'@param label_stretch_factor numeric. When chosing mode "nn-reg" the labels will be rescaled and this rescaling can be
+#' further adjusted by this factor. A factor smaller than 1.0 will compress the range of possible labels.
+#'@param randomize_instances logical. When set to TRUE (default) the instances will be shuffled before training (recommended).
+#'@param dropout_rate numeric. Apply Monte Carlo dropout to the NN model. This will randomely turn off the specified fraction of
+#' nodes of the neural network during each epoch of training as well as during prediction, making the NN more stable and
+#' less reliant on individual nodes/weights (only available for modes nn-class and nn-reg).
+#'@param label_noise_factor numeric. Add random noise to the input labels after rescaling to give the categorical labels a more
+#' continuous spread before training the regression model (only available for mode nn-reg).
+#'@param rescale_features logical. Set to TRUE if all feature values shall be rescaled to values between 0 and 1 prior to training (default=FALSE).
 #'@param patience integer. Number of epochs with no improvement after which training will be stopped.
 #'@param overwrite logical. If TRUE existing models are overwritten. Default is to FALSE,
 #'
@@ -76,6 +90,7 @@ train_iucnn <- function(x,
                         lab,
                         path_to_output=".",
                         model_name = "iuc_nn_model",
+                        mode='nn-class',
                         validation_split = 0.1,
                         test_fraction = 0.1,
                         seed = 1234,
@@ -87,11 +102,9 @@ train_iucnn <- function(x,
                         label_stretch_factor = 1.0,
                         patience = 200,
                         randomize_instances = TRUE,
-                        mode='nn-class',
                         dropout_rate = 0.0,
                         label_noise_factor = 0.0,
                         rescale_features = FALSE,
-                        return_categorical = FALSE,
                         overwrite = FALSE){
 
   # Check input
@@ -114,7 +127,6 @@ train_iucnn <- function(x,
   assert_numeric(dropout_rate, lower = 0, upper = 1)
   assert_numeric(label_noise_factor, lower = 0, upper = 1)
   assert_logical(rescale_features)
-  assert_logical(return_categorical)
   assert_logical(overwrite)
 
   ## specific checks
@@ -214,6 +226,9 @@ train_iucnn <- function(x,
     # in the current npbnn function we need to add a dummy column of instance names
     labels[['names']] = replicate(length(labels$labels),'sp.')
     labels = labels[,c('names','labels')]
+    #write.table(as.matrix(dataset_bnn),'manual_tests/features_tutorial_data_bnn.txt',sep='\t',quote=FALSE,row.names=FALSE)
+    #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data_bnn.txt',sep='\t',quote=FALSE,row.names=FALSE)
+
     # transform the data into BNN compatible format
     bnn_data = bnn_load_data(dataset_bnn,
                              labels,
