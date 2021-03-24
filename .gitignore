@@ -8,7 +8,8 @@ pre_submission_tests.R
 iuc_nn_model
 vignettes/wc10
 vignettes/WWF_ecoregions
-vignettes/iuc_nn_model
+vignettes/iuc_nn_model*
+vignettes/iuc_nn_model_1
 manual_tests
 training_stats.pdf
 HFP*

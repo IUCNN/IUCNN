@@ -27,8 +27,9 @@ If python has been installed before, you can specify the python version to sue w
 
 3. Install the tensorflow and matplotlib modules
 ```{r}
-reticulate::py_install("tensorflow==2.0.0", pip = TRUE)
+reticulate::py_install("tensorflow~=2.2.0rc4", pip = TRUE)
 reticulate::py_install("matplotlib", pip = TRUE)
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.8.tar.gz", pip = TRUE)
 ```
 
 # Usage
