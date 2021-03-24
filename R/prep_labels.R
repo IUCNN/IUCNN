@@ -85,7 +85,9 @@ prep_labels <- function(x,
 
     out <- out %>%
       left_join(lookup, by = labels)
-    }
+  }
+
+  names(lookup) <- c("labels", "lab.num.z")
 
   out <- out %>%
     dplyr::select(species = .data[[species]], labels = .data$lab.num.z)

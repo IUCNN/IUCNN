@@ -10,6 +10,10 @@
 #'if the sampbias package is not installed, the bias features are skipped.
 #'
 #'@inheritParams ft_geo
+#'@param type character. The type of features to calculate. Possible options are
+#'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate}, \dQuote{umanfootprint}, \dQuote{bias}.
+#'All except bias are the default.
+#'"\dQuote{bias} is only recommended up to the regional scale or below.
 #'
 #'@return a data.frame of bias features
 #'
@@ -32,58 +36,97 @@
 prep_features <- function(x,
                           species = "species",
                           lon = "decimallongitude",
-                          lat = "decimallatitude"){
+                          lat = "decimallatitude",
+                          type = c("geographic", "biomes", "climate", "humanfootprint")){
 
   # assertions
   assert_data_frame(x)
   assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
+  assert_character(type)
 
 
   #prepare geographic features
-  message("Calculating geographic features.")
-  out <- ft_geo(x,
-                species = species,
-                lon = lon,
-                lat = lat)
+  if("geographic" %in% type){
+    message("Calculating geographic features.")
+    out <- ft_geo(x,
+                  species = species,
+                  lon = lon,
+                  lat = lat)
+  }
 
-  #if internet run biomes, climate and footprint
+
+
   if(curl::has_internet()){
-    message("Calculating biome features.")
-    bio <- ft_biom(x,
-                   species = species,
-                   lon = lon,
-                   lat = lat)
 
-    message("Calculating climate features.")
-    clim <- ft_clim(x,
-                    species = species,
-                    lon = lon,
-                    lat = lat)
+    #biomes
+    if("biomes" %in% type){
+      message("Calculating biome features.")
+      bio <- ft_biom(x,
+                     species = species,
+                     lon = lon,
+                     lat = lat)
 
-    message("Calculating human footprint features.")
-    foot <- ft_foot(x,
-                    species = species,
-                    lon = lon,
-                    lat = lat)
-
-    out <- out %>%
-      left_join(bio, by = species) %>%
-      left_join(clim, by = species) %>%
-      left_join(foot, by = species)
-    }else{
-    warning("No internet connection, only geographic features created")
+      if(exists("out")){
+        out <- out %>%
+          left_join(bio, by = species)
+      }else{
+        out <- bio
+      }
     }
 
-  # #if sampbias is installed, run bias features
-  # if(!require("sampbias", quietly = TRUE)){
-  #   warning("sampbias not fund, skipping bias features. Install package sampbias.")
-  # }else{
-  #   samp <- t_bias(x)
-  #
-  #   out <- out %>%
-  #     left_join(geo, out, by = species)
-  # }
+    #climate
+    if("climate" %in% type){
+      message("Calculating climate features.")
+      clim <- ft_clim(x,
+                      species = species,
+                      lon = lon,
+                      lat = lat)
+
+      if(exists("out")){
+        out <- out %>%
+          left_join(clim, by = species)
+      }else{
+        out <- clim
+      }
+    }
+    # human footprint
+
+    if("humanfootprint" %in% type){
+      message("Calculating human footprint features.")
+      foot <- ft_foot(x,
+                      species = species,
+                      lon = lon,
+                      lat = lat)
+
+      if(exists("out")){
+        out <- out %>%
+          left_join(foot, by = species)
+      }else{
+        out <- foot
+      }
+    }
+  }else{
+    warning("No internet connection, only geographic features created")
+  }
+
+  #bias
+  if("bias" %in% type){
+    #if sampbias is installed, run bias features
+    if(!require("sampbias", quietly = TRUE)){
+      warning("sampbias not fund, skipping bias features. Install package sampbias.")
+    }else{
+      message("Calculating bias features.")
+      samp <- ft_bias(x)
+
+      if(exists("out")){
+        out <- out %>%
+          left_join(samp, by = species)
+      }else{
+        out <- samp
+      }
+    }
+  }
   return(out)
 }

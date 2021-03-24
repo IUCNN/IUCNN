@@ -9,6 +9,7 @@
 pre_submission_tests.R
 _site.yml
 ^docs$
+^.github$
 ^vignettes/wc10$
 ^vignettes/WWF_ecoregions$
 ^vignettes/iuc_nn_model$

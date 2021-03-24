@@ -74,12 +74,17 @@ feature_importance <- function(x,
   #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
   if (length(feature_blocks) == 0){
     ffb <- list(
-      geographic = c("tot_occ","uni_occ","mean_lat","mean_lon","lat_range","lon_range","lat_hemisphere","eoo","aoo"),
-      human_footprint = c("humanfootprint_1993_1","humanfootprint_1993_2","humanfootprint_1993_3","humanfootprint_1993_4",
-                          "humanfootprint_2009_1","humanfootprint_2009_2","humanfootprint_2009_3","humanfootprint_2009_4"),
+      geographic = c("tot_occ","uni_occ","mean_lat","mean_lon","lat_range",
+                     "lon_range","lat_hemisphere","eoo","aoo"),
+      human_footprint = c("humanfootprint_1993_1","humanfootprint_1993_2",
+                          "humanfootprint_1993_3","humanfootprint_1993_4",
+                          "humanfootprint_2009_1","humanfootprint_2009_2",
+                          "humanfootprint_2009_3","humanfootprint_2009_4"),
       climate = c("bio1","bio4","bio11","bio12","bio15","bio17","range_bio1",
-                  "range_bio4","range_bio11","range_bio12","range_bio15","range_bio17"),
-      biomes = c("1","2","7","10","13","3","4","5","6","11","98","8","12","9","14","99")
+                  "range_bio4","range_bio11","range_bio12",
+                  "range_bio15","range_bio17"),
+      biomes = c("1","2","7","10","13","3","4","5",
+                 "6","11","98","8","12","9","14","99")
     )
 
   }else{
@@ -144,7 +149,7 @@ feature_importance <- function(x,
                                                    n_permutations = as.integer(n_permutations),
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
-    d = data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE))
+    d = round(data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE)), 3)
     d['feature_block'] = names(feature_importance_out)
     selected_cols = d[c('feature_block','X1','X2')]
   }

@@ -8,7 +8,8 @@ prep_features(
   x,
   species = "species",
   lon = "decimallongitude",
-  lat = "decimallatitude"
+  lat = "decimallatitude",
+  type = c("geographic", "biomes", "climate", "humanfootprint")
 )
 }
 \arguments{
@@ -20,6 +21,11 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{lon}{a character string. The name of the column with the longitude.}
 
 \item{lat}{a character string. The name of the column with the latitude.}
+
+\item{type}{character. The type of features to calculate. Possible options are
+\dQuote{geographic}, \dQuote{biome}, \dQuote{climate}, \dQuote{umanfootprint}, \dQuote{bias}.
+All except bias are the default.
+"\dQuote{bias} is only recommended up to the regional scale or below.}
 }
 \value{
 a data.frame of bias features

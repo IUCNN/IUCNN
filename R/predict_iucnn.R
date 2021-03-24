@@ -16,6 +16,8 @@
 #'Note that the probabilities are the direct output of the SoftMax function in the output layer
 #'of the neural network and might be an unreliable measure of statistical support for
 #'the result of the classification (e.g. https://arxiv.org/abs/2005.04987).
+#'@param return_IUCN logical. If TRUE the predicted labels are translated into the original labels.
+#'If FALSE numeric labels as used by the model are returned
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 #'tutorial on how to run IUCNN.
@@ -58,12 +60,27 @@ predict_iucnn <- function(x,
                           target_acc = 0.0,
                           model_dir = "iuc_nn_model",
                           verbose = 0,
-                          return_raw = FALSE){
+                          return_raw = FALSE,
+                          return_IUCN = TRUE){
 
   # assertions
   assert_class(x, classes = "data.frame")
 
   message("Preparing input data")
+
+  # check that the same features are in training and prediction
+  test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
+    if(!test1){
+    mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
+    stop("Feature mismatch, missing in training features: \n", paste0(mis, collapse = ", "))
+  }
+
+  test2 <- all(model$input_data$feature_names %in% names(x))
+  if(!test2){
+    mis <- model$input_data$feature_names[!model$input_data$feature_names %in% names(x)]
+    stop("Feature mismatch, missing in prediction features: \n", paste0(mis, collapse = ", "))
+  }
+
   # complete cases only
   tmp.in <- x[complete.cases(x),]
 
@@ -130,6 +147,16 @@ predict_iucnn <- function(x,
         predictions = rep(NA, dim(out)[1])
         predictions[not_nan_boolean] = predictions_tmp
       }
+
+      # Translate prediction to original labels
+      if(return_IUCN){
+        lu <- model$input_data$lookup.labels
+        names(lu) <- model$input_data$lookup.lab.num.z
+
+        predictions <- lu[predictions+1]
+        names(predictions) <- NULL
+      }
+
       return(predictions)
     }
   }
