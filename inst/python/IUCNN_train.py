@@ -347,7 +347,6 @@ def iucnn_train(dataset,
     return output
 
 
-
 #error_min_max = [test_predictions_raw-test_predictions_raw_std[0],test_predictions_raw_std[1]-test_predictions_raw]
 #plt.errorbar(test_predictions_raw, test_labels, xerr=error_min_max, fmt='o')
 
