@@ -55,12 +55,12 @@
 #'
 #'predict_feat <- geo_features(not_eval)
 #'
-#'train_iucnn(x = train_feat,
+#'mod1 <- train_iucnn(x = train_feat,
 #'            label = labels)
 #'
 #'
 #'predict_iucnn(x = predict_feat,
-#'              model_dir = iuc_nn_model")
+#'              model = mod1)
 #'}
 #'
 #'
@@ -128,7 +128,7 @@ train_iucnn <- function(x,
 
   # check if the model directory already exists
   if(dir.exists(file.path(path_to_output, model_name))& !overwrite){
-    stop(sprintf("Directory %s exists. Provide alternative 'model_name' or 'path_to_output'.", model_name))
+    stop(sprintf("Directory %s exists. Provide alternative 'model_name' or 'path_to_output' or set `overwrite` to TRUE.", model_name))
   }
 
   # merge species and labels to match order

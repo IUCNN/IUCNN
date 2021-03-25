@@ -11,7 +11,7 @@
 #'
 #'@inheritParams ft_geo
 #'@param type character. The type of features to calculate. Possible options are
-#'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate}, \dQuote{umanfootprint}, \dQuote{bias}.
+#'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate}, \dQuote{human footprint}, \dQuote{bias}.
 #'All except bias are the default.
 #'"\dQuote{bias} is only recommended up to the regional scale or below.
 #'

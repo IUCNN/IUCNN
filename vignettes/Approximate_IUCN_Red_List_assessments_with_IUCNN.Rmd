@@ -249,7 +249,7 @@ The `train_iucnn` function contains various options to customize the neural netw
 ```{r}
 res_2 <- train_iucnn(x = features_train,
                    lab = labels_train, 
-                   dropout = 0.3,
+                   dropout_rate = 0.3,
                    model_name = "iucnn_model_2",
                    n_layers = 60,
                    use_bias = FALSE,
@@ -258,7 +258,7 @@ res_2 <- train_iucnn(x = features_train,
 
 You can compare the validation loss of the models using `res_1$validation_loss` and `res_2$validation_loss`. Model 2 in this case yields a lower validation loss and is therefore preferred. Once you chose the preferred model configuration based on validation loss, we can check test accuracy of best model: `res_2$test_accuracy`. The `train_iucnn` function contains various options to adapt the model, see the section "Setting model parameters" below for details. 
 
-### Changing the modelling algorithm
+### Changing the modeling algorithm
 There are three neural network algorithms implemented in iucnn. Besides the default classifier approach based on a tensorflow implementation, these are a Bayesian neural network and a regression model.
 
 The Bayesian approach has the advantage that it returns true probabilities for the classification of species into the relative output classes (e.g. 80% probability of a species to be LC). We consider this approach more suitable for classification of species into IUCN categories, than the default option. It will need more time for model training and should best be applied once you have identified the best model parameters using the default approach. You can run a BNN setting the `mode` option of `train_iucnn` to `"bnn-class"`.

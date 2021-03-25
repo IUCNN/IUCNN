@@ -16,12 +16,12 @@ test_that("nn-class detailed works", {
 
   ## train the model
   m <- train_iucnn(x = features,
-                    lab = labels_train,
-                    mode = "nn-class")
+                   lab = labels_train,
+                   mode = "nn-class",
+                   overwrite = TRUE)
 
   p <- predict_iucnn(x = features_predict,
-                     model = m,
-                     model_dir = "iuc_nn_model")
+                     model = m)
 
   expect_equal(length(m), 25)
   expect_s3_class(m, "iucnn_model")
@@ -45,22 +45,12 @@ test_that("nn-class broad works", {
   ## train the model
   m <- train_iucnn(x = features,
                    lab = labels_train,
-                   mode = "nn-class")
+                   mode = "nn-class",
+                   overwrite = TRUE)
 
   p <- predict_iucnn(x = features_predict,
-                     model = m,
-                     model_dir = "iuc_nn_model")
+                     model = m)
 
   expect_equal(length(m), 25)
   expect_s3_class(m, "iucnn_model")
 })
-
-
-test_that("bnn-class works", {
-  expect_equal(2 * 2, 4)
-})
-
-test_that("nn-reg works", {
-  expect_equal(2 * 2, 4)
-})
-
