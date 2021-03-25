@@ -9,7 +9,6 @@ train_iucnn(
   lab,
   path_to_output = ".",
   model_name = "iuc_nn_model",
-  mode = "nn-class",
   validation_split = 0.1,
   test_fraction = 0.1,
   seed = 1234,
@@ -21,9 +20,11 @@ train_iucnn(
   label_stretch_factor = 1,
   patience = 200,
   randomize_instances = TRUE,
+  mode = "nn-class",
   dropout_rate = 0,
   label_noise_factor = 0,
   rescale_features = FALSE,
+  return_categorical = FALSE,
   overwrite = FALSE
 )
 }
@@ -39,9 +40,6 @@ where the IUCNN model shall be saved}
 
 \item{model_name}{character string. The name used to save the trained model.}
 
-\item{mode}{character string. Choose between the IUCNN models "nn-class" (default, tensorflow neural network classifier),
-"nn-reg" (tensorflow neural network regression), or "bnn-class" (Bayesian neural network classifier)}
-
 \item{validation_split}{numeric. The fraction of the input data used as validation set.}
 
 \item{test_fraction}{numeric. The fraction of the input data used as test set.}
@@ -56,30 +54,12 @@ layers. For example, n_layers = c(60, 10) defines a model with two hidden layers
 respectively. Note that the number of nodes in the output layer is automatically determined based on
 the number of unique labels in the training set.}
 
-\item{use_bias}{logical. Specifies if a bias node is used in the first hidden layer (default=TRUE).}
+\item{use_bias}{integer (1/0). Specifies if a bias node is used in the first hidden layer.}
 
 \item{act_f}{character string. Specifies the activation function should be used in the hidden layers.
 Available options are: "relu" (default), "tanh", "sigmoid"}
 
-\item{act_f_out}{character string. Similar to act_f, this specifies the activation function for the output
-layer. When setting to "auto" (default), a suitable output activation function will be chosen based on the
-chosen mode. Other valid options are "softmax" (nn-class), "tanh" (nn-reg), "sigmoid" (nn-reg), "swish" (bnn-class)}
-
-\item{label_stretch_factor}{numeric. When chosing mode "nn-reg" the labels will be rescaled and this rescaling can be
-further adjusted by this factor. A factor smaller than 1.0 will compress the range of possible labels.}
-
 \item{patience}{integer. Number of epochs with no improvement after which training will be stopped.}
-
-\item{randomize_instances}{logical. When set to TRUE (default) the instances will be shuffled before training (recommended).}
-
-\item{dropout_rate}{numeric. Apply Monte Carlo dropout to the NN model. This will randomely turn off the specified fraction of
-nodes of the neural network during each epoch of training as well as during prediction, making the NN more stable and
-less reliant on individual nodes/weights (only available for modes nn-class and nn-reg).}
-
-\item{label_noise_factor}{numeric. Add random noise to the input labels after rescaling to give the categorical labels a more
-continuous spread before training the regression model (only available for mode nn-reg).}
-
-\item{rescale_features}{logical. Set to TRUE if all feature values shall be rescaled to values between 0 and 1 prior to training (default=FALSE).}
 
 \item{overwrite}{logical. If TRUE existing models are overwritten. Default is to FALSE,}
 }
@@ -108,18 +88,18 @@ labels <- c(1,0)
 
 train_feat <- ft_geo(dat)
 
-not_eval <- data.frame(species = c(A", "B")
+not_eval <- data.frame(species = c("A", "B")
                 decimallongitude = runif (200,-5,5),
                 decimallatitude = runif (200,-5,5))
 
 predict_feat <- geo_features(not_eval)
 
-train_iucnn(x = train_feat,
+mod1 <- train_iucnn(x = train_feat,
            label = labels)
 
 
 predict_iucnn(x = predict_feat,
-             model_dir = iuc_nn_model")
+             model = mod1)
 }
 
 
