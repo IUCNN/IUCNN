@@ -38,6 +38,8 @@ bioclimatic
 biom
 biome
 biomes
+bnn
+chosing
 clim
 cobi
 devtools
@@ -55,6 +57,7 @@ lon
 matplotlib
 miniconda
 mis
+nn
 occ
 rCAT
 ras
@@ -63,6 +66,7 @@ rasters
 relu
 rescale
 rescaled
+rescaling
 reticulate
 rgbif
 rl
@@ -70,6 +74,7 @@ rredlist
 sampbias
 sigmoid
 sigmoidal
+softmax
 tanh
 tensorflow
 wcshumanfootprint

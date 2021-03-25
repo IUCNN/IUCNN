@@ -20,7 +20,7 @@ training_occ
 }
 \description{
 A dataset containing geo-referenced occurrences of 884 Orchid species with
-existing IUCN Red List assessment ("CR", "EN", "VU", "NT", "LC"). This is example data
-to train an IUCNN model.
+existing IUCN Red List assessment ("CR", "EN", "VU", "NT", "LC").
+This is example data to train an IUCNN model.
 }
 \keyword{datasets}

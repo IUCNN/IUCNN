@@ -1,22 +1,31 @@
 #' Predict IUCN Categories from Features
 #'
-#' Uses a model generated with \code{\link{train_iucnn}} to predict the IUCN status of
-#' Not Evaluated or Data Deficient species based on features, for instance generated
-#' from species occurrence records with \code{\link{ft_geo}}, \code{\link{ft_clim}}, and \code{\link{ft_biom}}.
-#' The same features in the same order must be used for training and fitting.
+#' Uses a model generated with \code{\link{train_iucnn}}
+#' to predict the IUCN status of
+#' Not Evaluated or Data Deficient species based on features,
+#' for instance generated
+#' from species occurrence records with \code{\link{ft_geo}},
+#' \code{\link{ft_clim}}, and \code{\link{ft_biom}}.
+#' The same features in the same order must be
+#' used for training and fitting.
 #'
 #'
 #'@param x a data.set, containing a column "species" with the species names, and
-#'subsequent columns with different features, in the same order as used for \code{\link{train_iucnn}}
+#'subsequent columns with different features,
+#'in the same order as used for \code{\link{train_iucnn}}
 #'@param model the information on the NN model returned by \code{\link{train_iucnn}}
-#'@param target_acc numerical, 0-1. The target accuracy of the overall model. Species that cannot be classified with
+#'@param target_acc numerical, 0-1. The target accuracy of the overall model.
+#' Species that cannot be classified with
 #'enough certainty to reach this accuracy are classified as DD (Data Deficient).
 #'@param verbose logical, if TRUE generate additional output.
-#'@param return_raw logical. Should the probabilities for the labels be returned? Default is FALSE.
-#'Note that the probabilities are the direct output of the SoftMax function in the output layer
+#'@param return_raw logical. Should the probabilities for the labels be returned?
+#'Default is FALSE.
+#'Note that the probabilities are the direct output of the
+#'SoftMax function in the output layer
 #'of the neural network and might be an unreliable measure of statistical support for
 #'the result of the classification (e.g. https://arxiv.org/abs/2005.04987).
-#'@param return_IUCN logical. If TRUE the predicted labels are translated into the original labels.
+#'@param return_IUCN logical. If TRUE the predicted labels are translated
+#' into the original labels.
 #'If FALSE numeric labels as used by the model are returned
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
@@ -83,7 +92,7 @@ predict_iucnn <- function(x,
     warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
   }
 
-  instance_id = tmp.in$species
+  instance_id <- tmp.in$species
   #prepare input data
   tmp <- tmp.in %>%
     dplyr::select(-.data$species)
@@ -96,21 +105,21 @@ predict_iucnn <- function(x,
   message("Predicting conservation status")
 
   if(model$model == 'bnn-class'){
-    postpr = bnn_predict( features = as.matrix(tmp),
+    postpr <- bnn_predict( features = as.matrix(tmp),
                           instance_id = as.matrix(instance_id),
                           model_path = model$trained_model_path,
                           target_acc = target_acc,
                           filename = 'prediction',
-                          post_summary_mode=1
+                          post_summary_mode = 1
                           )
 
     if (return_raw==TRUE){
       return(postpr$post_prob_predictions)
     }else{
-      not_nan_boolean = complete.cases(postpr$post_prob_predictions)
-      predictions_tmp = apply(postpr$post_prob_predictions[not_nan_boolean,],1,which.max)-1
-      predictions = rep(NA, dim(postpr$post_prob_predictions)[1])
-      predictions[not_nan_boolean] = predictions_tmp
+      not_nan_boolean <- complete.cases(postpr$post_prob_predictions)
+      predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],1,which.max)-1
+      predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
+      predictions[not_nan_boolean] <- predictions_tmp
       return(predictions)
     }
 
@@ -134,12 +143,12 @@ predict_iucnn <- function(x,
       return(out)
     }else{
       if (model$model == 'nn-reg'){
-        predictions = round(out)
+        predictions <- round(out)
       }else{
-        not_nan_boolean = complete.cases(out)
-        predictions_tmp = apply(out[not_nan_boolean,],1,which.max)-1
-        predictions = rep(NA, dim(out)[1])
-        predictions[not_nan_boolean] = predictions_tmp
+        not_nan_boolean <- complete.cases(out)
+        predictions_tmp <- apply(out[not_nan_boolean,],1,which.max)-1
+        predictions <- rep(NA, dim(out)[1])
+        predictions[not_nan_boolean] <- predictions_tmp
       }
 
       # Translate prediction to original labels

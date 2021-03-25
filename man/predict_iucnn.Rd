@@ -47,22 +47,21 @@ tutorial on how to run IUCNN.
 }
 \examples{
 \dontrun{
-dat <- data.frame(species = c("A", "B"),
-               decimallongitude = runif (200,-5,5),
-               decimallatitude = runif (200,-5,5))
-labels <- data.frame(species = c("A","B"),
-                    labels = c(1,0))
+data("training_occ") #geographic occurrences of species with IUCN assessment
+data("training_labels")# the corresponding IUCN assessments
+data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
-train_feat <- ft_geo(dat)
+# 1. Feature and label preparation
+features <- prep_features(training_occ) # Training features
+labels_train <- prep_labels(training_labels) # Training labels
+features_predict <- prep_features(prediction_occ) # Prediction features
 
-not_eval <- data.frame(species = c("A", "B"),
-               decimallongitude = runif (200,-5,5),
-               decimallatitude = runif (200,-5,5))
-predict_feat <- ft_geo(not_eval)
-mod1 <- train_iucnn(x = train_feat,
-          labels = labels)
-predict_iucnn(x = predict_feat,
-            model = mod1)
+# 2. Model training
+m1 <- train_iucnn(x = features, lab = labels_train)
+
+# 3. Prediction
+predict_iucnn(x = features_predict,
+             model = m1)
 }
 
 

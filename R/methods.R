@@ -18,7 +18,9 @@ cat(sprintf("Validation accuracy: %s\n\n",
 
 cat(sprintf("Label detail: %s Classes (%s)\n\n",
             length(object$input_data$label_dict),
-            ifelse(length(object$input_data$label_dict) > 2, "detailed", "Threatened/Not Threatened")))
+            ifelse(length(object$input_data$label_dict) > 2,
+                   "detailed",
+                   "Threatened/Not Threatened")))
 
 cat("Label representation\n")
 
@@ -55,12 +57,4 @@ plot.iucnn_model <- function(x, ...){
          lty=1,
          pch = 1:2,
          cex=1.5)
-  # lattice::levelplot(x$confusion_matrix,
-  #                    scales=list(x=list(at = x$input_data$lookup.lab.num.z + 1,
-  #                                       labels = x$input_data$lookup.labels),
-  #                                y=list(at = x$input_data$lookup.lab.num.z + 1,
-  #                                       labels = x$input_data$lookup.labels)),
-  #                    xlab = "Predicted",
-  #                    ylab = "Test data",
-  #                    main = "B) Confusion matrix, test data")
 }

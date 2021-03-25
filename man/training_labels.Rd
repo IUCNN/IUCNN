@@ -9,7 +9,11 @@ A data frame with 889 rows and 2 variables:
 \describe{
 \item{species}{The canonical species name}
 \item{labels}{The IUCN conservation assessment, converted to numerical for use with IUCNN.
-0 =  Critically Endangered (CR), 1 = Endangered (EN), 2 = Vulnerable (VU), 3 = Near Threatened (NT), 4 = Least Concern (LC)}
+0 =  Critically Endangered (CR),
+1 = Endangered (EN),
+2 = Vulnerable (VU),
+3 = Near Threatened (NT),
+4 = Least Concern (LC)}
 }
 }
 \source{

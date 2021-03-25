@@ -2,9 +2,11 @@
 #'
 #' Calculates the number of occurrences, number of unique occurrences,
 #' mean latitude, mean longitude, latitudinal range, longitudinal range,
-#' eoo, aoo and hemisphere as input features for IUCNN from a list of species occurrences.
+#' eoo, aoo and hemisphere as input features for IUCNN
+#' from a list of species occurrences.
 #'
-#' Coordinate ranges are 90% quantiles, for species with less than three occurrences EOO is set to AOO.
+#' Coordinate ranges are 90% quantiles, for species with
+#' less than three occurrences EOO is set to AOO.
 #'
 #'@param x a data.frame of species occurrence records including three columns with
 #'species name, longitudinal coordinates and latitudinal coordinates (both decimal).
@@ -91,7 +93,10 @@ ft_geo <- function(x,
        dplyr::select(species = .data$taxa,
                      eoo = .data$EOOkm2,
                      aoo = .data$AOO2km) %>%
-       mutate(eoo = ifelse(.data$eoo == 0, .data$aoo, .data$eoo)) %>% # set EOO to AOO
+      # set EOO to AOO
+       mutate(eoo = ifelse(.data$eoo == 0,
+                           .data$aoo,
+                           .data$eoo)) %>%
        mutate(eoo = round(as.numeric(.data$eoo), 3)) %>%
        mutate(aoo = round(as.numeric(.data$aoo), 3))
 

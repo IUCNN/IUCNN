@@ -52,9 +52,9 @@ All climate variables are summarized  to the species median.
 }
 \examples{
 \dontrun{
-dat <- data.frame(species = "A",
-                decimallongitude = runif (200,-5,5),
-                decimallatitude = runif (200,-5,5))
+dat <- data.frame(species = c("A","B"),
+                  decimallongitude = runif (200,10,15),
+                  decimallatitude = runif (200,-5,5))
 
 ft_clim(dat)
 }

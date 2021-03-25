@@ -267,8 +267,7 @@ The Bayesian approach has the advantage that it returns true probabilities for t
 res_3 <- train_iucnn(x = features_train,
                     lab = labels_train, 
                     model_name = "iucnn_model_3",
-                    mode='bnn-class',
-                    return_categorical = TRUE)
+                    mode = 'bnn-class')
 ```
 
 IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of categories that can be sorted by increasing threat level, we can model the task of estimating these categories as a regression problem. To prepare the labels for optimal performance in a regression model, we need to rescale them to range from a small negative to a small positive number. This can be easily accomplished with the `prepare_labels()` function by adding the argument `rescale_labels  =TRUE` as shown below:
@@ -279,16 +278,15 @@ data("training_labels")
 labels_train <- prep_labels(training_labels)
 ```
 
-You will see that the output data.frame `labels_train` now contains an extra column with the rescaled labels, and some additional information stored in the column header. Now we can run the `train_iucnn()` function, specifying this time that the want to train a regression model by setting `mode = 'nn-reg'`. Further you can add the argument `return_categorical = TRUE` to round the regressed values to integers, which makes it easier to translate the predicted labels for the test set back to numeric IUCN categories:
+You will see that the output data.frame `labels_train` now contains an extra column with the rescaled labels, and some additional information stored in the column header. Now we can run the `train_iucnn()` function, specifying this time that the want to train a regression model by setting `mode = 'nn-reg'`.
 
 
 ```{r}
-res_4<- train_iucnn(x = features_train,
+res_4 <- train_iucnn(x = features_train,
                     lab = labels_train, 
                     model_name = "iucnn_model_4",
-                    mode='nn-reg',
-                    rescale_features = TRUE,
-                    return_categorical = TRUE)
+                    mode = 'nn-reg',
+                    rescale_features = TRUE)
 ```
 
 ### Feature importance

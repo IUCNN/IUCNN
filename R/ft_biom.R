@@ -9,14 +9,17 @@
 #' https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world
 #' and save them in the working directory
 #'
-#'@param biome.input s simple features collection of geometry type polygon, contain polygons of different biomes.
+#'@param biome.input s simple features collection of geometry type polygon,
+#'contain polygons of different biomes.
 #'If NULL, the WWF biome scheme is downloaded from
 #'https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world
-#'@param biome.id a character string. The name of the column with the biome names in biome.input.
+#'@param biome.id a character string. The name of the column
+#'with the biome names in biome.input.
 #'Default is "BIOME"
 #'@param download.path character string. The path were to save the WWF polygons
 #'if biome.input is NULL. Default is the working directory
-#'@param remove_zeros logical. If TRUE biomes without occurrence of any species are removed from the features.
+#'@param remove_zeros logical. If TRUE biomes without occurrence of
+#'any species are removed from the features.
 #'Default = FALSE
 #'@inheritParams ft_geo
 #'
@@ -27,11 +30,11 @@
 #'
 #' @examples
 #'\dontrun{
-# dat <- data.frame(species = c("A","b"),
-#                   decimallongitude = runif (200,10,15),
-#                   decimallatitude = runif (200,-5,5))
-#
-# ft_biom(dat)
+#' dat <- data.frame(species = c("A","b"),
+#'                   decimallongitude = runif (200,10,15),
+#'                   decimallatitude = runif (200,-5,5))
+#'
+#' ft_biom(dat)
 #'}
 #'
 #'
@@ -86,7 +89,8 @@ ft_biom <- function(x,
                       coords = c(lon, lat),
                       crs= st_crs(biome.input))
 
-  biom <- suppressMessages(sf::st_intersects(pts, biome.input)) # this gives the rownames of each point in wwf
+  # this gives the rownames of each point in wwf
+  biom <- suppressMessages(sf::st_intersects(pts, biome.input))
 
   sf::st_geometry(biome.input) <- NULL
   biom2 <-biome.input[as.numeric(biom), biome.id]
@@ -98,7 +102,9 @@ ft_biom <- function(x,
                    BIOME =  biom2) %>%
     dplyr::distinct() %>%
     dplyr::mutate(presence = 1) %>%
-    tidyr::pivot_wider(id_cols = .data$species, names_from = .data$BIOME, values_from = .data$presence) %>%
+    tidyr::pivot_wider(id_cols = .data$species,
+                       names_from = .data$BIOME,
+                       values_from = .data$presence) %>%
     dplyr::select(-.data$`NA`)
 
   biom[is.na(biom)] <- 0

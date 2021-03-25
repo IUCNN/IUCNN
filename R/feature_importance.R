@@ -61,7 +61,7 @@
 
 feature_importance <- function(x,
                                feature_blocks = list(),
-                               n_permutations=100,
+                               n_permutations = 100,
                                provide_indices = FALSE,
                                verbose = FALSE,
                                unlink_features_within_block = TRUE){
@@ -91,43 +91,44 @@ feature_importance <- function(x,
 
   }else{
     if (provide_indices){
-      i = 0
-      ffb= NULL
+      i <-0
+      ffb <-NULL
       for (block in feature_blocks){
-        i = i + 1
-        selected_features = x$input_data$feature_names[as.integer(block)]
-        block_name = paste(selected_features,collapse = ',')
-        ffb[[block_name]] = selected_features
+        i <- i + 1
+        selected_features <- x$input_data$feature_names[as.integer(block)]
+        block_name <- paste(selected_features, collapse = ',')
+        ffb[[block_name]] <- selected_features
       }
     }else{
-      ffb= feature_blocks
+      ffb <- feature_blocks
     }
   }
 
-  all_selected_feature_names = c()
-  feature_block_indices = ffb
+  all_selected_feature_names <- c()
+  feature_block_indices <- ffb
   for (i in names(ffb)){
-    feature_names = ffb[i][[1]]
-    feature_indices = c()
+    feature_names <- ffb[i][[1]]
+    feature_indices <- c()
     for (fname in feature_names){
-      all_selected_feature_names = c(all_selected_feature_names, fname)
-      findex = which(x$input_data$feature_names == fname)
-      feature_indices = c(feature_indices, as.integer(findex - 1)) #-1 is necessary because of indexing discrepancy between python and r
+      all_selected_feature_names <- c(all_selected_feature_names, fname)
+      findex <- which(x$input_data$feature_names == fname)
+      feature_indices <- c(feature_indices, as.integer(findex - 1))
+      #-1 is necessary because of indexing discrepancy between python and r
     }
-    feature_block_indices[i] = list(feature_indices)
+    feature_block_indices[i] <- list(feature_indices)
   }
 
   # treat all features that are not part of a defined feature block as an individual block
-  remaining_features = setdiff(x$input_data$feature_names,
+  remaining_features <- setdiff(x$input_data$feature_names,
                                all_selected_feature_names)
   for (fname in remaining_features){
-    findex = which(x$input_data$feature_names == fname)
-    feature_block_indices[fname] = as.integer(findex - 1)
+    findex <- which(x$input_data$feature_names == fname)
+    feature_block_indices[fname] <- as.integer(findex - 1)
   }
   if (x$model == 'bnn-class'){
     # source python function
     bn <- import("np_bnn")
-    feature_importance_out = bn$feature_importance(x$input_data$test_data,
+    feature_importance_out <- bn$feature_importance(x$input_data$test_data,
                                                    weights_pkl = x$trained_model_path,
                                                    true_labels = x$input_data$test_labels,
                                                    fname_stem = x$input_data$file_name,
@@ -136,10 +137,10 @@ feature_importance <- function(x,
                                                    write_to_file = FALSE,
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
-    selected_cols = feature_importance_out[,2:4]
+    selected_cols <- feature_importance_out[,2:4]
   }else{
     reticulate::source_python(system.file("python", "IUCNN_feature_importance.py", package = "IUCNN"))
-    feature_importance_out = feature_importance_nn(input_features = x$input_data$test_data,
+    feature_importance_out <- feature_importance_nn(input_features = x$input_data$test_data,
                                                    true_labels = x$input_data$test_labels,
                                                    model_dir = x$trained_model_path,
                                                    iucnn_mode = x$model,
@@ -151,10 +152,10 @@ feature_importance <- function(x,
                                                    n_permutations = as.integer(n_permutations),
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
-    d = round(data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE)), 3)
-    d['feature_block'] = names(feature_importance_out)
-    selected_cols = d[c('feature_block','X1','X2')]
+    d <- round(data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE)), 3)
+    d['feature_block'] <- names(feature_importance_out)
+    selected_cols <- d[c('feature_block','X1','X2')]
   }
-  names(selected_cols) = c('feature_block','feat_imp_mean','feat_imp_std')
+  names(selected_cols) <- c('feature_block','feat_imp_mean','feat_imp_std')
   return(selected_cols)
 }
