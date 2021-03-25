@@ -17,3 +17,4 @@ _site.yml
 ^.*HFP
 iuc_nn_model_feature_importance.txt
 training_stats.pdf
+^codemeta\.json$
