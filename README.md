@@ -57,8 +57,7 @@ plot(m1)
 
 # 3. Prediction
 predict_iucnn(x = features_predict,
-              model = m1,
-              model_dir = "iuc_nn_model")
+              model = m1)
 ```
 
 # Citation

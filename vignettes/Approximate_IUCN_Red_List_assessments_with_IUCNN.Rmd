@@ -1,4 +1,5 @@
 ---
+title: Approximate IUCN Red List assessments with IUCNN
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Approximate_IUCN_Red_List_assessments_with_IUCNN}
@@ -120,8 +121,7 @@ You can then use the trained model to predict the conservation status of *Not Ev
 
 ```{r}
 predictions <- predict_iucnn(x = features_predict, 
-                             model = res_1,
-                             model_dir = "iucnn_model_1")
+                             model = res_1)
 ```
 
 It is important to remember the following points when using IUCNN:
@@ -302,14 +302,12 @@ The `predict_iucnn` function offer some function to customize predictions. The m
 ```{r}
 pred_2 <- predict_iucnn(x = features_predict, 
                         target_acc = 0.7,
-                        model = res_2,
-                        model_dir = "iucnn_model_2")
+                        model = res_2)
 ```
 
 Furthermore, via the `return_raw` and `return_IUCN` options you can customize the output format. With `return_raw` option you can return the raw probabilities for the classification (see `?predict_iucnn`) and with `return_IUCN` you can chose to either return the IUCN category labels or the internal labels used by the neural network.
 ```{r}
 pred_3 <- predict_iucnn(x = features_predict, 
                         model = res_2,
-                        return_raw = TRUE,
-                        model_dir = "iucnn_model_2")
+                        return_raw = TRUE)
 ```

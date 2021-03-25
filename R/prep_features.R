@@ -22,9 +22,9 @@
 #'
 #' @examples
 #'\dontrun{
-#'dat <- data.frame(species = "A",
-#'                 decimallongitude = runif (200,-5,5),
-#'                 decimallatitude = runif (200,-5,5))
+#' dat <- data.frame(species = c("A","B"),
+#'                   decimallongitude = runif (200,10,15),
+#'                   decimallatitude = runif (200,-5,5))
 #'
 #'prep_features(dat)
 #'}
@@ -114,7 +114,7 @@ prep_features <- function(x,
   #bias
   if("bias" %in% type){
     #if sampbias is installed, run bias features
-    if(!require("sampbias", quietly = TRUE)){
+    if(!requireNamespace("sampbias", quietly = TRUE)){
       warning("sampbias not fund, skipping bias features. Install package sampbias.")
     }else{
       message("Calculating bias features.")
