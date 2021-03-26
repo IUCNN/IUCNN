@@ -23,7 +23,8 @@ ft_foot(
 \item{x}{a data.frame of species occurrence records including three columns with
 species name, longitudinal coordinates and latitudinal coordinates (both decimal).}
 
-\item{footp_input}{an object of the class raster or RasterStack with values for the human footprint index.
+\item{footp_input}{an object of the class raster or RasterStack
+with values for the human footprint index.
 If a RasterStack, different layers are interpreted as different time-slices.}
 
 \item{species}{a character string. The name of the column with the species names.}
@@ -32,7 +33,8 @@ If a RasterStack, different layers are interpreted as different time-slices.}
 
 \item{lat}{a character string. The name of the column with the latitude.}
 
-\item{rescale}{logical. If TRUE, the values are rescaled using natural logarithm transformation. If FALSE,
+\item{rescale}{logical. If TRUE, the values are rescaled using
+natural logarithm transformation. If FALSE,
 remember to change the breaks argument.}
 
 \item{year}{numeric. The years for which to obtain the human footprint index.
@@ -42,18 +44,23 @@ one slice is desired. Other time slices are currently not supported,}
 \item{file_path}{a character string. The path where raster can be saved on disk.
 IF NULL the working directory. Default = NULL.}
 
-\item{breaks}{numerical. The breaks to bin the human footprint index for the final features. The defaults are
-empirical values for the global footprint and rescale=TRUE. For custom values ensure that they
+\item{breaks}{numerical. The breaks to bin the human footprint index
+for the final features. The defaults are
+empirical values for the global footprint and rescale=TRUE.
+For custom values ensure that they
 cover the whole value range and are adapted to the value of rescale.}
 }
 \value{
 a data.frame of human footprint features
 }
 \description{
-Bins the human footprint index into a set of bins and the fraction of occurrence records
-of a species in each bin are the features. By default the human footprint index is downloaded from
+Bins the human footprint index into a set of bins and the
+fraction of occurrence records
+of a species in each bin are the features.
+By default the human footprint index is downloaded from
 https://wcshumanfootprint.org/. THIS FUNCTION WILL DOWNLOAD DATA FROM
-THE INTERNET AND SAVE IT TO THE  WORKING DIRECTORY. The data files are >200 MB each and downloading may
+THE INTERNET AND SAVE IT TO THE  WORKING DIRECTORY. The data files
+are >200 MB each and downloading may
 take some time on first execution.
 }
 \details{
@@ -73,7 +80,6 @@ ft_foot(dat)
 }
 \seealso{
 Other Feature preparation: 
-\code{\link{ft_bias}()},
 \code{\link{ft_biom}()},
 \code{\link{ft_clim}()},
 \code{\link{ft_geo}()},

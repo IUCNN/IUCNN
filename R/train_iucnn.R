@@ -408,7 +408,9 @@ train_iucnn <- function(x,
   named_res$trained_model_path <- trained_model_path
 
   named_res$model <- mode
+  named_res$seed <- seed
   named_res$dropout <- dropout_boolean
+  named_res$dropout_rate <- dropout_rate
 
   named_res$training_loss_history <- training_loss_history
   named_res$validation_loss_history <- validation_loss_history

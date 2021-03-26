@@ -218,3 +218,53 @@ subsample_n_per_class <- function(features,
   features <- features[match(target_sp, features$species),]
   return(list(features, labels))
 }
+
+log_results <- function(res,logfile,init_file=FALSE){
+  if (init_file){ # init a new logfile, make sure, you don't overwrite previous results
+    if(file.exists(logfile)){
+      overwrite_prompt = readline(prompt="Specified log-file already exists and will be overwritten and all previous contents will be lost. Do you want to proceed? [Y/n]: ")
+      if (overwrite_prompt == 'Y'){
+        cat(c("model","level","dropout-rate","seed","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","\n"),file=logfile,sep="\t")
+      }else{
+        print('Not overwriting existing log-file. Please specify different logfile argument or set init_file=FALSE')
+        break
+      }
+    }else{
+      cat(c("model","level","dropout-rate","seed","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","\n"),file=logfile,sep="\t")
+    }
+  }
+
+  if (length(res$input_data$lookup.lab.num.z)==2){
+    label_level = 'broad'
+    confusion_matrix_lines = c(NaN,
+                               NaN,
+                               NaN,
+                               NaN,
+                               NaN,
+                               paste(res$confusion_matrix[1,], collapse = '_'),
+                               paste(res$confusion_matrix[2,], collapse = '_')
+    )
+  }else{
+    label_level = 'detail'
+    confusion_matrix_lines = c(paste(res$confusion_matrix[1,], collapse = '_'),
+                               paste(res$confusion_matrix[2,], collapse = '_'),
+                               paste(res$confusion_matrix[3,], collapse = '_'),
+                               paste(res$confusion_matrix[4,], collapse = '_'),
+                               paste(res$confusion_matrix[5,], collapse = '_'),
+                               NaN,
+                               NaN
+    )
+  }
+
+  cat(c(res$model,
+        label_level,
+        res$dropout_rate,
+        res$seed,
+        round(res$training_accuracy,6),
+        round(res$validation_accuracy,6),
+        round(res$test_accuracy,6),
+        round(res$training_loss,6),
+        round(res$validation_loss,6),
+        confusion_matrix_lines,
+        "\n"),sep="\t",file=logfile,append=T)
+}

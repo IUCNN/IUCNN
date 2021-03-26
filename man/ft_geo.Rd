@@ -32,10 +32,12 @@ a data.frame of geographic features
 \description{
 Calculates the number of occurrences, number of unique occurrences,
 mean latitude, mean longitude, latitudinal range, longitudinal range,
-eoo, aoo and hemisphere as input features for IUCNN from a list of species occurrences.
+eoo, aoo and hemisphere as input features for IUCNN
+from a list of species occurrences.
 }
 \details{
-Coordinate ranges are 90\% quantiles, for species with less than three occurrences EOO is set to AOO.
+Coordinate ranges are 90\% quantiles, for species with
+less than three occurrences EOO is set to AOO.
 }
 \examples{
 dat <- data.frame(species = c("A","B"),
@@ -47,7 +49,6 @@ ft_geo(dat)
 }
 \seealso{
 Other Feature preparation: 
-\code{\link{ft_bias}()},
 \code{\link{ft_biom}()},
 \code{\link{ft_clim}()},
 \code{\link{ft_foot}()},
