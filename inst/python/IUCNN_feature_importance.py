@@ -8,6 +8,8 @@ Created on Fri Mar  5 17:25:09 2021
 
 import numpy as np
 import tensorflow as tf
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels):
     prm_est = model.predict(features).flatten()
