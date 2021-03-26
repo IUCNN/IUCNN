@@ -15,31 +15,40 @@ predict_iucnn(
 }
 \arguments{
 \item{x}{a data.set, containing a column "species" with the species names, and
-subsequent columns with different features, in the same order as used for \code{\link{train_iucnn}}}
+subsequent columns with different features,
+in the same order as used for \code{\link{train_iucnn}}}
 
 \item{model}{the information on the NN model returned by \code{\link{train_iucnn}}}
 
-\item{target_acc}{numerical, 0-1. The target accuracy of the overall model. Species that cannot be classified with
+\item{target_acc}{numerical, 0-1. The target accuracy of the overall model.
+Species that cannot be classified with
 enough certainty to reach this accuracy are classified as DD (Data Deficient).}
 
 \item{verbose}{logical, if TRUE generate additional output.}
 
-\item{return_raw}{logical. Should the probabilities for the labels be returned? Default is FALSE.
-Note that the probabilities are the direct output of the SoftMax function in the output layer
+\item{return_raw}{logical. Should the probabilities for the labels be returned?
+Default is FALSE.
+Note that the probabilities are the direct output of the
+SoftMax function in the output layer
 of the neural network and might be an unreliable measure of statistical support for
 the result of the classification (e.g. https://arxiv.org/abs/2005.04987).}
 
-\item{return_IUCN}{logical. If TRUE the predicted labels are translated into the original labels.
+\item{return_IUCN}{logical. If TRUE the predicted labels are translated
+into the original labels.
 If FALSE numeric labels as used by the model are returned}
 }
 \value{
 a vector with the predicted labels for the input species.
 }
 \description{
-Uses a model generated with \code{\link{train_iucnn}} to predict the IUCN status of
-Not Evaluated or Data Deficient species based on features, for instance generated
-from species occurrence records with \code{\link{ft_geo}}, \code{\link{ft_clim}}, and \code{\link{ft_biom}}.
-The same features in the same order must be used for training and fitting.
+Uses a model generated with \code{\link{train_iucnn}}
+to predict the IUCN status of
+Not Evaluated or Data Deficient species based on features,
+for instance generated
+from species occurrence records with \code{\link{ft_geo}},
+\code{\link{ft_clim}}, and \code{\link{ft_biom}}.
+The same features in the same order must be
+used for training and fitting.
 }
 \note{
 See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a

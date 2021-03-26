@@ -19,7 +19,8 @@ ft_clim(
 \item{x}{a data.frame of species occurrence records including three columns with
 species name, longitudinal coordinates and latitudinal coordinates (both decimal).}
 
-\item{climate.input}{a raster or rasterStack with climate data. Optional. If not provided,
+\item{climate.input}{a raster or rasterStack with climate data.
+Optional. If not provided,
 the 19 bioclim variables from www.worldclim.org are used as default.}
 
 \item{species}{a character string. The name of the column with the species names.}
@@ -32,20 +33,27 @@ the 19 bioclim variables from www.worldclim.org are used as default.}
 This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 feature values are returned.}
 
-\item{res}{numeric. The resolution of the default climate rasters. One of 2.5, 5, or 10. Only relevant if
+\item{res}{numeric. The resolution of the default climate rasters.
+One of 2.5, 5, or 10. Only relevant if
 climate.input is NULL}
 
-\item{type}{character string. A selection of which variables to return. If "all" all 19 bioclim variables
-if "selected" only Annual Mean Temperature, Temperature Seasonality, Mean temperature of the Coldest Quarter,
-Annual Precipitation, Precipitation seasonality and Precipitation of the Driest Quarter are returned}
+\item{type}{character string. A selection of which variables to return.
+If "all" all 19 bioclim variables
+if "selected" only Annual Mean Temperature, Temperature Seasonality,
+Mean temperature of the Coldest Quarter,
+Annual Precipitation, Precipitation seasonality and
+Precipitation of the Driest Quarter are returned}
 }
 \value{
 a data.frame of climatic features
 }
 \description{
-Extract median and range (95\% - 5\% quantiles) climate features based on a table of species occurrence coordinates.
-If no climate data is supplied via the input.climate argument, 19 bioclim variables are
-downloaded from  www.worldclim.org. Rescaling is only done for these default variables.
+Extract median and range (95\% - 5\% quantiles) climate
+features based on a table of species occurrence coordinates.
+If no climate data is supplied via the input.climate
+argument, 19 bioclim variables are
+downloaded from  www.worldclim.org.
+Rescaling is only done for these default variables.
 }
 \details{
 All climate variables are summarized  to the species median.
@@ -63,7 +71,6 @@ ft_clim(dat)
 }
 \seealso{
 Other Feature preparation: 
-\code{\link{ft_bias}()},
 \code{\link{ft_biom}()},
 \code{\link{ft_foot}()},
 \code{\link{ft_geo}()},

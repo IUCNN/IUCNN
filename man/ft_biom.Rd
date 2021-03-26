@@ -25,17 +25,20 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 
 \item{lat}{a character string. The name of the column with the latitude.}
 
-\item{biome.input}{s simple features collection of geometry type polygon, contain polygons of different biomes.
+\item{biome.input}{s simple features collection of geometry type polygon,
+contain polygons of different biomes.
 If NULL, the WWF biome scheme is downloaded from
 https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world}
 
-\item{biome.id}{a character string. The name of the column with the biome names in biome.input.
+\item{biome.id}{a character string. The name of the column
+with the biome names in biome.input.
 Default is "BIOME"}
 
 \item{download.path}{character string. The path were to save the WWF polygons
 if biome.input is NULL. Default is the working directory}
 
-\item{remove_zeros}{logical. If TRUE biomes without occurrence of any species are removed from the features.
+\item{remove_zeros}{logical. If TRUE biomes without occurrence of
+any species are removed from the features.
 Default = FALSE}
 }
 \value{
@@ -64,7 +67,6 @@ ft_biom(dat)
 }
 \seealso{
 Other Feature preparation: 
-\code{\link{ft_bias}()},
 \code{\link{ft_clim}()},
 \code{\link{ft_foot}()},
 \code{\link{ft_geo}()},

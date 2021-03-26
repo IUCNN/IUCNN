@@ -8,7 +8,8 @@
 A data frame with 889 rows and 2 variables:
 \describe{
 \item{species}{The canonical species name}
-\item{labels}{The IUCN conservation assessment, converted to numerical for use with IUCNN.
+\item{labels}{The IUCN conservation assessment,
+converted to numerical for use with IUCNN.
 0 =  Critically Endangered (CR),
 1 = Endangered (EN),
 2 = Vulnerable (VU),
@@ -23,7 +24,8 @@ A data frame with 889 rows and 2 variables:
 training_labels
 }
 \description{
-A dataset containing the International Union for the Conservation of Nature's Global
+A dataset containing the International Union for the
+Conservation of Nature's Global
 Red List conservation assessments for 884 species of orchids.
 }
 \keyword{datasets}

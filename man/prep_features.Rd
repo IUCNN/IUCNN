@@ -23,7 +23,8 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{lat}{a character string. The name of the column with the latitude.}
 
 \item{type}{character. The type of features to calculate. Possible options are
-\dQuote{geographic}, \dQuote{biome}, \dQuote{climate}, \dQuote{human footprint}, \dQuote{bias}.
+\dQuote{geographic}, \dQuote{biome}, \dQuote{climate},
+\dQuote{human footprint}.
 All except bias are the default.
 "\dQuote{bias} is only recommended up to the regional scale or below.}
 }
@@ -35,7 +36,8 @@ A wrapper function to prepare all default features included in IUCNN:
 geographic, biomes, climate, human footprint.
 If desired, bias features need to be calculated separately with ft_bias.
 For more control over feature preparation, you can use the
-\code{\link{ft_geo}}, \code{\link{ft_biom}}, \code{\link{ft_clim}},\code{\link{ft_foot}} functions.
+\code{\link{ft_geo}}, \code{\link{ft_biom}}, \code{\link{ft_clim}},
+\code{\link{ft_foot}} functions.
 }
 \details{
 Without internet access, only geographic features are calculated,
@@ -53,7 +55,6 @@ prep_features(dat)
 }
 \seealso{
 Other Feature preparation: 
-\code{\link{ft_bias}()},
 \code{\link{ft_biom}()},
 \code{\link{ft_clim}()},
 \code{\link{ft_foot}()},

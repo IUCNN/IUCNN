@@ -18,7 +18,7 @@ feature_importance(
 
 \item{feature_blocks}{a list. Default behavior is to group the features into geographic, climatic,
 biome, and human footprint features. Provide custom list of feature names or indices to define other
-feature blocks, e.g. \code{feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8))}. If feature
+feature blocks. If feature
 indices are provided as in this example, turn provide_indices flag to TRUE.}
 
 \item{n_permutations}{an integer. Defines how many iterations of shuffling feature values and
