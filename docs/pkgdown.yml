@@ -1,7 +1,0 @@
-pandoc: 2.7.3
-pkgdown: 1.5.1
-pkgdown_sha: ~
-articles:
-  Approximate_IUCN_Red_List_assessments_with_IUCNN: Approximate_IUCN_Red_List_assessments_with_IUCNN.html
-last_built: 2020-09-15T12:43Z
-

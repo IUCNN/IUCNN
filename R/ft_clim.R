@@ -1,19 +1,27 @@
 #' Extract Climatic Features from Occurrence Records
 #'
-#' Extract median and range (95% - 5% quantiles) climate features based on a table of species occurrence coordinates.
-#' If no climate data is supplied via the input.climate argument, 19 bioclim variables are
-#' downloaded from  www.worldclim.org. Rescaling is only done for these default variables.
+#' Extract median and range (95% - 5% quantiles) climate
+#' features based on a table of species occurrence coordinates.
+#' If no climate data is supplied via the input.climate
+#' argument, 19 bioclim variables are
+#' downloaded from  www.worldclim.org.
+#' Rescaling is only done for these default variables.
 #'
 #'
 #' All climate variables are summarized  to the species median.
 #'
-#'@param climate.input a raster or rasterStack with climate data. Optional. If not provided,
+#'@param climate.input a raster or rasterStack with climate data.
+#'Optional. If not provided,
 #'the 19 bioclim variables from www.worldclim.org are used as default.
-#'@param res numeric. The resolution of the default climate rasters. One of 2.5, 5, or 10. Only relevant if
+#'@param res numeric. The resolution of the default climate rasters.
+#'One of 2.5, 5, or 10. Only relevant if
 #'climate.input is NULL
-#'@param type character string. A selection of which variables to return. If "all" all 19 bioclim variables
-#'if "selected" only Annual Mean Temperature, Temperature Seasonality, Mean temperature of the Coldest Quarter,
-#'Annual Precipitation, Precipitation seasonality and Precipitation of the Driest Quarter are returned
+#'@param type character string. A selection of which variables to return.
+#'If "all" all 19 bioclim variables
+#'if "selected" only Annual Mean Temperature, Temperature Seasonality,
+#'Mean temperature of the Coldest Quarter,
+#'Annual Precipitation, Precipitation seasonality and
+#' Precipitation of the Driest Quarter are returned
 #'@inheritParams ft_geo
 #'
 #'@return a data.frame of climatic features
@@ -23,9 +31,9 @@
 #'
 #' @examples
 #'\dontrun{
-#'dat <- data.frame(species = "A",
-#'                 decimallongitude = runif (200,-5,5),
-#'                 decimallatitude = runif (200,-5,5))
+#' dat <- data.frame(species = c("A","B"),
+#'                   decimallongitude = runif (200,10,15),
+#'                   decimallatitude = runif (200,-5,5))
 #'
 #'ft_clim(dat)
 #'}

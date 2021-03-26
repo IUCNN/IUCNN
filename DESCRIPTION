@@ -1,6 +1,6 @@
 Package: IUCNN
 Title: Neural Networks to Approximate IUCN Red List Conservation Assessments
-Version: 0.9.4
+Version: 0.9.9
 Authors@R: c(person(given = "Alexander", family = "Zizka", email = "alexander.zizka@idiv.de",
                     role = c("aut", "cre")),
              person(given = "Daniele", family = "Silvestro", role = "ctb")
@@ -32,10 +32,7 @@ Imports:
     stats,
     tidyr,
     tidyselect,
-    checkmate,
-    sampbias
-Remotes:
-    github::azizka/sampbias
+    checkmate
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)

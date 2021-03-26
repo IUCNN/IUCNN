@@ -43,9 +43,6 @@ See the ?sampbias::calculate_bias for details.
 }
 \examples{
 \dontrun{
-dat <- data.frame(species = "A",
-                decimallongitude = runif (200,-5,5),
-                decimallatitude = runif (200,-5,5))
 
 ft_bias(dat)
 }

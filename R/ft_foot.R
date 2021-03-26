@@ -1,25 +1,32 @@
 #' Extract Human Footprint Index Features from Occurrence Records
 #'
-#' Bins the human footprint index into a set of bins and the fraction of occurrence records
-#' of a species in each bin are the features. By default the human footprint index is downloaded from
+#' Bins the human footprint index into a set of bins and the
+#' fraction of occurrence records
+#' of a species in each bin are the features.
+#' By default the human footprint index is downloaded from
 #' https://wcshumanfootprint.org/. THIS FUNCTION WILL DOWNLOAD DATA FROM
-#' THE INTERNET AND SAVE IT TO THE  WORKING DIRECTORY. The data files are >200 MB each and downloading may
+#' THE INTERNET AND SAVE IT TO THE  WORKING DIRECTORY. The data files
+#' are >200 MB each and downloading may
 #' take some time on first execution.
 #'
 #' By default four categories of increasing human footprint index ( 1 = lowest, 4 = highest)
 #'  are selected and rescaled.
 #'
-#' @param footp_input an object of the class raster or RasterStack with values for the human footprint index.
+#' @param footp_input an object of the class raster or RasterStack
+#' with values for the human footprint index.
 #' If a RasterStack, different layers are interpreted as different time-slices.
-#' @param rescale logical. If TRUE, the values are rescaled using natural logarithm transformation. If FALSE,
+#' @param rescale logical. If TRUE, the values are rescaled using
+#' natural logarithm transformation. If FALSE,
 #' remember to change the breaks argument.
 #' @param year numeric. The years for which to obtain the human footprint index.
 #' The default is to the two layers available. Can be a either year, in case only
 #' one slice is desired. Other time slices are currently not supported,
 #' @param file_path a character string. The path where raster can be saved on disk.
 #'  IF NULL the working directory. Default = NULL.
-#' @param breaks numerical. The breaks to bin the human footprint index for the final features. The defaults are
-#' empirical values for the global footprint and rescale=TRUE. For custom values ensure that they
+#' @param breaks numerical. The breaks to bin the human footprint index
+#'  for the final features. The defaults are
+#' empirical values for the global footprint and rescale=TRUE.
+#' For custom values ensure that they
 #' cover the whole value range and are adapted to the value of rescale.
 #' @inheritParams ft_geo
 #'
@@ -32,9 +39,9 @@
 #'
 #' @examples
 #'\dontrun{
-#'dat <- data.frame(species = "A",
-#'                 decimallongitude = runif (200,-5,5),
-#'                 decimallatitude = runif (200,-5,5))
+#' dat <- data.frame(species = c("A","B"),
+#'                   decimallongitude = runif (200,10,15),
+#'                   decimallatitude = runif (200,-5,5))
 #'
 #'ft_foot(dat)
 #'}
@@ -103,7 +110,9 @@ ft_foot <- function(x,
 
   # extract values
   message("Extracting_footprint_index for occurrence records")
-  pts <- sf::st_as_sf(x, coords = c(lon, lat), crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  pts <- sf::st_as_sf(x,
+                      coords = c(lon, lat),
+                      crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
   pts <- pts %>% sf::st_transform(sf::st_crs(footp_inp))
   pts <- sf::st_coordinates(pts)
 
@@ -145,7 +154,9 @@ ft_foot <- function(x,
     tally() %>%
     group_by(.data$species, .data$year) %>%
     mutate(frac = round(.data$n / sum(.data$n), 2)) %>%
-    mutate(label = paste("humanfootprint", parse_number(.data$year), .data$HFP, sep = "_")) %>%
+    mutate(label = paste("humanfootprint",
+                         parse_number(.data$year),
+                         .data$HFP, sep = "_")) %>%
     dplyr::select(.data$species, .data$label, .data$frac) %>%
     pivot_wider(id_cols = .data$species,
                 names_from = .data$label,

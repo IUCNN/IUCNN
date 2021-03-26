@@ -16,7 +16,7 @@ feature_importance(
 \arguments{
 \item{x}{iucnn_model object, as produced as output when running \code{\link{train_iucnn}}}
 
-\item{feature_blocks}{a list. Default behaviour is to group the features into geographic, climatic,
+\item{feature_blocks}{a list. Default behavior is to group the features into geographic, climatic,
 biome, and human footprint features. Provide custom list of feature names or indices to define other
 feature blocks, e.g. \code{feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8))}. If feature
 indices are provided as in this example, turn provide_indices flag to TRUE.}
@@ -63,17 +63,19 @@ data("training_occ")
 data("training_labels")
 
 train_feat <- prep_features(training_occ)
-labels_train <- prep_labels(training_labels,level = 'detail')
+labels_train <- prep_labels(training_labels,
+                           level = 'detail')
 
 train_output <- train_iucnn(x = train_feat,
-                          labels = labels_train,
+                          lab = labels_train,
                           patience = 10)
 
 
-feature_importance_default <- feature_importance(x= train_output)
-feature_importance_custom = feature_importance(x = train_output,
-feature_blocks = list(block1 = c(1,2,3,4),block2 = c(5,6,7,8)),
-provide_indices = TRUE)
+imp_def <- feature_importance(x = train_output)
+imp_cust <- feature_importance(x = train_output,
+                              feature_blocks = list(block1 = c(1,2,3,4),
+                                                    block2 = c(5,6,7,8)),
+                              provide_indices = TRUE)
 }
 
 }

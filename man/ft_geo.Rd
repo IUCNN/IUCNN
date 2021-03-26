@@ -38,10 +38,9 @@ eoo, aoo and hemisphere as input features for IUCNN from a list of species occur
 Coordinate ranges are 90\% quantiles, for species with less than three occurrences EOO is set to AOO.
 }
 \examples{
-
-dat <- data.frame(species = "A",
-               decimallongitude = runif (200,-5,5),
-                decimallatitude = runif (200,-5,5))
+dat <- data.frame(species = c("A","B"),
+                  decimallongitude = runif (200,10,15),
+                  decimallatitude = runif (200,-5,5))
 
 ft_geo(dat)
 
