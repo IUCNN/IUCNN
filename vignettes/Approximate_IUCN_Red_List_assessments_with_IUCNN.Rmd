@@ -158,7 +158,6 @@ Table 2. Functions to obtain default features and options to customize the featu
 |Biomes|`ft_biom`|change the reference dataset of biomes (biome_input, biome.id), remove biomes without any species occurrence (remove_zeros)|
 |Climate|`ft_clim`|the amount of bioclim variables from the default source to be included (type), the resolution of the default input data (res)|
 |Human footprint|`ft_foot`|chose the time points from the default source (year), the break points for the different footprint categories (breaks, by default approximately quantiles on the global footprint dataset) or a default source for human footprint (footp_input)|
-|Geographic bias|`ft_bias`|The resolution of the bias raster (res) or providing a template raster (ras)|
 
 For instance:
 

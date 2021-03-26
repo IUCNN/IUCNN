@@ -13,7 +13,7 @@
 #'@inheritParams ft_geo
 #'@param type character. The type of features to calculate. Possible options are
 #'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate},
-#'\dQuote{human footprint}, \dQuote{bias}.
+#'\dQuote{human footprint}.
 #'All except bias are the default.
 #'"\dQuote{bias} is only recommended up to the regional scale or below.
 #'
@@ -111,24 +111,6 @@ prep_features <- function(x,
     }
   }else{
     warning("No internet connection, only geographic features created")
-  }
-
-  #bias
-  if("bias" %in% type){
-    #if sampbias is installed, run bias features
-    if(!requireNamespace("sampbias", quietly = TRUE)){
-      warning("sampbias not fund, skipping bias features. Install package sampbias.")
-    }else{
-      message("Calculating bias features.")
-      samp <- ft_bias(x)
-
-      if(exists("out")){
-        out <- out %>%
-          left_join(samp, by = species)
-      }else{
-        out <- samp
-      }
-    }
   }
   return(out)
 }
