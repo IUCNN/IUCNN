@@ -1,10 +1,10 @@
 import tensorflow as tf
 import numpy as np
 import os
-#try:
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
-#except:
-#    pass
+try:
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
+except:
+    pass
 
 def iucnn_train(dataset, 
                 labels,
