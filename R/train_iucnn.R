@@ -42,8 +42,8 @@
 #'the activation function for the output
 #'layer. When setting to "auto" (default), a suitable output activation
 #' function will be chosen based on the
-#'chosen mode. Other valid options are "softmax" (nn-class), "tanh" (nn-reg),
-#'"sigmoid" (nn-reg), "swish" (bnn-class)
+#'chosen mode. Other valid options are "softmax" (nn-class, bnn-class), "tanh" (nn-reg),
+#'"sigmoid" (nn-reg)
 #'@param label_stretch_factor numeric. When choosing mode "nn-reg" the
 #'labels will be rescaled and this rescaling can be
 #'further adjusted by this factor. A factor smaller than 1.0 will
@@ -96,9 +96,6 @@
 #'
 #' @export
 #' @importFrom reticulate py_get_attr source_python
-#' @importFrom utils read.table
-#' @importFrom magrittr %>%
-#' @importFrom dplyr select left_join mutate
 #' @importFrom stats complete.cases
 #' @importFrom checkmate assert_data_frame assert_character assert_logical assert_numeric
 
@@ -109,9 +106,10 @@ train_iucnn <- function(x,
                         model_name = "iuc_nn_model",
                         validation_split = 0.1,
                         test_fraction = 0.1,
+                        cv_fold = 1,
                         seed = 1234,
                         max_epochs = 1000,
-                        n_layers = c(60,60,20),
+                        n_layers = '60_60_20',
                         use_bias = TRUE,
                         act_f = "relu",
                         act_f_out = "auto",
@@ -121,7 +119,9 @@ train_iucnn <- function(x,
                         dropout_rate = 0.0,
                         label_noise_factor = 0.0,
                         rescale_features = FALSE,
-                        overwrite = FALSE){
+                        save_model = TRUE,
+                        overwrite = FALSE,
+                        verbose = 1){
 
   # Check input
   ## assertion
@@ -132,26 +132,17 @@ train_iucnn <- function(x,
   assert_numeric(test_fraction, lower = 0, upper = 1)
   assert_numeric(seed)
   assert_numeric(max_epochs)
-  assert_numeric(n_layers)
+  assert_character(n_layers)
   assert_logical(use_bias)
   assert_character(act_f)
   assert_character(act_f_out)
   assert_numeric(label_stretch_factor, lower = 0, upper = 1)
   assert_numeric(patience)
   assert_logical(randomize_instances)
-  assert_character(mode)
   assert_numeric(dropout_rate, lower = 0, upper = 1)
   assert_numeric(label_noise_factor, lower = 0, upper = 1)
   assert_logical(rescale_features)
   assert_logical(overwrite)
-
-  ## specific checks
-  if(!"species" %in% names(x)){
-    stop("species column not found in x.
-         The features input need a column named 'species'
-         with the species names matching those in labels")
-  }
-
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
   # check if the model directory already exists
@@ -159,74 +150,18 @@ train_iucnn <- function(x,
     stop(sprintf("Directory %s exists. Provide alternative 'model_name' or 'path_to_output' or set `overwrite` to TRUE.", model_name))
   }
 
-  # merge species and labels to match order
-  tmp.in <- left_join(x, lab$labels, by = "species")
+  data_out = process_iucnn_input(x,lab = lab, mode = mode, outpath = '.', write_data_files = FALSE, verbose=verbose)
 
-  # check if species wre lost by the merging
-  if(nrow(tmp.in) != nrow(x)){
-    mis <- x$species[!x$species %in% tmp$species]
-    warning("Labels for species not found, species removed.\n", paste(mis, "\n"))
-  }
+  dataset = data_out[[1]]
+  labels = data_out[[2]]
+  instance_names = data_out[[3]]
 
-  if(nrow(tmp.in) != nrow(lab$labels)){
-    mis <- lab$labels$species[!lab$labels$species %in% tmp$species]
-    warning("Features for species not found, species removed.\n", paste(mis, "\n"))
-  }
+  n_layers = as.numeric(strsplit(n_layers,'_')[[1]])
 
-  # complete cases only
-  tmp <- tmp.in[complete.cases(tmp.in),]
-
-  if(nrow(tmp) != nrow(tmp.in)){
-    mis <- tmp.in[!complete.cases(tmp.in),]
-    warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
-  }
-
-  # check that not all species were removed
-  if(nrow(tmp) == 0){
-    stop("Labels and features do not match or there are no species with complete features.")
-  }
-
-  # report the number of species
-  t1 <- nrow(tmp)
-
-  if(t1 < 200){
-    warning("The number of training taxa is low, consider including more species")
-  }
-  message(sprintf("%s species included in model training", t1))
-
-  # check class balance
-  t2 <- table(tmp$labels)
-
-  if(max(t2) / min(t2) > 3){
-    warning("Classes unbalanced")
-  }
-  message(sprintf("Class max/min representation ratio: %s", round(max(t2) / min(t2), 1)))
-
-  # prepare input data for the python function
-  dataset <- tmp %>%
-    dplyr::select(-.data$species, -.data$labels)
-
-  dataset_bnn <- tmp[, seq_along(names(tmp)) - 1]
-
-  instance_names <- tmp %>%
-    dplyr::select(.data$species)
-
-  labels <- tmp %>%
-    dplyr::select(.data$labels)
-
-  # prepare labels to start at 0
-  if(min(labels$labels) != 0){
-    warning(sprintf("Labels need to start at 0. Labels substracted with %s", min(labels$labels)))
-
-    labels <-  labels %>%
-      dplyr::mutate(labels = .data$labels - min(.data$labels))
-  }
   # set out act fun if chosen auto
   if (act_f_out == 'auto'){
     if (mode == 'nn-reg'){
       act_f_out  <-  'tanh'
-    }else if(mode == 'bnn-class'){
-      act_f_out  <-  'swish'
     }else{
       act_f_out  <-  'softmax'
     }
@@ -239,14 +174,10 @@ train_iucnn <- function(x,
   }
 
   if (mode == 'bnn-class'){
-    # in the current npbnn function we need to add a dummy column of instance names
-    labels[['names']] <- replicate(length(labels$labels),'sp.')
-    labels <- labels[, c('names','labels')]
-    #write.table(as.matrix(dataset_bnn),'manual_tests/features_tutorial_data_bnn.txt',sep='\t',quote=FALSE,row.names=FALSE)
-    #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data_bnn.txt',sep='\t',quote=FALSE,row.names=FALSE)
-
+    act_f = 'swish'
+    print('Activation function for BNN model is hard-coded to be "swish" and is not affected by the act_f setting.')
     # transform the data into BNN compatible format
-    bnn_data <- bnn_load_data(dataset_bnn,
+    bnn_data <- bnn_load_data(dataset,
                              labels,
                              seed = as.integer(seed),
                              testsize = test_fraction,
@@ -260,8 +191,8 @@ train_iucnn <- function(x,
     # define the BNN model
     bnn_model <- create_BNN_model(bnn_data,
                                  n_layers,
-                                 actfun = act_f_out,
-                                 seed = 1234
+                                 actfun = act_f,
+                                 seed = as.integer(seed)
     )
 
     # set up the MCMC environment
@@ -324,16 +255,14 @@ train_iucnn <- function(x,
 
     activation_function <- act_f_out
     trained_model_path <- pklfile_path
+    patience = NaN
+    validation_split = NaN
+
 
   }else{
 
     # source python function
     reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
-
-    #write.table(as.matrix(dataset),'manual_tests/features_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-    #write.table(as.matrix(labels),'manual_tests/labels_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-    #write.table(as.matrix(instance_names),'manual_tests/instance_names_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
-    #write.table(names(dataset),'manual_tests/feature_names_tutorial_data.txt',sep='\t',quote=FALSE,row.names=FALSE)
 
     # run model via python script
     res <- iucnn_train(dataset = as.matrix(dataset),
@@ -343,6 +272,7 @@ train_iucnn <- function(x,
                       model_name = model_name,
                       validation_split = validation_split,
                       test_fraction = test_fraction,
+                      cv_k = as.integer(cv_fold),
                       seed = as.integer(seed),
                       instance_names = as.matrix(instance_names),
                       feature_names = names(dataset),
@@ -358,7 +288,8 @@ train_iucnn <- function(x,
                       rescale_features = rescale_features,
                       dropout_rate = dropout_rate,
                       dropout_reps = 100,
-                      label_noise_factor = label_noise_factor
+                      label_noise_factor = label_noise_factor,
+                      save_model = save_model
     )
 
     test_labels <- as.vector(res[[1]])
@@ -404,13 +335,24 @@ train_iucnn <- function(x,
   named_res$min_max_label_rescaled <- min_max_label
   named_res$label_stretch_factor <- label_stretch_factor
 
-  named_res$activation_function <- activation_function
   named_res$trained_model_path <- trained_model_path
 
   named_res$model <- mode
   named_res$seed <- seed
   named_res$dropout <- dropout_boolean
   named_res$dropout_rate <- dropout_rate
+  named_res$max_epochs <- max_epochs
+  named_res$n_layers <- n_layers
+  named_res$use_bias <- use_bias
+  named_res$rescale_features <- rescale_features
+  named_res$act_f <- act_f
+  named_res$act_f_out <- activation_function
+  named_res$validation_split <- validation_split
+  named_res$test_fraction <- test_fraction
+  named_res$cv_fold <- cv_fold
+  named_res$patience <- patience
+  named_res$randomize_instances <- randomize_instances
+  named_res$label_noise_factor <- label_noise_factor
 
   named_res$training_loss_history <- training_loss_history
   named_res$validation_loss_history <- validation_loss_history

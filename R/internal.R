@@ -1,4 +1,8 @@
 #' @importFrom  reticulate import
+#' @importFrom utils read.table
+#' @importFrom magrittr %>%
+#' @importFrom dplyr select left_join mutate
+
 
 get_footp <- function(x, file_path){
   test <- file.exists(file.path(file_path,
@@ -219,52 +223,201 @@ subsample_n_per_class <- function(features,
   return(list(features, labels))
 }
 
-log_results <- function(res,logfile,init_file=FALSE){
-  if (init_file){ # init a new logfile, make sure, you don't overwrite previous results
+log_results <- function(res,logfile,init_logfile=FALSE){
+  if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
+    header = c("model","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","act_f","act_f_out","cv_fold","validation_split","test_fraction","label_stretch_factor","label_noise_factor","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1")
     if(file.exists(logfile)){
       overwrite_prompt = readline(prompt="Specified log-file already exists and will be overwritten and all previous contents will be lost. Do you want to proceed? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
-        cat(c("model","level","dropout-rate","seed","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","\n"),file=logfile,sep="\t")
+        cat(header,file=logfile,sep="\t")
+        cat('\n',file=logfile,append=T)
       }else{
-        print('Not overwriting existing log-file. Please specify different logfile argument or set init_file=FALSE')
+        print('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=FALSE')
         break
       }
     }else{
-      cat(c("model","level","dropout-rate","seed","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","\n"),file=logfile,sep="\t")
+      cat(header,file=logfile,sep="\t")
+      cat('\n',file=logfile,append=T)
     }
   }
+  if (class(res)=="iucnn_model"){
+    if (length(res$input_data$lookup.lab.num.z)==2){
+      label_level = 'broad'
+      confusion_matrix_lines = c(NaN,
+                                 NaN,
+                                 NaN,
+                                 NaN,
+                                 NaN,
+                                 paste(res$confusion_matrix[1,], collapse = '_'),
+                                 paste(res$confusion_matrix[2,], collapse = '_'))
+    }else{
+      label_level = 'detail'
+      confusion_matrix_lines = c(paste(res$confusion_matrix[1,], collapse = '_'),
+                                 paste(res$confusion_matrix[2,], collapse = '_'),
+                                 paste(res$confusion_matrix[3,], collapse = '_'),
+                                 paste(res$confusion_matrix[4,], collapse = '_'),
+                                 paste(res$confusion_matrix[5,], collapse = '_'),
+                                 NaN,
+                                 NaN)
+    }
+    cat(c(res$model,
+          label_level,
+          res$dropout_rate,
+          res$seed,
+          res$max_epochs,
+          res$patience,
+          paste(res$n_layers, collapse = '_'),
+          res$use_bias,
+          res$rescale_features,
+          res$randomize_instances,
+          res$act_f,
+          res$act_f_out,
+          res$cv_fold,
+          res$validation_split,
+          res$test_fraction,
+          res$label_stretch_factor,
+          res$label_noise_factor,
+          round(res$training_accuracy,6),
+          round(res$validation_accuracy,6),
+          round(res$test_accuracy,6),
+          round(res$training_loss,6),
+          round(res$validation_loss,6),
+          confusion_matrix_lines),sep="\t",file=logfile,append=T)
+    cat('\n',file=logfile,append=T)
+  message(paste0("Model-testing results written to file: ",logfile))
+  }
+}
 
-  if (length(res$input_data$lookup.lab.num.z)==2){
-    label_level = 'broad'
-    confusion_matrix_lines = c(NaN,
-                               NaN,
-                               NaN,
-                               NaN,
-                               NaN,
-                               paste(res$confusion_matrix[1,], collapse = '_'),
-                               paste(res$confusion_matrix[2,], collapse = '_')
-    )
+
+process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_files=FALSE, verbose=1){
+  if (typeof(lab) == 'double'){ # aka if lab=NaN when running from predict_iucnn
+    # complete cases only
+    tmp.in <- x[complete.cases(x),]
+    if(nrow(tmp.in) != nrow(x)){
+      mis <- x[!complete.cases(x),]
+      if (verbose ==1){
+        warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
+      }
+    }
+    instance_id <- tmp.in$species
+    #prepare input data
+    tmp <- tmp.in %>%
+      dplyr::select(-.data$species)
+
+    dataset <- tmp
+    labels <- NaN
+    instance_names <- instance_id
+
   }else{
-    label_level = 'detail'
-    confusion_matrix_lines = c(paste(res$confusion_matrix[1,], collapse = '_'),
-                               paste(res$confusion_matrix[2,], collapse = '_'),
-                               paste(res$confusion_matrix[3,], collapse = '_'),
-                               paste(res$confusion_matrix[4,], collapse = '_'),
-                               paste(res$confusion_matrix[5,], collapse = '_'),
-                               NaN,
-                               NaN
-    )
+    ## specific checks
+    if(!"species" %in% names(x)){
+      stop("species column not found in x.
+           The features input need a column named 'species'
+           with the species names matching those in labels")
+    }
+
+    # merge species and labels to match order
+    tmp.in <- left_join(x, lab$labels, by = "species")
+
+    # check if species were lost by the merging
+    if(nrow(tmp.in) != nrow(x)){
+      mis <- x$species[!x$species %in% tmp$species]
+      if (verbose ==1){
+        warning("Labels for species not found, species removed.\n", paste(mis, "\n"))
+      }
+    }
+
+    if(nrow(tmp.in) != nrow(lab$labels)){
+      mis <- lab$labels$species[!lab$labels$species %in% tmp$species]
+      if (verbose ==1){
+        warning("Features for species not found, species removed.\n", paste(mis, "\n"))
+      }
+    }
+
+    # complete cases only
+    tmp <- tmp.in[complete.cases(tmp.in),]
+
+    if(nrow(tmp) != nrow(tmp.in)){
+      mis <- tmp.in[!complete.cases(tmp.in),]
+      if (verbose ==1){
+        warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
+      }
+    }
+
+    # check that not all species were removed
+    if(nrow(tmp) == 0){
+      stop("Labels and features do not match or there are no species with complete features.")
+    }
+
+    # report the number of species
+    t1 <- nrow(tmp)
+
+    if(t1 < 200){
+      if (verbose ==1){
+        warning("The number of training taxa is low, consider including more species")
+      }
+    }
+
+    if (verbose ==1){
+      message(sprintf("%s species included in model training", t1))
+    }
+
+    # check class balance
+    t2 <- table(tmp$labels)
+
+    if(max(t2) / min(t2) > 3){
+      if (verbose ==1){
+        warning("Classes unbalanced")
+      }
+    }
+    if (verbose ==1){
+      message(sprintf("Class max/min representation ratio: %s", round(max(t2) / min(t2), 1)))
+    }
+    # prepare input data for the python function
+    dataset <- tmp %>%
+      dplyr::select(-.data$species, -.data$labels)
+
+    if (mode=='bnn-class'){
+      dataset <- tmp[, seq_along(names(tmp)) - 1]
+    }
+
+    instance_names <- tmp %>%
+      dplyr::select(.data$species)
+
+    labels <- tmp %>%
+      dplyr::select(.data$labels)
+
+    # prepare labels to start at 0
+    if(min(labels$labels) != 0){
+      if (verbose ==1){
+        warning(sprintf("Labels need to start at 0. Labels substracted with %s", min(labels$labels)))
+      }
+
+      labels <-  labels %>%
+        dplyr::mutate(labels = .data$labels - min(.data$labels))
+    }
+
+    if (mode=='bnn-class'){
+      # in the current npbnn function we need to add a dummy column of instance names
+      labels[['names']] <- replicate(length(labels$labels),'sp.')
+      labels <- labels[, c('names','labels')]
+    }
+
+  }
+  if (write_data_files == TRUE){
+    write.table(as.matrix(dataset),paste(outpath,'iucnn_input_features.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
+    if (typeof(lab) == 'list'){
+      write.table(as.matrix(labels),paste(outpath,'iucnn_input_labels.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
+    }
+    write.table(as.matrix(instance_names),paste(outpath,'iucnn_input_instance_names.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
+    write.table(names(dataset),paste(outpath,'iucnn_input_feature_names.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
   }
 
-  cat(c(res$model,
-        label_level,
-        res$dropout_rate,
-        res$seed,
-        round(res$training_accuracy,6),
-        round(res$validation_accuracy,6),
-        round(res$test_accuracy,6),
-        round(res$training_loss,6),
-        round(res$validation_loss,6),
-        confusion_matrix_lines,
-        "\n"),sep="\t",file=logfile,append=T)
+  return(list(dataset,labels,instance_names))
 }
+
+
+
+
+
+

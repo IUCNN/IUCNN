@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore")
 import tensorflow as tf
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
@@ -14,6 +14,7 @@ def iucnn_train(dataset,
                 path_to_output,
                 validation_split,
                 test_fraction,
+                cv_k,
                 seed,
                 instance_names,
                 feature_names,
@@ -30,13 +31,15 @@ def iucnn_train(dataset,
                 rescale_features,
                 dropout_rate,
                 dropout_reps,
-                label_noise_factor):
+                label_noise_factor,
+                save_model):    
+    
     
     class MCDropout(tf.keras.layers.Dropout):
         def call(self, inputs):
             return super().call(inputs, training=True)    
     
-    def build_classification_model(dropout,dropout_rate):
+    def build_classification_model(dropout,dropout_rate,use_bias):
         architecture = [tf.keras.layers.Flatten(input_shape=[train_set.shape[1]])]
         architecture.append(tf.keras.layers.Dense(n_layers[0],
                                       activation=act_f,
@@ -55,7 +58,7 @@ def iucnn_train(dataset,
                       metrics=['accuracy'])
         return model
 
-    def build_regression_model(dropout,dropout_rate):
+    def build_regression_model(dropout,dropout_rate,use_bias):
         architecture = [tf.keras.layers.Flatten(input_shape=[train_set.shape[1]])]
         architecture.append(tf.keras.layers.Dense(n_layers[0],
                                       activation=act_f,
@@ -149,15 +152,29 @@ def iucnn_train(dataset,
     #         rescaled_labels = ((labels/lab_range) +0.5) * (n_labels-1)
     #     return(rescaled_labels)
 
-    def model_init(mode,dropout,dropout_rate):
+    def model_init(mode,dropout,dropout_rate,use_bias):
         if mode == 'nn-reg':
-            model = build_regression_model(dropout,dropout_rate)
+            model = build_regression_model(dropout,dropout_rate,use_bias)
         elif mode == 'nn-class':    
-            model = build_classification_model(dropout,dropout_rate)
+            model = build_classification_model(dropout,dropout_rate,use_bias)
         return model 
-    
-    if not os.path.exists(path_to_output):
-        os.makedirs(path_to_output)
+
+    def iter_test_indices(features, n_splits = 5, shuffle = True, seed = None):
+        n_samples = features.shape[0]
+        indices = np.arange(n_samples)
+        if seed:
+            np.random.seed(seed)
+        np.random.shuffle(indices)
+        fold_sizes = np.full(n_splits, n_samples // n_splits, dtype=np.int)
+        fold_sizes[:n_samples % n_splits] += 1
+        current = 0
+        index_output = []
+        for fold_size in fold_sizes:
+            start, stop = current, current + fold_size
+            index_output.append(indices[start:stop])
+            current = stop
+        return index_output
+
     # randomize data
     if seed > 0:
         np.random.seed(seed)
@@ -172,6 +189,10 @@ def iucnn_train(dataset,
         dropout = True
     else:
         dropout = False
+    if use_bias == 1:
+        use_bias = True
+    elif use_bias == 0:
+        use_bias = False
     if mode == 'nn-reg':
         rescale_labels_boolean = True
         if act_f_out == 'tanh':
@@ -191,129 +212,175 @@ def iucnn_train(dataset,
     rescale_factor = max(labels)
     rescaled_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
 
-    rnd_dataset = dataset[rnd_indx,:]
-    rnd_labels = labels[rnd_indx]
-    rnd_instance_names = instance_names[rnd_indx]
+    # rnd_dataset = dataset[rnd_indx,:]
+    # rnd_labels = labels[rnd_indx]
+    # rnd_instance_names = instance_names[rnd_indx]
+    
+    if cv_k > 1:
+        train_index_blocks = iter_test_indices(dataset,n_splits = cv_k,shuffle=False)
+        test_indices = []
+        cv = True
+    else:
+        test_size = int(len(labels)*test_fraction)
+        train_index_blocks = [rnd_indx[:-test_size]]
+        test_indices = list(rnd_indx[-test_size:])
+        cv = False
+        
+    train_acc_per_fold = []
+    train_loss_per_fold = []
+    validation_acc_per_fold = []
+    validation_loss_per_fold = []
+    test_acc_per_fold = []
+    test_loss_per_fold = []    
+    for it, __ in enumerate(train_index_blocks):
+        if cv:
+            print("Training CV fold %i/%i..."%(it+1,cv_k),flush=True)
+            test_ids = train_index_blocks[it] # in case of cv, choose one of the k chunks as test set
+            train_ids = np.concatenate(np.array([train_index_blocks[i] for i in list(np.delete(np.arange(len(train_index_blocks)),it))])).astype(int)
+        else:
+            test_ids = test_indices
+            train_ids = train_index_blocks[0]
+        
+        train_set = dataset[train_ids,:]
+        test_set = dataset[test_ids,:]
+        
+        labels_cat = tf.keras.utils.to_categorical(labels)
+        n_class = labels_cat.shape[1]
+        if mode == 'nn-class':
+            labels_for_training = labels_cat[train_ids,:]
+            labels_for_testing = labels_cat[test_ids,:]
+            optimize_for_this = "val_loss"
+        elif mode == 'nn-reg':
+            labels_for_training = rescaled_labels[train_ids]
+            noise_radius = (((np.max(rescaled_labels)-np.min(rescaled_labels))/(n_class-1))/2)*label_noise_factor
+            #labels_for_training = np.array([np.random.normal(i,noise_radius/3) for i in labels_for_training])
+            labels_for_training = np.array([np.random.uniform(i-noise_radius,i+noise_radius) for i in labels_for_training])
+            labels_for_testing = rescaled_labels[test_ids]
+            optimize_for_this = "val_mae"      
 
-    test_size = int(len(labels)*test_fraction)
-    train_set = rnd_dataset[:-test_size,:]
-    test_set = rnd_dataset[-test_size:,:]
-
-    # format labels
-    rnd_labels_cat  = tf.keras.utils.to_categorical(rnd_labels)
-    rnd_labels_scaled = rescaled_labels[rnd_indx]
-    
-    train_labels_cat = rnd_labels_cat[:-test_size,:]
-    train_labels_scaled = rnd_labels_scaled[:-test_size]
-    train_labels = rnd_labels[:-test_size]
-    train_instance_names = rnd_instance_names[:-test_size]
-
-    test_labels_cat = rnd_labels_cat[-test_size:,:]
-    test_labels_scaled = rnd_labels_scaled[-test_size:]
-    test_labels = rnd_labels[-test_size:]
-    test_instance_names = rnd_instance_names[-test_size:]
-    
-    val_set_cutoff = int(np.round(train_set.shape[0]*validation_split))
-    validation_set = train_set[-val_set_cutoff:,:]
-    
-    n_class = rnd_labels_cat.shape[1]
-    
-    if mode == 'nn-class':
-        labels_for_training = train_labels_cat
-        labels_for_testing = test_labels_cat
-        optimize_for_this = "val_loss"
-    elif mode == 'nn-reg':
-        labels_for_training = train_labels_scaled
-        noise_radius = (((np.max(rescaled_labels)-np.min(rescaled_labels))/(n_class-1))/2)*label_noise_factor
-        #labels_for_training = np.array([np.random.normal(i,noise_radius/3) for i in labels_for_training])
-        labels_for_training = np.array([np.random.uniform(i-noise_radius,i+noise_radius) for i in labels_for_training])
-        labels_for_testing = test_labels_scaled
-        optimize_for_this = "val_mae"
-    validation_labels = labels_for_training[-val_set_cutoff:]
-    
-    
-    # determine stopping point
-    if patience == 0:
-        tf.random.set_seed(seed)
-        # determining optimal number of epochs
-        model = model_init(mode,dropout,dropout_rate)
-        #model.summary()
-        history_fit = model.fit(train_set, 
+        # these are just to keep track of the true, unaltered (not-rescaled) labels for output
+        output_train_labels = labels[train_ids]
+        output_test_labels = labels[test_ids]
+        
+        train_instance_names = instance_names[train_ids]
+        test_instance_names = instance_names[test_ids]
+        
+        # define validation set manually as the last chunck of the training data (for manually compiling validation accuracy of some altered models)
+        val_set_cutoff = int(np.round(train_set.shape[0]*validation_split))
+        validation_set = train_set[-val_set_cutoff:,:]
+        validation_labels = labels_for_training[-val_set_cutoff:]
+        
+        # determine stopping point
+        if patience == 0:
+            tf.random.set_seed(seed)
+            # determining optimal number of epochs
+            model = model_init(mode,dropout,dropout_rate,use_bias)
+            #model.summary()
+            history_fit = model.fit(train_set, 
+                                    labels_for_training, 
+                                    epochs=max_epochs,
+                                    validation_split=validation_split, 
+                                    verbose=verbose)    
+        else:
+            tf.random.set_seed(seed)
+            # train model
+            model = model_init(mode,dropout,dropout_rate,use_bias)
+            model.build((train_set.shape[1],))
+            if verbose:
+                model.summary()
+            # The patience parameter is the amount of epochs to check for improvement
+            early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience)
+            history_fit = model.fit(train_set, 
                                 labels_for_training, 
                                 epochs=max_epochs,
                                 validation_split=validation_split, 
-                                verbose=verbose)    
-    else:
-        tf.random.set_seed(seed)
-        # train model
-        model = model_init(mode,dropout,dropout_rate)
-        model.build((train_set.shape[1],))
-        model.summary()
-        # The patience parameter is the amount of epochs to check for improvement
-        early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience)
-        history_fit = model.fit(train_set, 
-                            labels_for_training, 
-                            epochs=max_epochs,
-                            validation_split=validation_split, 
-                            verbose=verbose,
-                            callbacks=[early_stop])
-    if 'accuracy' in optimize_for_this:
-        stopping_point = np.argmax(history_fit.history[optimize_for_this])+1
-    else:
-        stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
-    # train model
-    tf.random.set_seed(seed)
-    model = model_init(mode,dropout,dropout_rate)
-    model.summary()
-    history = model.fit(train_set, 
-                        labels_for_training, 
-                        epochs=stopping_point,
-                        validation_split=validation_split, 
-                        verbose=verbose)   
-
-    if mode == 'nn-class':        
-        train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,dropout,dropout_reps,loss=True)
-        test_predictions, test_predictions_raw, test_loss, test_acc = get_classification_accuracy(model,test_set,labels_for_testing,dropout,dropout_reps,loss=True)        
-        if dropout:
-            val_predictions, val_predictions_raw, val_loss, val_acc = get_classification_accuracy(model,validation_set,validation_labels,dropout,dropout_reps,loss=True)  
+                                verbose=verbose,
+                                callbacks=[early_stop])
+        if 'accuracy' in optimize_for_this:
+            stopping_point = np.argmax(history_fit.history[optimize_for_this])+1
         else:
-            train_acc = history.history['accuracy'][-1]
+            stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
+        # train model
+        tf.random.set_seed(seed)
+        model = model_init(mode,dropout,dropout_rate,use_bias)
+        if verbose:
+            model.summary()
+        history = model.fit(train_set, 
+                            labels_for_training, 
+                            epochs=stopping_point,
+                            validation_split=validation_split, 
+                            verbose=verbose)   
+    
+        if mode == 'nn-class':        
+            train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,dropout,dropout_reps,loss=True)
+            test_predictions, test_predictions_raw, test_loss, test_acc = get_classification_accuracy(model,test_set,labels_for_testing,dropout,dropout_reps,loss=True)        
+            if dropout:
+                val_predictions, val_predictions_raw, val_loss, val_acc = get_classification_accuracy(model,validation_set,validation_labels,dropout,dropout_reps,loss=True)  
+            else:
+                train_acc = history.history['accuracy'][-1]
+                train_loss = history.history['loss'][-1]
+                val_acc = history.history['val_accuracy'][-1]
+                val_loss = history.history['val_loss'][-1]
+            train_acc_history = np.array(history.history['accuracy'])
+            val_acc_history = np.array(history.history['val_accuracy'])
+            train_mae_history = np.nan
+            val_mae_history = np.nan
+    
+        elif mode == 'nn-reg':
+            test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
             train_loss = history.history['loss'][-1]
-            val_acc = history.history['val_accuracy'][-1]
+            test_loss = np.nan
+            train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
+            val_acc, __, __ = get_regression_accuracy(model,validation_set,validation_labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
             val_loss = history.history['val_loss'][-1]
-        train_acc_history = np.array(history.history['accuracy'])
-        val_acc_history = np.array(history.history['val_accuracy'])
-        train_mae_history = np.nan
-        val_mae_history = np.nan
+            train_acc_history = np.nan
+            val_acc_history = np.nan
+            train_mae_history = np.array(history.history['mae'])
+            val_mae_history = np.array(history.history['val_mae'])
 
-    elif mode == 'nn-reg':
-        test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
-        train_loss = history.history['loss'][-1]
-        test_loss = np.nan
-        train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
-        val_acc, __, __ = get_regression_accuracy(model,validation_set,validation_labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
-        val_loss = history.history['val_loss'][-1]
-        train_acc_history = np.nan
-        val_acc_history = np.nan
-        train_mae_history = np.array(history.history['mae'])
-        val_mae_history = np.array(history.history['val_mae'])
+        train_acc_per_fold.append(train_acc)
+        train_loss_per_fold.append(train_loss)
+        validation_acc_per_fold.append(val_acc)
+        validation_loss_per_fold.append(val_loss)
+        test_acc_per_fold.append(test_acc)
+        test_loss_per_fold.append(test_loss) 
 
-    model_outpath = os.path.join(path_to_output, model_name)
-    model.save( model_outpath )
-    print("IUC-NN model saved as:", model_name, "in", path_to_output)
+        if save_model:
+            if not os.path.exists(path_to_output):
+                os.makedirs(path_to_output)
+            model_outpath = os.path.join(path_to_output, model_name+ '_%i'%it)
+            model.save( model_outpath )
+            print("IUC-NN model saved as:", model_name, "in", path_to_output)
+        else:
+            model_outpath = ''
+    
+    # print stats to screen
+    avg_train_acc = np.mean(train_acc_per_fold)
+    avg_validation_acc = np.mean(validation_acc_per_fold)
+    avg_test_acc = np.mean(test_acc_per_fold)
+    avg_train_loss = np.mean(train_loss_per_fold)
+    avg_validation_loss = np.mean(validation_loss_per_fold)
+    avg_test_loss = np.mean(test_loss_per_fold)
+    
+    if verbose:
+        print('Average scores for all folds:')
+        print('> Test accuracy: %.5f (+- %.5f (std))'%(avg_test_acc,np.std(test_acc_per_fold)))
+        print('> Test loss: %.5f'%avg_test_loss)
+
+
 
     output = [
-                test_labels,
+                output_test_labels,
                 test_predictions,
                 test_predictions_raw,
                 
-                train_acc,
-                val_acc,
-                test_acc,
+                avg_train_acc,
+                avg_validation_acc,
+                avg_test_acc,
 
-                train_loss,
-                val_loss,
-                test_loss,
+                avg_train_loss,
+                avg_validation_loss,
+                avg_test_loss,
                 
                 np.array(history.history['loss']),
                 np.array(history.history['val_loss']),
@@ -332,13 +399,13 @@ def iucnn_train(dataset,
                 act_f_out,
                 model_outpath,
                 
-                np.array(tf.math.confusion_matrix(test_labels,test_predictions)),
+                np.array(tf.math.confusion_matrix(output_test_labels,test_predictions)),
                 
                 {"data":train_set,
-                 "labels":train_labels.flatten(),
+                 "labels":output_train_labels.flatten(),
                  "label_dict":np.unique(labels).astype(str),
                  "test_data":test_set,
-                 "test_labels":test_labels.flatten(),
+                 "test_labels":output_test_labels.flatten(),
                  "id_data":train_instance_names,
                  "id_test_data":test_instance_names,
                  "file_name":model_name,

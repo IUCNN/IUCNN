@@ -12,9 +12,10 @@ train_iucnn(
   model_name = "iuc_nn_model",
   validation_split = 0.1,
   test_fraction = 0.1,
+  cv_fold = 1,
   seed = 1234,
   max_epochs = 1000,
-  n_layers = c(60, 60, 20),
+  n_layers = "60_60_20",
   use_bias = TRUE,
   act_f = "relu",
   act_f_out = "auto",
@@ -24,7 +25,9 @@ train_iucnn(
   dropout_rate = 0,
   label_noise_factor = 0,
   rescale_features = FALSE,
-  overwrite = FALSE
+  save_model = TRUE,
+  overwrite = FALSE,
+  verbose = 1
 )
 }
 \arguments{
@@ -72,8 +75,8 @@ Available options are: "relu" (default), "tanh", "sigmoid"}
 the activation function for the output
 layer. When setting to "auto" (default), a suitable output activation
 function will be chosen based on the
-chosen mode. Other valid options are "softmax" (nn-class), "tanh" (nn-reg),
-"sigmoid" (nn-reg), "swish" (bnn-class)}
+chosen mode. Other valid options are "softmax" (nn-class, bnn-class), "tanh" (nn-reg),
+"sigmoid" (nn-reg)}
 
 \item{label_stretch_factor}{numeric. When choosing mode "nn-reg" the
 labels will be rescaled and this rescaling can be

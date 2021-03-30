@@ -69,11 +69,9 @@ predict_iucnn <- function(x,
   # assertions
   assert_class(x, classes = "data.frame")
 
-  message("Preparing input data")
-
   # check that the same features are in training and prediction
   test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
-    if(!test1){
+  if(!test1){
     mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
     stop("Feature mismatch, missing in training features: \n", paste0(mis, collapse = ", "))
   }
@@ -84,29 +82,17 @@ predict_iucnn <- function(x,
     stop("Feature mismatch, missing in prediction features: \n", paste0(mis, collapse = ", "))
   }
 
-  # complete cases only
-  tmp.in <- x[complete.cases(x),]
 
-  if(nrow(tmp.in) != nrow(x)){
-    mis <- x[!complete.cases(x),]
-    warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
-  }
+  data_out = process_iucnn_input(x,mode = mode, outpath = '.', write_data_files = FALSE)
 
-  instance_id <- tmp.in$species
-  #prepare input data
-  tmp <- tmp.in %>%
-    dplyr::select(-.data$species)
-
-  message("Loading python code")
-
-  # source python function
-  reticulate::source_python(system.file("python", "IUCNN_predict.py", package = "IUCNN"))
+  dataset = data_out[[1]]
+  instance_names = data_out[[3]]
 
   message("Predicting conservation status")
 
   if(model$model == 'bnn-class'){
-    postpr <- bnn_predict( features = as.matrix(tmp),
-                          instance_id = as.matrix(instance_id),
+    postpr <- bnn_predict(features = as.matrix(dataset),
+                          instance_id = as.matrix(instance_names),
                           model_path = model$trained_model_path,
                           target_acc = target_acc,
                           filename = 'prediction',
@@ -125,8 +111,11 @@ predict_iucnn <- function(x,
 
 
   }else{
+    # source python function
+    reticulate::source_python(system.file("python", "IUCNN_predict.py", package = "IUCNN"))
+
     # run predict function
-    out <- iucnn_predict(feature_set = as.matrix(tmp),
+    out <- iucnn_predict(feature_set = as.matrix(dataset),
                          model_dir = model$trained_model_path,
                          verbose = verbose,
                          iucnn_mode = model$model,
