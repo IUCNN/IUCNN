@@ -23,6 +23,8 @@ train_iucnn(
   patience = 200,
   randomize_instances = TRUE,
   dropout_rate = 0,
+  mc_dropout = TRUE,
+  mc_dropout_reps = 100,
   label_noise_factor = 0,
   rescale_features = FALSE,
   save_model = TRUE,
@@ -76,7 +78,7 @@ the activation function for the output
 layer. When setting to "auto" (default), a suitable output activation
 function will be chosen based on the
 chosen mode. Other valid options are "softmax" (nn-class, bnn-class), "tanh" (nn-reg),
-"sigmoid" (nn-reg)}
+"sigmoid" (nn-reg), or no activation function "" (nn-reg)}
 
 \item{label_stretch_factor}{numeric. When choosing mode "nn-reg" the
 labels will be rescaled and this rescaling can be

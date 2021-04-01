@@ -7,8 +7,8 @@ modeltest_iucnn <- function(x,
                             lab,
                             logfile = 'model_testing_logfile.txt',
                             mode = 'nn-class',
-                            cv_fold = 3,
-                            n_layers = c('40_30_20','40_20','20'),
+                            cv_fold = 5,
+                            n_layers = c('50_30_10','40_20','30'),
                             dropout_rate = c(0.0,0.1,0.3),
                             use_bias = TRUE,
                             seed = 1234,
@@ -16,10 +16,12 @@ modeltest_iucnn <- function(x,
                             label_noise_factor = 0.0,
                             act_f = "relu",
                             act_f_out = "auto",
-                            max_epochs = 1000,
-                            patience = 100,
+                            max_epochs = 500,
+                            patience = 30,
                             validation_split = 0.1,
                             test_fraction = 0.0,
+                            mc_dropout = TRUE,
+                            mc_dropout_reps = 10,
                             randomize_instances = TRUE,
                             rescale_features = FALSE,
                             init_logfile = TRUE,
@@ -29,7 +31,7 @@ modeltest_iucnn <- function(x,
   ## assertion
   assert_data_frame(x)
   assert_class(lab, classes = "iucnn_labels")
-  match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
+  assert_character(mode)
   assert_character(logfile)
   assert_numeric(cv_fold)
   assert_numeric(dropout_rate, lower = 0, upper = 1)
@@ -66,29 +68,32 @@ modeltest_iucnn <- function(x,
     log_results(NaN,new_logfile,init_logfile=TRUE)
 
     for (row_id in 1:dim(model_configurations_df)[1]){
+      print(paste0('Running model ',row_id,'/',dim(model_configurations_df)[1]))
       row = model_configurations_df[row_id,]
-      mode = row[1][[1]]
-      dropout_rate = row[3][[1]]
-      seed = row[4][[1]]
-      max_epochs = row[5][[1]]
-      patience = row[6][[1]]
-      n_layers = as.integer(str_split(row[7],'_')[[1]])
-      use_bias = row[8][[1]]
-      rescale_features = row[9][[1]]
-      randomize_instances = row[10][[1]]
-      act_f = row[11][[1]]
-      act_f_out = row[12][[1]]
-      cv_fold = row[13][[1]]
-      validation_split = row[14][[1]]
-      test_fraction = row[15][[1]]
-      label_stretch_factor = row[16][[1]]
-      label_noise_factor = row[17][[1]]
+      mode = row$mode
+      dropout_rate = row$dropout_rate
+      seed = row$seed
+      max_epochs = row$max_epochs
+      patience = row$patience
+      n_layers = row$n_layers
+      use_bias = row$use_bias
+      rescale_features = row$rescale_features
+      randomize_instances = row$randomize_instances
+      mc_dropout = row$mc_dropout
+      mc_dropout_reps = row$mc_dropout_reps
+      act_f = row$act_f
+      act_f_out = row$act_f_out
+      cv_fold = row$cv_fold
+      validation_split = row$validation_split
+      test_fraction = row$test_fraction
+      label_stretch_factor = row$label_stretch_factor
+      label_noise_factor = row$label_noise_factor
 
       res = train_iucnn(x = features,
                         lab = labels_train,
                         mode=mode,
                         path_to_output = '',
-                        model_name = "",
+                        model_name = '',
                         validation_split = validation_split,
                         test_fraction = test_fraction,
                         cv_fold = cv_fold,
@@ -102,6 +107,8 @@ modeltest_iucnn <- function(x,
                         patience = patience,
                         randomize_instances = randomize_instances,
                         dropout_rate = dropout_rate,
+                        mc_dropout = mc_dropout,
+                        mc_dropout_reps = mc_dropout_reps,
                         label_noise_factor = label_noise_factor,
                         rescale_features = rescale_features,
                         save_model = FALSE,
@@ -142,7 +149,7 @@ modeltest_iucnn <- function(x,
     #reticulate::py_run_string("permutation = list(itertools.product(*[r.cv_fold_list,r.n_layers_list,r.dropout_rate_list,r.use_bias_list,r.seed_list,r.label_stretch_factor_list,r.label_noise_factor_list,r.act_f_list,r.act_f_out_list,r.max_epochs_list,r.patience_list,r.validation_split_list,r.test_fraction_list,r.randomize_instances_list,r.rescale_features_list]))")
     #permutations = reticulate::py$permutation
 
-    permutations = do.call(expand.grid, list(cv_fold,n_layers,dropout_rate,use_bias,seed,label_stretch_factor,label_noise_factor,act_f,act_f_out,max_epochs,patience,validation_split,test_fraction,randomize_instances,rescale_features))
+    permutations = do.call(expand.grid, list(cv_fold,n_layers,dropout_rate,use_bias,seed,label_stretch_factor,label_noise_factor,act_f,act_f_out,max_epochs,patience,validation_split,test_fraction,randomize_instances,rescale_features,mc_dropout,mc_dropout_reps,mode))
     n_permutations = dim(permutations)[1]
 
     message(paste0("Running model test for ",n_permutations," models. This can be quite time-intensive."))
@@ -165,10 +172,13 @@ modeltest_iucnn <- function(x,
       test_fraction_i = as.numeric(settings[[13]])
       randomize_instances_i = as.logical(settings[[14]])
       rescale_features_i = as.logical(settings[[15]])
+      mc_dropout_i = as.logical(settings[[16]])
+      mc_dropout_reps_i = as.integer(settings[[17]])
+      mode_i = as.character(settings[[18]])
 
       # set out act fun if chosen auto
       if (act_f_out_i == 'auto'){
-        if (mode == 'nn-reg'){
+        if (mode_i == 'nn-reg'){
           act_f_out_i  <-  'tanh'
         }else{
           act_f_out_i  <-  'softmax'
@@ -178,7 +188,7 @@ modeltest_iucnn <- function(x,
       # train model
       res = train_iucnn(x = features,
                         lab = labels_train,
-                        mode = mode,
+                        mode = mode_i,
                         path_to_output = '',
                         model_name = '',
                         validation_split = validation_split_i,
@@ -194,6 +204,8 @@ modeltest_iucnn <- function(x,
                         patience = patience_i,
                         randomize_instances = randomize_instances_i,
                         dropout_rate = dropout_rate_i,
+                        mc_dropout = mc_dropout_i,
+                        mc_dropout_reps = mc_dropout_reps_i,
                         label_noise_factor = label_noise_factor_i,
                         rescale_features = rescale_features_i,
                         save_model = FALSE,

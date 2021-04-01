@@ -4,7 +4,7 @@ import os, sys
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 try:
-    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # disable tf compilation warning
 except:
     pass
 

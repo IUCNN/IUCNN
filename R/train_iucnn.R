@@ -43,7 +43,7 @@
 #'layer. When setting to "auto" (default), a suitable output activation
 #' function will be chosen based on the
 #'chosen mode. Other valid options are "softmax" (nn-class, bnn-class), "tanh" (nn-reg),
-#'"sigmoid" (nn-reg)
+#'"sigmoid" (nn-reg), or no activation function "" (nn-reg)
 #'@param label_stretch_factor numeric. When choosing mode "nn-reg" the
 #'labels will be rescaled and this rescaling can be
 #'further adjusted by this factor. A factor smaller than 1.0 will
@@ -117,6 +117,8 @@ train_iucnn <- function(x,
                         patience = 200,
                         randomize_instances = TRUE,
                         dropout_rate = 0.0,
+                        mc_dropout = TRUE,
+                        mc_dropout_reps = 100,
                         label_noise_factor = 0.0,
                         rescale_features = FALSE,
                         save_model = TRUE,
@@ -287,7 +289,8 @@ train_iucnn <- function(x,
                       randomize_instances = as.integer(randomize_instances),
                       rescale_features = rescale_features,
                       dropout_rate = dropout_rate,
-                      dropout_reps = 100,
+                      dropout_reps = mc_dropout_reps,
+                      mc_dropout = mc_dropout,
                       label_noise_factor = label_noise_factor,
                       save_model = save_model
     )
@@ -353,6 +356,8 @@ train_iucnn <- function(x,
   named_res$patience <- patience
   named_res$randomize_instances <- randomize_instances
   named_res$label_noise_factor <- label_noise_factor
+  named_res$mc_dropout <- mc_dropout
+  named_res$mc_dropout_reps <- mc_dropout_reps
 
   named_res$training_loss_history <- training_loss_history
   named_res$validation_loss_history <- validation_loss_history

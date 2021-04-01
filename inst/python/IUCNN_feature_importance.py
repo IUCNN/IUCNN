@@ -8,8 +8,12 @@ Created on Fri Mar  5 17:25:09 2021
 
 import numpy as np
 import tensorflow as tf
-import warnings
+import warnings, os
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+try:
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # disable tf compilation warning
+except:
+    pass
 
 def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels):
     prm_est = model.predict(features).flatten()

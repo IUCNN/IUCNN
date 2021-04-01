@@ -4,7 +4,7 @@ import warnings
 warnings.filterwarnings("ignore")
 import tensorflow as tf
 try:
-    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # disable tf compilation warning
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # disable tf compilation warning
 except:
     pass
 
@@ -31,6 +31,7 @@ def iucnn_train(dataset,
                 rescale_features,
                 dropout_rate,
                 dropout_reps,
+                mc_dropout,
                 label_noise_factor,
                 save_model):    
     
@@ -92,46 +93,52 @@ def iucnn_train(dataset,
         add_value = values[np.where(accs==np.max(accs))[0][0]]
         return(add_value)
 
-    def get_classification_accuracy(model,features,true_labels,dropout,dropout_reps,loss=False):
-        if dropout:
-            predictions_raw = np.array([model.predict(features) for i in np.arange(dropout_reps)])
-            predictions_raw_mean = np.mean(predictions_raw,axis=0)
-        else:
-            predictions_raw_mean = model.predict(features)
-        label_predictions = np.argmax(predictions_raw_mean, axis=1)
-        true_label_cats = np.argmax(true_labels,axis=1)
-        mean_acc_man = np.sum(label_predictions==true_label_cats)/len(label_predictions)
-        if loss:
-            if dropout:
-                preds = np.array([model.evaluate(features,true_labels,verbose=0) for i in np.arange(dropout_reps)])
-                test_loss, test_acc = np.hsplit(preds,2)
-                mean_loss = np.mean(test_loss)
-                #mean_acc = np.mean(test_acc)
+    def get_classification_accuracy(model,features,true_labels,mc_dropout,dropout_reps,loss=False):
+        if features.shape[0] == 0:
+            return np.array([]), np.array([]), np.nan, np.nan
+        else:    
+            if mc_dropout:
+                predictions_raw = np.array([model.predict(features) for i in np.arange(dropout_reps)])
+                predictions_raw_mean = np.mean(predictions_raw,axis=0)
             else:
-                mean_loss,mean_acc = model.evaluate(features,true_labels,verbose=0) 
-        else:
-            mean_loss == np.nan
-            #mean_acc = np.nan
-        return label_predictions, predictions_raw_mean, mean_loss, mean_acc_man
+                predictions_raw_mean = model.predict(features)
+            label_predictions = np.argmax(predictions_raw_mean, axis=1)
+            true_label_cats = np.argmax(true_labels,axis=1)
+            mean_acc_man = np.sum(label_predictions==true_label_cats)/len(label_predictions)
+            if loss:
+                if mc_dropout:
+                    preds = np.array([model.evaluate(features,true_labels,verbose=0) for i in np.arange(dropout_reps)])
+                    test_loss, test_acc = np.hsplit(preds,2)
+                    mean_loss = np.mean(test_loss)
+                    #mean_acc = np.mean(test_acc)
+                else:
+                    mean_loss,mean_acc = model.evaluate(features,true_labels,verbose=0) 
+            else:
+                mean_loss == np.nan
+                #mean_acc = np.nan
+            return label_predictions, predictions_raw_mean, mean_loss, mean_acc_man
 
-    def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps=1,return_std = False):
-        if dropout:
-            prm_est_reps = np.array([model.predict(features).flatten() for i in np.arange(dropout_reps)])
-            prm_est_mean = np.mean(prm_est_reps,axis=0)
-        else:
-            prm_est_mean = model.predict(features).flatten()
-        prm_est_rescaled = rescale_labels(prm_est_mean,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
-        real_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True).astype(int).flatten()
-        label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
-        cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
-        if return_std:
-            prm_est_reps_rescaled = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps])
-            stds_rescaled = np.std(prm_est_reps_rescaled,axis=0)
-            min_rescaled = np.min(prm_est_reps_rescaled,axis=0)
-            max_rescaled = np.max(prm_est_reps_rescaled,axis=0)
-            return cat_acc, label_predictions, prm_est_rescaled, np.array([min_rescaled,max_rescaled])
-        else:
-            return cat_acc, label_predictions, prm_est_rescaled
+    def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps=1,return_std = False):
+        if features.shape[0] == 0:
+            return np.nan, np.array([]), np.array([])
+        else:   
+            if mc_dropout:
+                prm_est_reps = np.array([model.predict(features).flatten() for i in np.arange(dropout_reps)])
+                prm_est_mean = np.mean(prm_est_reps,axis=0)
+            else:
+                prm_est_mean = model.predict(features).flatten()
+            prm_est_rescaled = rescale_labels(prm_est_mean,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
+            real_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True).astype(int).flatten()
+            label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
+            cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
+            if return_std:
+                prm_est_reps_rescaled = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps])
+                stds_rescaled = np.std(prm_est_reps_rescaled,axis=0)
+                min_rescaled = np.min(prm_est_reps_rescaled,axis=0)
+                max_rescaled = np.max(prm_est_reps_rescaled,axis=0)
+                return cat_acc, label_predictions, prm_est_rescaled, np.array([min_rescaled,max_rescaled])
+            else:
+                return cat_acc, label_predictions, prm_est_rescaled
 
     def rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=False):
         label_range = max(min_max_label)-min(min_max_label)
@@ -164,7 +171,8 @@ def iucnn_train(dataset,
         indices = np.arange(n_samples)
         if seed:
             np.random.seed(seed)
-        np.random.shuffle(indices)
+        if shuffle:
+            indices = np.random.choice(indices, len(indices), replace=False)
         fold_sizes = np.full(n_splits, n_samples // n_splits, dtype=np.int)
         fold_sizes[:n_samples % n_splits] += 1
         current = 0
@@ -179,16 +187,13 @@ def iucnn_train(dataset,
     if seed > 0:
         np.random.seed(seed)
         tf.random.set_seed(seed)
-    if randomize_instances:
-        rnd_indx = np.random.choice(range(len(labels)), len(labels), replace=False)
-    else:
-        rnd_indx = np.arange(len(labels))
     if rescale_features:
         dataset = (dataset - dataset.min(axis=0)) / (dataset.max(axis=0) - dataset.min(axis=0))
     if dropout_rate>0:
         dropout = True
     else:
         dropout = False
+        mc_dropout = False
     if use_bias == 1:
         use_bias = True
     elif use_bias == 0:
@@ -211,19 +216,23 @@ def iucnn_train(dataset,
     
     rescale_factor = max(labels)
     rescaled_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
-
-    # rnd_dataset = dataset[rnd_indx,:]
-    # rnd_labels = labels[rnd_indx]
-    # rnd_instance_names = instance_names[rnd_indx]
     
     if cv_k > 1:
-        train_index_blocks = iter_test_indices(dataset,n_splits = cv_k,shuffle=False)
+        train_index_blocks = iter_test_indices(dataset,n_splits = cv_k,shuffle=randomize_instances)
         test_indices = []
         cv = True
     else:
+        if randomize_instances:
+            rnd_indx = np.random.choice(range(len(labels)), len(labels), replace=False)
+        else:
+            rnd_indx = np.arange(len(labels))
         test_size = int(len(labels)*test_fraction)
-        train_index_blocks = [rnd_indx[:-test_size]]
-        test_indices = list(rnd_indx[-test_size:])
+        if test_size == 0:
+            train_index_blocks = [rnd_indx]
+            test_indices = [[]]
+        else:
+            train_index_blocks = [rnd_indx[:-test_size]]
+            test_indices = [rnd_indx[-test_size:]]         
         cv = False
         
     train_acc_per_fold = []
@@ -232,14 +241,19 @@ def iucnn_train(dataset,
     validation_loss_per_fold = []
     test_acc_per_fold = []
     test_loss_per_fold = []    
+    
+    all_test_labels = []
+    all_test_predictions = []
+    all_test_predictions_raw = []
+    
     for it, __ in enumerate(train_index_blocks):
         if cv:
             print("Training CV fold %i/%i..."%(it+1,cv_k),flush=True)
             test_ids = train_index_blocks[it] # in case of cv, choose one of the k chunks as test set
             train_ids = np.concatenate(np.array([train_index_blocks[i] for i in list(np.delete(np.arange(len(train_index_blocks)),it))])).astype(int)
         else:
-            test_ids = test_indices
-            train_ids = train_index_blocks[0]
+            test_ids = list(test_indices[it])
+            train_ids = list(train_index_blocks[it])
         
         train_set = dataset[train_ids,:]
         test_set = dataset[test_ids,:]
@@ -260,7 +274,7 @@ def iucnn_train(dataset,
 
         # these are just to keep track of the true, unaltered (not-rescaled) labels for output
         output_train_labels = labels[train_ids]
-        output_test_labels = labels[test_ids]
+        all_test_labels.append(labels[test_ids])
         
         train_instance_names = instance_names[train_ids]
         test_instance_names = instance_names[test_ids]
@@ -296,10 +310,12 @@ def iucnn_train(dataset,
                                 validation_split=validation_split, 
                                 verbose=verbose,
                                 callbacks=[early_stop])
+        
         if 'accuracy' in optimize_for_this:
             stopping_point = np.argmax(history_fit.history[optimize_for_this])+1
         else:
             stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
+        print('Best training epoch: ',stopping_point,flush=True)
         # train model
         tf.random.set_seed(seed)
         model = model_init(mode,dropout,dropout_rate,use_bias)
@@ -311,11 +327,11 @@ def iucnn_train(dataset,
                             validation_split=validation_split, 
                             verbose=verbose)   
     
-        if mode == 'nn-class':        
-            train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,dropout,dropout_reps,loss=True)
-            test_predictions, test_predictions_raw, test_loss, test_acc = get_classification_accuracy(model,test_set,labels_for_testing,dropout,dropout_reps,loss=True)        
-            if dropout:
-                val_predictions, val_predictions_raw, val_loss, val_acc = get_classification_accuracy(model,validation_set,validation_labels,dropout,dropout_reps,loss=True)  
+        if mode == 'nn-class':
+            train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,mc_dropout,dropout_reps,loss=True)
+            test_predictions, test_predictions_raw, test_loss, test_acc = get_classification_accuracy(model,test_set,labels_for_testing,mc_dropout,dropout_reps,loss=True)        
+            if mc_dropout:
+                val_predictions, val_predictions_raw, val_loss, val_acc = get_classification_accuracy(model,validation_set,validation_labels,mc_dropout,dropout_reps,loss=True)  
             else:
                 train_acc = history.history['accuracy'][-1]
                 train_loss = history.history['loss'][-1]
@@ -327,11 +343,11 @@ def iucnn_train(dataset,
             val_mae_history = np.nan
     
         elif mode == 'nn-reg':
-            test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
+            test_acc,test_predictions,test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
             train_loss = history.history['loss'][-1]
             test_loss = np.nan
-            train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
-            val_acc, __, __ = get_regression_accuracy(model,validation_set,validation_labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,dropout,dropout_reps)
+            train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
+            val_acc, __, __ = get_regression_accuracy(model,validation_set,validation_labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
             val_loss = history.history['val_loss'][-1]
             train_acc_history = np.nan
             val_acc_history = np.nan
@@ -344,6 +360,9 @@ def iucnn_train(dataset,
         validation_loss_per_fold.append(val_loss)
         test_acc_per_fold.append(test_acc)
         test_loss_per_fold.append(test_loss) 
+        
+        all_test_predictions.append(test_predictions)
+        all_test_predictions_raw.append(test_predictions_raw)
 
         if save_model:
             if not os.path.exists(path_to_output):
@@ -367,12 +386,19 @@ def iucnn_train(dataset,
         print('> Test accuracy: %.5f (+- %.5f (std))'%(avg_test_acc,np.std(test_acc_per_fold)))
         print('> Test loss: %.5f'%avg_test_loss)
 
-
-
+    all_test_labels = np.concatenate(all_test_labels)
+    all_test_predictions = np.concatenate(all_test_predictions)
+    all_test_predictions_raw = np.concatenate(all_test_predictions_raw)
+    
+    if len(all_test_labels) > 0:
+        confusion_matrix = np.array(tf.math.confusion_matrix(all_test_labels,all_test_predictions))
+    else:
+        confusion_matrix = np.zeros([n_class,n_class])
+        
     output = [
-                output_test_labels,
-                test_predictions,
-                test_predictions_raw,
+                all_test_labels,
+                all_test_predictions,
+                all_test_predictions_raw,
                 
                 avg_train_acc,
                 avg_validation_acc,
@@ -399,13 +425,13 @@ def iucnn_train(dataset,
                 act_f_out,
                 model_outpath,
                 
-                np.array(tf.math.confusion_matrix(output_test_labels,test_predictions)),
+                confusion_matrix,
                 
                 {"data":train_set,
                  "labels":output_train_labels.flatten(),
                  "label_dict":np.unique(labels).astype(str),
                  "test_data":test_set,
-                 "test_labels":output_test_labels.flatten(),
+                 "test_labels":all_test_labels.flatten(),
                  "id_data":train_instance_names,
                  "id_test_data":test_instance_names,
                  "file_name":model_name,

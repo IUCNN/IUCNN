@@ -225,7 +225,7 @@ subsample_n_per_class <- function(features,
 
 log_results <- function(res,logfile,init_logfile=FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
-    header = c("model","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","act_f","act_f_out","cv_fold","validation_split","test_fraction","label_stretch_factor","label_noise_factor","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1")
+    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_split","test_fraction","label_stretch_factor","label_noise_factor","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1")
     if(file.exists(logfile)){
       overwrite_prompt = readline(prompt="Specified log-file already exists and will be overwritten and all previous contents will be lost. Do you want to proceed? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
@@ -270,6 +270,8 @@ log_results <- function(res,logfile,init_logfile=FALSE){
           res$use_bias,
           res$rescale_features,
           res$randomize_instances,
+          res$mc_dropout,
+          res$mc_dropout_reps,
           res$act_f,
           res$act_f_out,
           res$cv_fold,
