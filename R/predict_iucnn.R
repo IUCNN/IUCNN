@@ -69,6 +69,15 @@ predict_iucnn <- function(x,
   # assertions
   assert_class(x, classes = "data.frame")
 
+  if (length(model$input_data$test_labels)==0 & target_acc > 0){
+    warning('No test labels found to calculate target_acc threshold. Target_acc will instead be determined using the training data.')
+    test_data = model$input_data$data
+    test_labels = model$input_data$labels
+  }else{
+    test_data = model$input_data$test_data
+    test_labels = model$input_data$test_labels
+  }
+
   # check that the same features are in training and prediction
   test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
   if(!test1){
@@ -119,11 +128,11 @@ predict_iucnn <- function(x,
                          model_dir = model$trained_model_path,
                          verbose = verbose,
                          iucnn_mode = model$model,
-                         dropout = model$dropout,
+                         dropout = model$mc_dropout,
                          dropout_reps = 100,
                          target_acc = target_acc,
-                         test_data = model$input_data$test_data,
-                         test_labels = model$input_data$test_labels,
+                         test_data = test_data,
+                         test_labels = test_labels,
                          rescale_labels_boolean = model$rescale_labels_boolean,
                          rescale_factor = model$label_rescaling_factor,
                          min_max_label = model$min_max_label_rescaled,

@@ -101,9 +101,10 @@
 
 train_iucnn <- function(x,
                         lab,
-                        mode = 'nn-class',
                         path_to_output = ".",
                         model_name = "iuc_nn_model",
+                        read_settings = FALSE,
+                        mode = 'nn-class',
                         validation_split = 0.1,
                         test_fraction = 0.1,
                         cv_fold = 1,
@@ -150,6 +151,28 @@ train_iucnn <- function(x,
   # check if the model directory already exists
   if(dir.exists(file.path(path_to_output, model_name))& !overwrite){
     stop(sprintf("Directory %s exists. Provide alternative 'model_name' or 'path_to_output' or set `overwrite` to TRUE.", model_name))
+  }
+
+  if (class(read_settings)=="data.frame"){
+    warning("Model settings are being adopted from info provided under 'read_settings' flag. All other provided model settings are being ignored. test_fraction is set to 0 and cv_fold to 1.")
+    mode = read_settings$mode
+    dropout_rate = read_settings$dropout_rate
+    seed = read_settings$seed
+    max_epochs = read_settings$max_epochs
+    patience = read_settings$patience
+    n_layers = read_settings$n_layers
+    use_bias = read_settings$use_bias
+    rescale_features = read_settings$rescale_features
+    randomize_instances = read_settings$randomize_instances
+    mc_dropout = read_settings$mc_dropout
+    mc_dropout_reps = read_settings$mc_dropout_reps
+    act_f = read_settings$act_f
+    act_f_out = read_settings$act_f_out
+    cv_fold = 1
+    validation_split = read_settings$validation_split
+    test_fraction = 0
+    label_stretch_factor = read_settings$label_stretch_factor
+    label_noise_factor = read_settings$label_noise_factor
   }
 
   data_out = process_iucnn_input(x,lab = lab, mode = mode, outpath = '.', write_data_files = FALSE, verbose=verbose)
