@@ -170,7 +170,7 @@ train_iucnn <- function(x,
     act_f_out = read_settings$act_f_out
     cv_fold = 1
     validation_split = read_settings$validation_split
-    test_fraction = 0
+    test_fraction = 0.
     label_stretch_factor = read_settings$label_stretch_factor
     label_noise_factor = read_settings$label_noise_factor
   }
@@ -283,6 +283,8 @@ train_iucnn <- function(x,
     patience = NaN
     validation_split = NaN
 
+    accthres_tbl = NaN
+    stopping_point = NaN
 
   }else{
 
@@ -348,8 +350,10 @@ train_iucnn <- function(x,
     trained_model_path <- res[[21]]
 
     confusion_matrix <- res[[22]]
+    accthres_tbl <- res[[23]]
+    stopping_point <- res[[24]]
 
-    input_data <- res[[23]]
+    input_data <- res[[25]]
     }
 
   named_res <- NULL
@@ -362,6 +366,8 @@ train_iucnn <- function(x,
   named_res$label_stretch_factor <- label_stretch_factor
 
   named_res$trained_model_path <- trained_model_path
+  named_res$accthres_tbl <- accthres_tbl
+  named_res$final_training_epoch <- stopping_point
 
   named_res$model <- mode
   named_res$seed <- seed

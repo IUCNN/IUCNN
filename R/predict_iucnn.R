@@ -69,14 +69,6 @@ predict_iucnn <- function(x,
   # assertions
   assert_class(x, classes = "data.frame")
 
-  if (length(model$input_data$test_labels)==0 & target_acc > 0){
-    warning('No test labels found to calculate target_acc threshold. Target_acc will instead be determined using the training data.')
-    test_data = model$input_data$data
-    test_labels = model$input_data$labels
-  }else{
-    test_data = model$input_data$test_data
-    test_labels = model$input_data$test_labels
-  }
 
   # check that the same features are in training and prediction
   test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
@@ -91,6 +83,10 @@ predict_iucnn <- function(x,
     stop("Feature mismatch, missing in prediction features: \n", paste0(mis, collapse = ", "))
   }
 
+  if (target_acc > 0){
+    confidence_threshold = model$accthres_tbl[min(which(model$accthres_tbl[,2] > target_acc)),][1]
+
+  }
 
   data_out = process_iucnn_input(x,mode = mode, outpath = '.', write_data_files = FALSE)
 
@@ -130,9 +126,7 @@ predict_iucnn <- function(x,
                          iucnn_mode = model$model,
                          dropout = model$mc_dropout,
                          dropout_reps = 100,
-                         target_acc = target_acc,
-                         test_data = test_data,
-                         test_labels = test_labels,
+                         confidence_threshold = confidence_threshold,
                          rescale_labels_boolean = model$rescale_labels_boolean,
                          rescale_factor = model$label_rescaling_factor,
                          min_max_label = model$min_max_label_rescaled,
