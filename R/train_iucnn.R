@@ -21,7 +21,6 @@
 #'"nn-reg" (tensorflow neural network regression), or "bnn-class" (Bayesian neural network classifier)
 #'@param path_to_output character string. The path to the location
 #'where the IUCNN model shall be saved
-#'@param model_name character string. The name used to save the trained model.
 #'@param validation_split numeric. The fraction of the input data used as validation set.
 #'@param test_fraction numeric. The fraction of the input data used as test set.
 #'@param seed reset the python random seed.
@@ -101,21 +100,19 @@
 
 train_iucnn <- function(x,
                         lab,
-                        path_to_output = ".",
-                        model_name = "iuc_nn_model",
+                        path_to_output = "iuc_nn_model",
                         read_settings = FALSE,
                         mode = 'nn-class',
-                        validation_split = 0.1,
-                        test_fraction = 0.1,
+                        validation_fraction = 0.1,
                         cv_fold = 1,
                         seed = 1234,
                         max_epochs = 1000,
+                        patience = 200,
                         n_layers = '60_60_20',
                         use_bias = TRUE,
                         act_f = "relu",
                         act_f_out = "auto",
                         label_stretch_factor = 1.0,
-                        patience = 200,
                         randomize_instances = TRUE,
                         dropout_rate = 0.0,
                         mc_dropout = TRUE,
@@ -131,8 +128,7 @@ train_iucnn <- function(x,
   assert_data_frame(x)
   assert_class(lab, classes = "iucnn_labels")
   assert_character(path_to_output)
-  assert_numeric(validation_split, lower = 0, upper = 1)
-  assert_numeric(test_fraction, lower = 0, upper = 1)
+  assert_numeric(validation_fraction, lower = 0, upper = 1)
   assert_numeric(seed)
   assert_numeric(max_epochs)
   assert_character(n_layers)
@@ -149,17 +145,17 @@ train_iucnn <- function(x,
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
   # check if the model directory already exists
-  if(dir.exists(file.path(path_to_output, model_name))& !overwrite){
-    stop(sprintf("Directory %s exists. Provide alternative 'model_name' or 'path_to_output' or set `overwrite` to TRUE.", model_name))
+  if(dir.exists(file.path(path_to_output))& !overwrite){
+    stop(sprintf("Directory %s exists. Provide alternative 'path_to_output' or set `overwrite` to TRUE.", path_to_output))
   }
 
   if (class(read_settings)=="data.frame"){
-    warning("Model settings are being adopted from info provided under 'read_settings' flag. All other provided model settings are being ignored. test_fraction is set to 0 and cv_fold to 1.")
+    warning("Model settings are being adopted from info provided under 'read_settings' flag. All other provided model settings are being ignored. validation_fraction is set to 0 and cv_fold to 1.")
     mode = read_settings$mode
     dropout_rate = read_settings$dropout_rate
     seed = read_settings$seed
-    max_epochs = read_settings$max_epochs
-    patience = read_settings$patience
+    max_epochs = read_settings$stopping_point
+    patience = NULL
     n_layers = read_settings$n_layers
     use_bias = read_settings$use_bias
     rescale_features = read_settings$rescale_features
@@ -169,8 +165,7 @@ train_iucnn <- function(x,
     act_f = read_settings$act_f
     act_f_out = read_settings$act_f_out
     cv_fold = 1
-    validation_split = read_settings$validation_split
-    test_fraction = 0.
+    validation_fraction = 0.
     label_stretch_factor = read_settings$label_stretch_factor
     label_noise_factor = read_settings$label_noise_factor
   }
@@ -205,7 +200,7 @@ train_iucnn <- function(x,
     bnn_data <- bnn_load_data(dataset,
                              labels,
                              seed = as.integer(seed),
-                             testsize = test_fraction,
+                             testsize = validation_fraction,
                              all_class_in_testset=FALSE,
                              header = TRUE, # input data has a header
                              instance_id = TRUE, # input data includes names of instances
@@ -249,20 +244,18 @@ train_iucnn <- function(x,
     log_file_content <- read.table(logfile_path, sep = '\t', header = TRUE)
     pklfile_path <- as.character(py_get_attr(logger, '_pklfile'))
 
-    test_labels <- bnn_data$test_labels
-    test_predictions <- apply(post_pr_test$post_prob_predictions, 1, which.max) - 1
-    test_predictions_raw <- post_pr_test$post_prob_predictions
+    validation_labels <- bnn_data$test_labels
+    validation_predictions <- apply(post_pr_test$post_prob_predictions, 1, which.max) - 1
+    validation_predictions_raw <- post_pr_test$post_prob_predictions
 
     confusion_matrix <- post_pr_test$confusion_matrix
     confusion_matrix <- confusion_matrix[1:dim(confusion_matrix)[1] - 1, 1:dim(confusion_matrix)[2] - 1] #remove the sum row and column
 
     training_accuracy <- log_file_content$accuracy[length(log_file_content$accuracy)]
-    validation_accuracy <- NaN
-    test_accuracy <- post_pr_test$mean_accuracy
+    validation_accuracy <- post_pr_test$mean_accuracy
 
     training_loss <- (-log_file_content$likelihood[length(log_file_content$likelihood)]) / length(bnn_data$labels)
     validation_loss <- NaN
-    test_loss <- NaN
 
     training_loss_history <- (-log_file_content$likelihood) / length(bnn_data$labels)
     validation_loss_history <- NaN
@@ -281,7 +274,7 @@ train_iucnn <- function(x,
     activation_function <- act_f_out
     trained_model_path <- pklfile_path
     patience = NaN
-    validation_split = NaN
+    validation_fraction = validation_fraction
 
     accthres_tbl = NaN
     stopping_point = NaN
@@ -296,21 +289,19 @@ train_iucnn <- function(x,
                       labels = as.matrix(labels),
                       mode = mode,
                       path_to_output = path_to_output,
-                      model_name = model_name,
-                      validation_split = validation_split,
-                      test_fraction = test_fraction,
+                      validation_fraction = validation_fraction,
                       cv_k = as.integer(cv_fold),
                       seed = as.integer(seed),
                       instance_names = as.matrix(instance_names),
                       feature_names = names(dataset),
                       verbose = 0,
                       max_epochs = as.integer(max_epochs),
+                      patience = patience,
                       n_layers = as.list(n_layers),
                       use_bias = use_bias,
                       act_f = act_f,
                       act_f_out = act_f_out,
                       stretch_factor_rescaled_labels = label_stretch_factor,
-                      patience = patience,
                       randomize_instances = as.integer(randomize_instances),
                       rescale_features = rescale_features,
                       dropout_rate = dropout_rate,
@@ -320,40 +311,38 @@ train_iucnn <- function(x,
                       save_model = save_model
     )
 
-    test_labels <- as.vector(res[[1]])
-    test_predictions <- as.vector(res[[2]])
-    test_predictions_raw <- res[[3]]
+    validation_labels <- as.vector(res[[1]])
+    validation_predictions <- as.vector(res[[2]])
+    validation_predictions_raw <- res[[3]]
 
     training_accuracy <- res[[4]]
     validation_accuracy <- res[[5]]
-    test_accuracy <- res[[6]]
 
-    training_loss <- res[[7]]
-    validation_loss <- res[[8]]
-    test_loss <- res[[9]]
+    training_loss <- res[[6]]
+    validation_loss <- res[[7]]
 
-    training_loss_history <- as.vector(res[[10]])
-    validation_loss_history <- as.vector(res[[11]])
+    training_loss_history <- res[[8]]
+    validation_loss_history <- res[[9]]
 
-    training_accuracy_history <- as.vector(res[[12]])
-    validation_accuracy_history <- as.vector(res[[13]])
+    training_accuracy_history <- res[[10]]
+    validation_accuracy_history <- res[[1]]
 
-    training_mae_history <- as.vector(res[[14]])
-    validation_mae_history <- as.vector(res[[15]])
+    training_mae_history <- res[[12]]
+    validation_mae_history <- res[[13]]
 
-    rescale_labels_boolean <- res[[16]]
-    label_rescaling_factor <- res[[17]]
-    min_max_label <- as.vector(res[[18]])
-    label_stretch_factor <- res[[19]]
+    rescale_labels_boolean <- res[[14]]
+    label_rescaling_factor <- res[[15]]
+    min_max_label <- as.vector(res[[16]])
+    label_stretch_factor <- res[[17]]
 
-    activation_function <- res[[20]]
-    trained_model_path <- res[[21]]
+    activation_function <- res[[18]]
+    trained_model_path <- res[[19]]
 
-    confusion_matrix <- res[[22]]
-    accthres_tbl <- res[[23]]
-    stopping_point <- res[[24]]
+    confusion_matrix <- res[[20]]
+    accthres_tbl <- res[[21]]
+    stopping_point <- res[[22]]
 
-    input_data <- res[[25]]
+    input_data <- res[[23]]
     }
 
   named_res <- NULL
@@ -379,8 +368,7 @@ train_iucnn <- function(x,
   named_res$rescale_features <- rescale_features
   named_res$act_f <- act_f
   named_res$act_f_out <- activation_function
-  named_res$validation_split <- validation_split
-  named_res$test_fraction <- test_fraction
+  named_res$validation_fraction <- validation_fraction
   named_res$cv_fold <- cv_fold
   named_res$patience <- patience
   named_res$randomize_instances <- randomize_instances
@@ -399,17 +387,15 @@ train_iucnn <- function(x,
 
   named_res$training_loss <- training_loss
   named_res$validation_loss <- validation_loss
-  named_res$test_loss  <- test_loss
 
-  named_res$test_predictions_raw <- test_predictions_raw #softmax probs, posterior probs, or regressed values
-  named_res$test_predictions <- test_predictions
-  named_res$test_labels <- test_labels
+  named_res$validation_predictions_raw <- validation_predictions_raw #softmax probs, posterior probs, or regressed values
+  named_res$validation_predictions <- validation_predictions
+  named_res$validation_labels <- validation_labels
 
   named_res$confusion_matrix <- confusion_matrix
 
   named_res$training_accuracy <- training_accuracy
   named_res$validation_accuracy <- validation_accuracy
-  named_res$test_accuracy <- test_accuracy
 
   class(named_res) <- "iucnn_model"
 

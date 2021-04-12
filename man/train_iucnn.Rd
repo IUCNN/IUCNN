@@ -7,21 +7,19 @@
 train_iucnn(
   x,
   lab,
-  path_to_output = ".",
-  model_name = "iuc_nn_model",
+  path_to_output = "iuc_nn_model",
   read_settings = FALSE,
   mode = "nn-class",
-  validation_split = 0.1,
-  test_fraction = 0.1,
+  validation_fraction = 0.1,
   cv_fold = 1,
   seed = 1234,
   max_epochs = 1000,
+  patience = 200,
   n_layers = "60_60_20",
   use_bias = TRUE,
   act_f = "relu",
   act_f_out = "auto",
   label_stretch_factor = 1,
-  patience = 200,
   randomize_instances = TRUE,
   dropout_rate = 0,
   mc_dropout = TRUE,
@@ -45,19 +43,16 @@ same order as used for \code{\link{predict_iucnn}}.}
 \item{path_to_output}{character string. The path to the location
 where the IUCNN model shall be saved}
 
-\item{model_name}{character string. The name used to save the trained model.}
-
 \item{mode}{character string. Choose between the IUCNN models
 "nn-class" (default, tensorflow neural network classifier),
 "nn-reg" (tensorflow neural network regression), or "bnn-class" (Bayesian neural network classifier)}
 
-\item{validation_split}{numeric. The fraction of the input data used as validation set.}
-
-\item{test_fraction}{numeric. The fraction of the input data used as test set.}
-
 \item{seed}{reset the python random seed.}
 
 \item{max_epochs}{integer. The maximum number of epochs.}
+
+\item{patience}{integer. Number of epochs with no improvement
+after which training will be stopped.}
 
 \item{n_layers}{numeric vector with length of at least one.
 The vector quantifies the number of nodes
@@ -86,9 +81,6 @@ labels will be rescaled and this rescaling can be
 further adjusted by this factor. A factor smaller than 1.0 will
 compress the range of possible labels.}
 
-\item{patience}{integer. Number of epochs with no improvement
-after which training will be stopped.}
-
 \item{randomize_instances}{logical. When set to TRUE (default) the
 instances will be shuffled before training (recommended).}
 
@@ -108,6 +100,10 @@ values shall be rescaled
 to values between 0 and 1 prior to training (default=FALSE).}
 
 \item{overwrite}{logical. If TRUE existing models are overwritten. Default is to FALSE,}
+
+\item{validation_split}{numeric. The fraction of the input data used as validation set.}
+
+\item{test_fraction}{numeric. The fraction of the input data used as test set.}
 }
 \value{
 a folder in the working directory (or as specified with path_to_output)
