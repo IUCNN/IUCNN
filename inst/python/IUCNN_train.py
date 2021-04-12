@@ -1,5 +1,5 @@
 import numpy as np
-import os
+import os, sys
 import warnings
 warnings.filterwarnings("ignore")
 import tensorflow as tf
@@ -133,7 +133,7 @@ def iucnn_train(dataset,
             cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
             if return_std:
                 prm_est_reps_rescaled = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps])
-                stds_rescaled = np.std(prm_est_reps_rescaled,axis=0)
+                #stds_rescaled = np.std(prm_est_reps_rescaled,axis=0)
                 min_rescaled = np.min(prm_est_reps_rescaled,axis=0)
                 max_rescaled = np.max(prm_est_reps_rescaled,axis=0)
                 return cat_acc, label_predictions, prm_est_rescaled, np.array([min_rescaled,max_rescaled])
@@ -182,6 +182,56 @@ def iucnn_train(dataset,
             index_output.append(indices[start:stop])
             current = stop
         return index_output
+
+    def get_confidence_threshold(model,iucnn_mode,test_data,test_labels,mc_dropout,dropout_reps,rescale_factor,min_max_label,stretch_factor_rescaled_labels,target_acc=0.9):
+        if iucnn_mode == 'nn-class':
+            if mc_dropout:
+                prm_est_reps = np.array([model.predict(test_data) for i in np.arange(dropout_reps)])
+                prm_est_mean = np.mean(prm_est_reps,axis=0)
+            else:
+                prm_est_mean = model.predict(test_data)
+        elif iucnn_mode == 'nn-reg':
+            label_cats = np.arange(max(min_max_label)+1)
+            if mc_dropout:
+                prm_est_reps_unscaled = np.array([model.predict(test_data).flatten() for i in np.arange(dropout_reps)])
+                predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps_unscaled])
+                prm_est_mean = turn_reg_output_into_softmax(predictions_raw,label_cats)
+            else:
+                prm_est_reps_unscaled = model.predict(test_data).flatten()
+                predictions_raw = rescale_labels(prm_est_reps_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
+                prm_est_mean = np.round(predictions_raw, 0).astype(int)
+        # CALC TRADEOFFS
+        tbl_results = []
+        for i in np.linspace(0.01, 0.99, 99):
+            try:
+                scores = get_accuracy_threshold(prm_est_mean, test_labels, threshold=i)
+                tbl_results.append([i, scores['accuracy'], scores['retained_samples']])
+            except:
+                pass
+        tbl_results = np.array(tbl_results)
+        if target_acc is None:
+            return tbl_results
+        else:
+            try:
+                indx = np.min(np.where(np.round(tbl_results[:,1],2) >= target_acc))
+            except ValueError:
+                sys.exit('Target accuracy can not be reached. Set a lower threshold and try again.')
+            selected_row = tbl_results[indx,:]
+            return selected_row[0]
+
+    def get_accuracy_threshold(probs, labels, threshold=0.75):
+        indx = np.where(np.max(probs, axis=1)>threshold)[0]
+        res_supported = probs[indx,:]
+        labels_supported = labels[indx]
+        pred = np.argmax(res_supported, axis=1)
+        accuracy = len(pred[pred == labels_supported])/len(pred)
+        dropped_frequency = len(pred)/len(labels)
+        return {'predictions': pred, 'accuracy': accuracy, 'retained_samples': dropped_frequency}
+
+    def turn_reg_output_into_softmax(reg_out_rescaled,label_cats):
+            predictions = np.round(reg_out_rescaled, 0).astype(int)
+            softmax_probs_mean = np.array([[len(np.where(predictions[:,i]==j)[0])/len(predictions[:,i]) for j in label_cats] for  i in np.arange(predictions.shape[1])])
+            return softmax_probs_mean
 
     # randomize data
     if seed > 0:
@@ -295,6 +345,20 @@ def iucnn_train(dataset,
                                     epochs=max_epochs,
                                     validation_split=validation_split, 
                                     verbose=verbose)    
+            if 'accuracy' in optimize_for_this:
+                stopping_point = np.argmax(history_fit.history[optimize_for_this])+1
+            else:
+                stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
+            # train model
+            tf.random.set_seed(seed)
+            model = model_init(mode,dropout,dropout_rate,use_bias)
+            if verbose:
+                model.summary()
+            history = model.fit(train_set, 
+                                labels_for_training, 
+                                epochs=stopping_point,
+                                validation_split=validation_split, #ToDo: should this line be removed?
+                                verbose=verbose)   
         else:
             tf.random.set_seed(seed)
             # train model
@@ -303,29 +367,18 @@ def iucnn_train(dataset,
             if verbose:
                 model.summary()
             # The patience parameter is the amount of epochs to check for improvement
-            early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience)
-            history_fit = model.fit(train_set, 
+            early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience, restore_best_weights=True)
+            history = model.fit(train_set, 
                                 labels_for_training, 
                                 epochs=max_epochs,
-                                validation_split=validation_split, 
+                                validation_split=validation_split,
                                 verbose=verbose,
                                 callbacks=[early_stop])
-        
-        if 'accuracy' in optimize_for_this:
-            stopping_point = np.argmax(history_fit.history[optimize_for_this])+1
-        else:
-            stopping_point = np.argmin(history_fit.history[optimize_for_this])+1
-        print('Best training epoch: ',stopping_point,flush=True)
-        # train model
-        tf.random.set_seed(seed)
-        model = model_init(mode,dropout,dropout_rate,use_bias)
-        if verbose:
-            model.summary()
-        history = model.fit(train_set, 
-                            labels_for_training, 
-                            epochs=stopping_point,
-                            validation_split=validation_split, 
-                            verbose=verbose)   
+            if 'accuracy' in optimize_for_this:
+                stopping_point = np.argmax(history.history[optimize_for_this])+1
+            else:
+                stopping_point = np.argmin(history.history[optimize_for_this])+1
+            print('Best training epoch: ',stopping_point,flush=True)
     
         if mode == 'nn-class':
             train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,mc_dropout,dropout_reps,loss=True)
@@ -394,7 +447,17 @@ def iucnn_train(dataset,
         confusion_matrix = np.array(tf.math.confusion_matrix(all_test_labels,all_test_predictions))
     else:
         confusion_matrix = np.zeros([n_class,n_class])
+      
+    if len(labels_for_testing) == 0:
+        print('No test set found, determining accuracy threshold table based on training set.',flush=True)
+        features_for_accthres = train_set
+        labels_for_accthres = output_train_labels.flatten()
+    else:
+        features_for_accthres = test_set
+        labels_for_accthres = labels_for_testing
         
+    accthres_tbl = get_confidence_threshold(model,mode,features_for_accthres,labels_for_accthres,mc_dropout,dropout_reps,rescale_factor,min_max_label,stretch_factor_rescaled_labels,target_acc=None)
+
     output = [
                 all_test_labels,
                 all_test_predictions,
@@ -426,6 +489,8 @@ def iucnn_train(dataset,
                 model_outpath,
                 
                 confusion_matrix,
+                accthres_tbl,
+                stopping_point,
                 
                 {"data":train_set,
                  "labels":output_train_labels.flatten(),

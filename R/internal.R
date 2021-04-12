@@ -418,8 +418,17 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
   return(list(dataset,labels,instance_names))
 }
 
+get_best_model <- function(model_testing_results){
+  best_model = model_testing_results[which((model_testing_results$test_acc == max(model_testing_results$test_acc,na.rm = TRUE))),]
+  return(best_model)
+}
 
-
+plot_predictions <- function(predictions){
+  counts_detail = table(predictions,useNA = 'ifany')
+  bar_names = names(counts_detail)
+  bar_names[is.na(bar_names)] = 'NA'
+  barplot(counts_detail,names.arg = bar_names)
+}
 
 
 

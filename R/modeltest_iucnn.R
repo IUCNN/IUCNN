@@ -121,33 +121,11 @@ modeltest_iucnn <- function(x,
   }else{
 
     if (cv_fold > 1){
-      message("Evaluating models using cross-validation. User-setting for test_fraction will be ignored. To run a single repitition with the specified test_fraction instead, set cv_fold=1.")
+      warning("Evaluating models using cross-validation. User-setting for test_fraction will be ignored. To run a single repitition with the specified test_fraction instead, set cv_fold=1.")
     }
     if (init_logfile == TRUE){
       log_results(NaN,logfile,init_logfile=init_logfile)
     }
-
-    # cv_fold_list = as.list(cv_fold)
-    # n_layers_list = as.list(n_layers)
-    # dropout_rate_list = as.list(dropout_rate)
-    # use_bias_list = as.list(use_bias)
-    # seed_list = as.list(seed)
-    # label_stretch_factor_list = as.list(label_stretch_factor)
-    # label_noise_factor_list = as.list(label_noise_factor)
-    # act_f_list = as.list(act_f)
-    # act_f_out_list = as.list(act_f_out)
-    # max_epochs_list = as.list(max_epochs)
-    # patience_list = as.list(patience)
-    # validation_split_list = as.list(validation_split)
-    # test_fraction_list = as.list(test_fraction)
-    # randomize_instances_list = as.list(randomize_instances)
-    # rescale_features_list = as.list(rescale_features)
-
-    # create all possible permutations of the values to test
-    #reticulate::py_run_string("import itertools")
-    #reticulate::py_run_string("import numpy as np")
-    #reticulate::py_run_string("permutation = list(itertools.product(*[r.cv_fold_list,r.n_layers_list,r.dropout_rate_list,r.use_bias_list,r.seed_list,r.label_stretch_factor_list,r.label_noise_factor_list,r.act_f_list,r.act_f_out_list,r.max_epochs_list,r.patience_list,r.validation_split_list,r.test_fraction_list,r.randomize_instances_list,r.rescale_features_list]))")
-    #permutations = reticulate::py$permutation
 
     permutations = do.call(expand.grid, list(cv_fold,n_layers,dropout_rate,use_bias,seed,label_stretch_factor,label_noise_factor,act_f,act_f_out,max_epochs,patience,validation_split,test_fraction,randomize_instances,rescale_features,mc_dropout,mc_dropout_reps,mode))
     n_permutations = dim(permutations)[1]
