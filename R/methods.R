@@ -51,6 +51,7 @@ plot.iucnn_model <- function(x, ...){
   plot(x$training_loss_history, type = "n", ylab = "Loss", xlab = "Epoch")
   points(x$training_loss_history, type = "b", col = "darkblue", pch = 1)
   points(x$validation_loss_history, type = "b", col = "darkred", pch = 2)
+  abline(x$final_training_epoch, lty = 2)
   legend(x = "topright",
     legend = c("Training", "Validation"),
          col=c("darkblue", "darkred"),
