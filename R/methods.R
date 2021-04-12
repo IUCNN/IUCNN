@@ -45,17 +45,18 @@ print(cm)
 
 #' @export
 #' @method plot iucnn_model
-#' @importFrom graphics legend points
+#' @importFrom graphics abline legend points text
 plot.iucnn_model <- function(x, ...){
 
-  plot(x$training_loss_history, type = "n", ylab = "Loss", xlab = "Epoch")
+  plot(x$training_loss_history, type = "n", ylab = "Loss", xlab = "Epoch",
+       ylim = c(0, max(max(x$training_loss_history), max(x$validation_loss_history))))
   points(x$training_loss_history, type = "b", col = "darkblue", pch = 1)
   points(x$validation_loss_history, type = "b", col = "darkred", pch = 2)
-  abline(x$final_training_epoch, lty = 2)
+  abline(v = x$final_training_epoch, lty = 2)
   legend(x = "topright",
-    legend = c("Training", "Validation"),
-         col=c("darkblue", "darkred"),
-         lty=1,
-         pch = 1:2,
+    legend = c("Training", "Validation", "Final epoch"),
+         col = c("darkblue", "darkred", "black"),
+         lty = c(1, 1, 2),
+         pch = c(1,2,NA),
          cex=1.5)
 }
