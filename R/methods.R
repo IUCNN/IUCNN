@@ -58,5 +58,5 @@ plot.iucnn_model <- function(x, ...){
          col = c("darkblue", "darkred", "black"),
          lty = c(1, 1, 2),
          pch = c(1,2,NA),
-         cex=1.5)
+         cex = 1.5)
 }
