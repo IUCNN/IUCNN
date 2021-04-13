@@ -225,14 +225,14 @@ subsample_n_per_class <- function(features,
 
 log_results <- function(res,logfile,init_logfile=FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
-    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_split","test_fraction","label_stretch_factor","label_noise_factor","train_acc","val_acc","test_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1")
+    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1")
     if(file.exists(logfile)){
-      overwrite_prompt = readline(prompt="Specified log-file already exists and will be overwritten and all previous contents will be lost. Do you want to proceed? [Y/n]: ")
+      overwrite_prompt = readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
         cat(header,file=logfile,sep="\t")
         cat('\n',file=logfile,append=T)
       }else{
-        print('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=FALSE')
+        print('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=TRUE')
         break
       }
     }else{
@@ -275,13 +275,13 @@ log_results <- function(res,logfile,init_logfile=FALSE){
           res$act_f,
           res$act_f_out,
           res$cv_fold,
-          res$validation_split,
-          res$test_fraction,
+          res$validation_fraction,
           res$label_stretch_factor,
           res$label_noise_factor,
+          paste(res$final_training_epoch, collapse = '_'),
+          round(mean(res$final_training_epoch),0),
           round(res$training_accuracy,6),
           round(res$validation_accuracy,6),
-          round(res$test_accuracy,6),
           round(res$training_loss,6),
           round(res$validation_loss,6),
           confusion_matrix_lines),sep="\t",file=logfile,append=T)
@@ -418,8 +418,12 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
   return(list(dataset,labels,instance_names))
 }
 
-get_best_model <- function(model_testing_results){
-  best_model = model_testing_results[which((model_testing_results$test_acc == max(model_testing_results$test_acc,na.rm = TRUE))),]
+get_best_model <- function(model_testing_results,rank_mode=0){
+  if (rank_mode == 0){ # highest validation accuracy
+    best_model = model_testing_results[which((model_testing_results$val_acc == max(model_testing_results$val_acc,na.rm = TRUE))),]
+  }else if (rank_mode == 1){ # lowest validation loss
+    best_model = model_testing_results[which((model_testing_results$validation_loss == min(model_testing_results$validation_loss,na.rm = TRUE))),]
+  }
   return(best_model)
 }
 

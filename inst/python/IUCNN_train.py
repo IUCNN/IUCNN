@@ -352,7 +352,7 @@ def iucnn_train(dataset,
             tf.random.set_seed(seed)
             # train model
             model = model_init(mode,dropout,dropout_rate,use_bias)
-            model.build((train_set.shape[1],))
+            #model.build((train_set.shape[1],))
             if verbose:
                 model.summary()
             # The patience parameter is the amount of epochs to check for improvement
@@ -416,6 +416,7 @@ def iucnn_train(dataset,
         all_validation_predictions_raw.append(val_predictions_raw)
         
         stopping_points.append(stopping_point)
+        
         if len(labels_for_validation)>0:
             validation_histories.setdefault('train_rep_%i'%it,history.history['val_loss'])
         else:
@@ -498,7 +499,7 @@ def iucnn_train(dataset,
                 
                 confusion_matrix,
                 accthres_tbl,
-                stopping_point,
+                np.array(stopping_points),
                 
                 {"data":train_set,
                  "labels":output_train_labels.flatten(),
