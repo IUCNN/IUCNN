@@ -4,16 +4,13 @@ summary.iucnn_model <-  function(object,
                                ...) {
 cat(sprintf("A model of type %s, trained on %s species and %s features.\n\n",
             object$model,
-              length(object$input_data$id_data),
+              length(object$input_data$test_labels),
               length(object$input_data$feature_names)))
 
 cat(sprintf("Training accuracy: %s\n",
             round(object$training_accuracy, 3)))
 
-cat(sprintf("Test accuracy: %s\n",
-            round(object$test_accuracy, 3)))
-
-cat(sprintf("Validation accuracy: %s\n\n",
+cat(sprintf("Accuracy on unseen data: %s\n",
             round(object$validation_accuracy, 3)))
 
 cat(sprintf("Label detail: %s Classes (%s)\n\n",
@@ -24,11 +21,14 @@ cat(sprintf("Label detail: %s Classes (%s)\n\n",
 
 cat("Label representation\n")
 
-tel <- data.frame(table(object$test_labels))
-trl <- data.frame(table(object$input_data$labels))
+maxlab = max(object$validation_predictions)
+tel <- data.frame(0:maxlab,get_cat_count(object$validation_predictions,max_cat = maxlab))
+names(tel) = c("Var1","Freq")
+trl <- data.frame(0:maxlab,get_cat_count(object$validation_labels,max_cat = maxlab))
+names(trl) = c("Var1","Freq")
 lab <- merge(trl,tel, by = "Var1")
 
-names(lab) <- c("Label", "Input_freq", "Test_freq")
+names(lab) <- c("Label", "Input_count", "Estimated_count")
 
 print(lab)
 cat("\n")
@@ -48,15 +48,26 @@ print(cm)
 #' @importFrom graphics abline legend points text
 plot.iucnn_model <- function(x, ...){
 
-  plot(x$training_loss_history, type = "n", ylab = "Loss", xlab = "Epoch",
-       ylim = c(0, max(max(x$training_loss_history), max(x$validation_loss_history))))
-  points(x$training_loss_history, type = "b", col = "darkblue", pch = 1)
-  points(x$validation_loss_history, type = "b", col = "darkred", pch = 2)
-  abline(v = x$final_training_epoch, lty = 2)
-  legend(x = "topright",
-    legend = c("Training", "Validation", "Final epoch"),
-         col = c("darkblue", "darkred", "black"),
-         lty = c(1, 1, 2),
-         pch = c(1,2,NA),
-         cex = 1.5)
+  x$validation_accuracy_history
+  x$training_accuracy_history
+  x$final_training_epoch
+
+
+  par(mfrow=c(round(x$cv_fold/2,0),2),mar = c(2, 2, 2, 2))
+  for (i in 1:x$cv_fold){
+    plot(x$training_loss_history[[i]], type = "n", ylab = "Loss", xlab = "Epoch",
+         ylim = c(min(min(x$training_loss_history[[i]]), min(x$validation_loss_history[[i]])), max(max(x$training_loss_history[[i]]), max(x$validation_loss_history[[i]]))))
+    points(x$training_loss_history[[i]], type = "b", col = "darkblue", pch = 1)
+    points(x$validation_loss_history[[i]], type = "b", col = "darkred", pch = 2)
+    abline(v = x$final_training_epoch[[i]], lty = 2)
+    title(paste0('CV-fold ', i))
+    legend(x = "topright",
+           legend = c("Training", "Validation", "Final epoch"),
+           col = c("darkblue", "darkred", "black"),
+           lty = c(1, 1, 2),
+           pch = c(1,2,NA),
+           cex = .5)
+
+  }
+
 }

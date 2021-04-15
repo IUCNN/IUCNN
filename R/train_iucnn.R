@@ -325,7 +325,7 @@ train_iucnn <- function(x,
     validation_loss_history <- res[[9]]
 
     training_accuracy_history <- res[[10]]
-    validation_accuracy_history <- res[[1]]
+    validation_accuracy_history <- res[[11]]
 
     training_mae_history <- res[[12]]
     validation_mae_history <- res[[13]]

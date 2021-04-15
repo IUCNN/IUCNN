@@ -225,14 +225,14 @@ subsample_n_per_class <- function(features,
 
 log_results <- function(res,logfile,init_logfile=FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
-    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1")
+    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","delta_LC","delta_NT","delta_VU","delta_EN","delta_CR","delta_0","delta_1")
     if(file.exists(logfile)){
       overwrite_prompt = readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
         cat(header,file=logfile,sep="\t")
         cat('\n',file=logfile,append=T)
       }else{
-        print('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=TRUE')
+        print('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=FALSE')
         break
       }
     }else{
@@ -243,6 +243,7 @@ log_results <- function(res,logfile,init_logfile=FALSE){
   if (class(res)=="iucnn_model"){
     if (length(res$input_data$lookup.lab.num.z)==2){
       label_level = 'broad'
+      ratio_prediction_lines = c(NaN,NaN,abs(get_cat_count(res$validation_labels,max_cat = 1)-get_cat_count(res$validation_predictions,max_cat = 1)))
       confusion_matrix_lines = c(NaN,
                                  NaN,
                                  NaN,
@@ -252,6 +253,7 @@ log_results <- function(res,logfile,init_logfile=FALSE){
                                  paste(res$confusion_matrix[2,], collapse = '_'))
     }else{
       label_level = 'detail'
+      ratio_prediction_lines = c(abs(get_cat_count(res$validation_labels,max_cat = 4)-get_cat_count(res$validation_predictions,max_cat = 4)),NaN,NaN)
       confusion_matrix_lines = c(paste(res$confusion_matrix[1,], collapse = '_'),
                                  paste(res$confusion_matrix[2,], collapse = '_'),
                                  paste(res$confusion_matrix[3,], collapse = '_'),
@@ -284,7 +286,8 @@ log_results <- function(res,logfile,init_logfile=FALSE){
           round(res$validation_accuracy,6),
           round(res$training_loss,6),
           round(res$validation_loss,6),
-          confusion_matrix_lines),sep="\t",file=logfile,append=T)
+          confusion_matrix_lines,
+          ratio_prediction_lines),sep="\t",file=logfile,append=T)
     cat('\n',file=logfile,append=T)
   message(paste0("Model-testing results written to file: ",logfile))
   }
@@ -418,11 +421,38 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
   return(list(dataset,labels,instance_names))
 }
 
-get_best_model <- function(model_testing_results,rank_mode=0){
-  if (rank_mode == 0){ # highest validation accuracy
+get_best_model <- function(model_testing_results,rank_mode=1){
+  if (rank_mode == 1){ # highest validation accuracy
     best_model = model_testing_results[which((model_testing_results$val_acc == max(model_testing_results$val_acc,na.rm = TRUE))),]
-  }else if (rank_mode == 1){ # lowest validation loss
+  }else if (rank_mode == 2){ # lowest validation loss
     best_model = model_testing_results[which((model_testing_results$validation_loss == min(model_testing_results$validation_loss,na.rm = TRUE))),]
+  }else if (rank_mode == 3){ # smallest weighted misclassification error
+    if (typeof(model_testing_results$confusion_LC)=='character'){
+      LC_weighted_errors = get_weighted_errors(model_testing_results,'confusion_LC',1)
+      NT_weighted_errors = get_weighted_errors(model_testing_results,'confusion_NT',2)
+      VU_weighted_errors = get_weighted_errors(model_testing_results,'confusion_VU',3)
+      EN_weighted_errors = get_weighted_errors(model_testing_results,'confusion_EN',4)
+      CR_weighted_errors = get_weighted_errors(model_testing_results,'confusion_CR',5)
+      error_list = list(LC_weighted_errors,NT_weighted_errors,VU_weighted_errors,EN_weighted_errors,CR_weighted_errors)
+    }else{
+      not_threatened_weighted_errors = get_weighted_errors(model_testing_results,'confusion_0',1)
+      threatened_weighted_errors = get_weighted_errors(model_testing_results,'confusion_1',2)
+      error_list = list(not_threatened_weighted_errors,threatened_weighted_errors)
+    }
+    total_error_all_rows = rowSums(data.frame(t(matrix(unlist(error_list), nrow=length(error_list), byrow=TRUE))))
+    best_row_index = which.min(total_error_all_rows)
+    best_model = model_testing_results[best_row_index,]
+  }else if (rank_mode == 4){ # fewest class misclassifications
+    if (typeof(model_testing_results$confusion_LC)=='character'){
+      sum_false_classes = rowSums(model_testing_results[,c('delta_LC','delta_NT','delta_VU','delta_EN','delta_CR')])
+    }else{
+      sum_false_classes = rowSums(model_testing_results[,c('delta_0','delta_1')])
+    }
+    best_row_index = which.min(sum_false_classes)
+    best_model = model_testing_results[best_row_index,]
+  }else{
+    message(paste0('Invalid choice rank_mode = ',rank_mode))
+    break
   }
   return(best_model)
 }
@@ -434,5 +464,68 @@ plot_predictions <- function(predictions){
   barplot(counts_detail,names.arg = bar_names)
 }
 
+get_weighted_errors <- function(model_testing_results,colname='confusion_LC',true_index=1){
+  stat_col = strsplit(model_testing_results[,colname],'_')
+  a = data.frame(matrix(unlist(stat_col), nrow=length(stat_col), byrow=TRUE))
+  weighted_errors = c()
+  for (i in 1:dim(a)[1]){
+    row = as.numeric(a[i,])
+    weighted_error = sum(abs((1:dim(a)[2]-true_index))*row)
+    weighted_errors = c(weighted_errors,weighted_error)
+  }
+  return(weighted_errors)
+}
+
+get_cat_count <- function(target_vector,max_cat = 4){
+  cat_counts = c()
+  for (i in 0:max_cat){
+    cat_counts = c(cat_counts,length(target_vector[target_vector==i]))
+  }
+  return(cat_counts)
+}
+
+get_confusion_matrix <- function(best_model){
+  if (typeof(best_model$confusion_LC)=='character'){
+    target_cols = as.character(best_model[,c('confusion_LC','confusion_NT','confusion_VU','confusion_EN','confusion_CR')])
+    count_strings = strsplit(target_cols,'_')
+    confusion_matrix = matrix(as.integer(unlist(count_strings)), nrow=length(count_strings), byrow=TRUE)
+    #estimates_per_class = colSums(confusion_matrix)
+  }else{
+    target_cols = as.character(best_model[,c('confusion_0','confusion_1')])
+    count_strings = strsplit(target_cols,'_')
+    confusion_matrix = matrix(as.integer(unlist(count_strings)), nrow=length(count_strings), byrow=TRUE)
+  }
+  return(confusion_matrix)
+}
 
 
+evaluate_model <- function(features,labels,best_model){
+
+  res = train_iucnn(features,
+                    labels,
+                    path_to_output = "",
+                    read_settings = FALSE,
+                    mode = best_model$mode,
+                    validation_fraction = best_model$validation_fraction,
+                    cv_fold = best_model$cv_fold,
+                    seed = best_model$seed,
+                    max_epochs = best_model$max_epochs,
+                    patience = best_model$patience,
+                    n_layers = best_model$n_layers,
+                    use_bias = best_model$use_bias,
+                    act_f = best_model$act_f,
+                    act_f_out = best_model$act_f_out,
+                    label_stretch_factor = best_model$label_stretch_factor,
+                    randomize_instances = best_model$randomize_instances,
+                    dropout_rate = best_model$dropout_rate,
+                    mc_dropout = best_model$mc_dropout,
+                    mc_dropout_reps = best_model$mc_dropout_reps,
+                    label_noise_factor = best_model$label_noise_factor,
+                    rescale_features = best_model$rescale_features,
+                    save_model = FALSE,
+                    overwrite = FALSE,
+                    verbose = 0)
+  summary(res)
+  plot(res)
+  return(res)
+}
