@@ -1,0 +1,19 @@
+Training accuracy: 0.659
+Accuracy on unseen data: 0.542
+Label detail: 5 Classes (detailed)
+
+Label representation
+  Label Input_count Estimated_count
+1     0         383             396
+2     1          54              92
+3     2         123             106
+4     3         224             271
+5     4          89               8
+
+Confusion matrix (rows test data and columns predicted):
+    LC NT VU  EN CR
+LC 294 36 26  27  0
+NT  27 11  4  12  0
+VU  36 18 27  42  0
+EN  30 21 38 134  1
+CR   9  6 11  56  7
