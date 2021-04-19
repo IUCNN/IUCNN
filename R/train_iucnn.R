@@ -101,7 +101,7 @@
 train_iucnn <- function(x,
                         lab,
                         path_to_output = "iuc_nn_model",
-                        read_settings = FALSE,
+                        best_model = FALSE,
                         mode = 'nn-class',
                         validation_fraction = 0.1,
                         cv_fold = 1,
@@ -135,7 +135,7 @@ train_iucnn <- function(x,
   assert_logical(use_bias)
   assert_character(act_f)
   assert_character(act_f_out)
-  assert_numeric(label_stretch_factor, lower = 0, upper = 1)
+  assert_numeric(label_stretch_factor, lower = 0, upper = 2)
   assert_numeric(patience)
   assert_logical(randomize_instances)
   assert_numeric(dropout_rate, lower = 0, upper = 1)
@@ -144,30 +144,32 @@ train_iucnn <- function(x,
   assert_logical(overwrite)
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
+  if (class(best_model)=="data.frame"){
+    #warning("Model settings are being adopted from info provided under 'best_model' flag. All other provided model settings are being ignored. validation_fraction is set to 0 and cv_fold to 1.")
+    mode = best_model$mode
+    dropout_rate = best_model$dropout_rate
+    seed = best_model$seed
+    max_epochs = best_model$final_train_epoch_all
+    max_epochs = round(mean(as.numeric(strsplit(max_epochs,'_')[[1]])))
+    patience = NULL
+    n_layers = best_model$n_layers
+    use_bias = best_model$use_bias
+    rescale_features = best_model$rescale_features
+    randomize_instances = best_model$randomize_instances
+    mc_dropout = best_model$mc_dropout
+    mc_dropout_reps = 100
+    act_f = best_model$act_f
+    act_f_out = best_model$act_f_out
+    cv_fold = 1
+    validation_fraction = 0.
+    label_stretch_factor = best_model$label_stretch_factor
+    label_noise_factor = best_model$label_noise_factor
+    overwrite = TRUE
+  }
+
   # check if the model directory already exists
   if(dir.exists(file.path(path_to_output))& !overwrite){
     stop(sprintf("Directory %s exists. Provide alternative 'path_to_output' or set `overwrite` to TRUE.", path_to_output))
-  }
-
-  if (class(read_settings)=="data.frame"){
-    warning("Model settings are being adopted from info provided under 'read_settings' flag. All other provided model settings are being ignored. validation_fraction is set to 0 and cv_fold to 1.")
-    mode = read_settings$mode
-    dropout_rate = read_settings$dropout_rate
-    seed = read_settings$seed
-    max_epochs = read_settings$stopping_point
-    patience = NULL
-    n_layers = read_settings$n_layers
-    use_bias = read_settings$use_bias
-    rescale_features = read_settings$rescale_features
-    randomize_instances = read_settings$randomize_instances
-    mc_dropout = read_settings$mc_dropout
-    mc_dropout_reps = read_settings$mc_dropout_reps
-    act_f = read_settings$act_f
-    act_f_out = read_settings$act_f_out
-    cv_fold = 1
-    validation_fraction = 0.
-    label_stretch_factor = read_settings$label_stretch_factor
-    label_noise_factor = read_settings$label_noise_factor
   }
 
   data_out = process_iucnn_input(x,lab = lab, mode = mode, outpath = '.', write_data_files = FALSE, verbose=verbose)

@@ -52,8 +52,7 @@ plot.iucnn_model <- function(x, ...){
   x$training_accuracy_history
   x$final_training_epoch
 
-
-  par(mfrow=c(round(x$cv_fold/2,0),2),mar = c(2, 2, 2, 2))
+  par(mfrow=c(rnd(x$cv_fold/2),2),mar = c(2, 2, 2, 2))
   for (i in 1:x$cv_fold){
     plot(x$training_loss_history[[i]], type = "n", ylab = "Loss", xlab = "Epoch",
          ylim = c(min(min(x$training_loss_history[[i]]), min(x$validation_loss_history[[i]])), max(max(x$training_loss_history[[i]]), max(x$validation_loss_history[[i]]))))

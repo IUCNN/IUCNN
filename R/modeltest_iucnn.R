@@ -17,9 +17,9 @@ modeltest_iucnn <- function(x,
                             label_noise_factor = 0.0,
                             act_f = "relu",
                             act_f_out = "auto",
-                            max_epochs = 500,
-                            patience = 30,
-                            mc_dropout = FALSE,
+                            max_epochs = 5000,
+                            patience = 200,
+                            mc_dropout = TRUE,
                             mc_dropout_reps = 100,
                             randomize_instances = TRUE,
                             rescale_features = FALSE,
@@ -37,7 +37,7 @@ modeltest_iucnn <- function(x,
   assert_character(n_layers)
   assert_logical(use_bias)
   assert_numeric(seed)
-  assert_numeric(label_stretch_factor, lower = 0, upper = 1)
+  assert_numeric(label_stretch_factor, lower = 0, upper = 2)
   assert_numeric(label_noise_factor, lower = 0, upper = 1)
   assert_character(act_f_out)
   assert_character(act_f)
@@ -117,8 +117,7 @@ modeltest_iucnn <- function(x,
       validation_fraction = 0.0
     }else{
       if(validation_fraction == 0){
-        warning(paste0("No validation set defined: cv_fold is set to ",cv_fold," and validation_fraction to ", validation_fraction,'. Change either one of these settings to define a validation set.'))
-        break
+        stop(paste0("No validation set defined: cv_fold is set to ",cv_fold," and validation_fraction to ", validation_fraction,'. Change either one of these settings to define a validation set.'))
       }else{
         warning(paste0("Running single training round for each model with ", validation_fraction, " validation set."))
       }

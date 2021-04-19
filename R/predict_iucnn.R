@@ -61,6 +61,7 @@
 
 predict_iucnn <- function(x,
                           model,
+                          validation_model=NULL,
                           target_acc = 0.0,
                           verbose = 0,
                           return_raw = FALSE,
@@ -83,10 +84,20 @@ predict_iucnn <- function(x,
     stop("Feature mismatch, missing in prediction features: \n", paste0(mis, collapse = ", "))
   }
 
-  if (target_acc > 0){
-    confidence_threshold = model$accthres_tbl[min(which(model$accthres_tbl[,2] > target_acc)),][1]
-
+  if (target_acc == 0){
+    confidence_threshold = NULL
+  }else{
+   if (class(validation_model) == "iucnn_model"){
+     if (validation_model$dropout == FALSE){
+       stop('target_acc argument can only be used for models trained with mc_dropout. Retrain your model and specify a dropout rate > 0 to use this option')
+     }else{
+       confidence_threshold = validation_model$accthres_tbl[min(which(validation_model$accthres_tbl[,2] > target_acc)),][1]
+     }
+   }else{
+     stop('When choosing target_acc > 0 you need to provide the validation model (output of the evaluate_model() function)')
+   }
   }
+
 
   data_out = process_iucnn_input(x,mode = mode, outpath = '.', write_data_files = FALSE)
 
@@ -94,6 +105,9 @@ predict_iucnn <- function(x,
   instance_names = data_out[[3]]
 
   message("Predicting conservation status")
+
+  pred_out = NULL
+  pred_out$names = instance_names
 
   if(model$model == 'bnn-class'){
     postpr <- bnn_predict(features = as.matrix(dataset),
@@ -105,13 +119,15 @@ predict_iucnn <- function(x,
                           )
 
     if (return_raw==TRUE){
-      return(postpr$post_prob_predictions)
+      pred_out$predictions = postpr$post_prob_predictions
+      return(pred_out)
     }else{
       not_nan_boolean <- complete.cases(postpr$post_prob_predictions)
       predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],1,which.max)-1
       predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
       predictions[not_nan_boolean] <- predictions_tmp
-      return(predictions)
+      pred_out$predictions = predictions
+      return(pred_out)
     }
 
 
@@ -124,7 +140,7 @@ predict_iucnn <- function(x,
                          model_dir = model$trained_model_path,
                          verbose = verbose,
                          iucnn_mode = model$model,
-                         dropout = model$mc_dropout,
+                         dropout = validation_model$mc_dropout,
                          dropout_reps = 100,
                          confidence_threshold = confidence_threshold,
                          rescale_labels_boolean = model$rescale_labels_boolean,
@@ -132,7 +148,8 @@ predict_iucnn <- function(x,
                          min_max_label = model$min_max_label_rescaled,
                          stretch_factor_rescaled_labels = model$label_stretch_factor)
     if (return_raw==TRUE){
-      return(out)
+      pred_out$predictions = out
+      return(pred_out)
     }else{
       if (model$model == 'nn-reg'){
         predictions <- round(out)
@@ -151,8 +168,8 @@ predict_iucnn <- function(x,
         predictions <- lu[predictions+1]
         names(predictions) <- NULL
       }
-
-      return(predictions)
+      pred_out$predictions = predictions
+      return(pred_out)
     }
   }
 }

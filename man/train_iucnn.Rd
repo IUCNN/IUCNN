@@ -8,7 +8,7 @@ train_iucnn(
   x,
   lab,
   path_to_output = "iuc_nn_model",
-  read_settings = FALSE,
+  best_model = FALSE,
   mode = "nn-class",
   validation_fraction = 0.1,
   cv_fold = 1,

@@ -116,27 +116,25 @@ def iucnn_train(dataset,
                 #mean_acc = np.nan
             return label_predictions, predictions_raw_mean, mean_loss, mean_acc_man
 
-    def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps=1,return_std = False):
+
+    def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps=1):
         if features.shape[0] == 0:
             return np.nan, np.array([]), np.array([])
         else:   
             if mc_dropout:
-                prm_est_reps = np.array([model.predict(features).flatten() for i in np.arange(dropout_reps)])
-                prm_est_mean = np.mean(prm_est_reps,axis=0)
+                label_cats = np.arange(rescale_factor+1)
+                prm_est_reps_unscaled = np.array([model.predict(features).flatten() for i in np.arange(dropout_reps)])
+                predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps_unscaled])
+                prm_est_mean = turn_reg_output_into_softmax(predictions_raw,label_cats)
+                label_predictions = np.argmax(prm_est_mean, axis=1) 
             else:
-                prm_est_mean = model.predict(features).flatten()
-            prm_est_rescaled = rescale_labels(prm_est_mean,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
+                prm_est_mean_unscaled = model.predict(features).flatten()
+                prm_est_mean = rescale_labels(prm_est_mean_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
+                label_predictions = np.round(prm_est_mean, 0).astype(int).flatten()
             real_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True).astype(int).flatten()
-            label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
+
             cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
-            if return_std:
-                prm_est_reps_rescaled = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps])
-                #stds_rescaled = np.std(prm_est_reps_rescaled,axis=0)
-                min_rescaled = np.min(prm_est_reps_rescaled,axis=0)
-                max_rescaled = np.max(prm_est_reps_rescaled,axis=0)
-                return cat_acc, label_predictions, prm_est_rescaled, np.array([min_rescaled,max_rescaled])
-            else:
-                return cat_acc, label_predictions, prm_est_rescaled
+            return cat_acc, label_predictions, prm_est_mean
 
     def rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=False):
         label_range = max(min_max_label)-min(min_max_label)
@@ -460,8 +458,11 @@ def iucnn_train(dataset,
         confusion_matrix = np.zeros([n_class,n_class])
         accthres_tbl = np.nan
     else:
+        if mc_dropout:
+            accthres_tbl = get_confidence_threshold(model,all_validation_predictions_raw,all_validation_labels,target_acc=None)
+        else:
+            accthres_tbl = np.nan
         confusion_matrix = np.array(tf.math.confusion_matrix(all_validation_labels,all_validation_predictions))        
-        accthres_tbl = get_confidence_threshold(model,all_validation_predictions_raw,all_validation_labels,target_acc=None)
 
     output = [
                 all_validation_labels,
@@ -655,6 +656,5 @@ def iucnn_train(dataset,
     # model.compile(loss='mean_squared_error',
     #               optimizer=optimizer,
     #               metrics=['mae','mse'])
-
 
 
