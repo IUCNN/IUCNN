@@ -240,3 +240,16 @@ names(all_pred_broad) = c('species','pred_class','pred_class_acc_70','pred_class
 write.table(all_pred_broad, file = "predictions_broad.txt",sep = ',',quote = FALSE)
 
 
+
+# res_broad = train_iucnn(features,
+#                         labels_train_broad,
+#                         cv_fold = 5,
+#                         n_layers = '9_9_9',
+#                         validation_fraction=0,
+#                         save_model=TRUE
+#                         )
+#
+# res_broad$validation_accuracy
+#
+# a = feature_importance(x = iucnn_results_broad_class)
+# a

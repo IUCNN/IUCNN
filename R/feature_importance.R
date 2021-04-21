@@ -139,9 +139,17 @@ feature_importance <- function(x,
                                                    unlink_features_within_block = unlink_features_within_block)
     selected_cols <- feature_importance_out[,2:4]
   }else{
+    if (is.nan(x$input_data$test_data)){
+      use_these_features = x$input_data$data
+      use_these_labels = x$input_data$labels
+
+    }else{
+      use_these_features = x$input_data$test_data
+      use_these_labels = x$input_data$test_labels
+    }
     reticulate::source_python(system.file("python", "IUCNN_feature_importance.py", package = "IUCNN"))
-    feature_importance_out <- feature_importance_nn(input_features = x$input_data$test_data,
-                                                   true_labels = x$input_data$test_labels,
+    feature_importance_out <- feature_importance_nn(input_features = use_these_features,
+                                                   true_labels = use_these_labels,
                                                    model_dir = x$trained_model_path,
                                                    iucnn_mode = x$model,
                                                    feature_names = x$input_data$feature_names,

@@ -266,6 +266,7 @@ def iucnn_train(dataset,
     if cv_k > 1:
         train_index_blocks = iter_test_indices(dataset,n_splits = cv_k,shuffle=randomize_instances)
         cv = True
+        validation_fraction = 0.0
     else:
         if randomize_instances:
             rnd_indx = np.random.choice(range(len(labels)), len(labels), replace=False)
@@ -464,6 +465,22 @@ def iucnn_train(dataset,
             accthres_tbl = np.nan
         confusion_matrix = np.array(tf.math.confusion_matrix(all_validation_labels,all_validation_predictions))        
 
+    if validation_fraction == 0 and cv_k < 2:
+        data_train = dataset
+        labels_train = labels
+        data_test = np.nan
+        labels_test = np.nan
+    elif validation_fraction == 0 and cv_k > 1:
+        data_train = dataset
+        labels_train = labels
+        data_test = dataset
+        labels_test = labels
+    else:
+        data_train = train_set
+        labels_train = output_train_labels.flatten()
+        data_test = validation_set
+        labels_test = all_validation_labels.flatten()        
+        
     output = [
                 all_validation_labels,
                 all_validation_predictions,
@@ -496,11 +513,11 @@ def iucnn_train(dataset,
                 accthres_tbl,
                 np.array(stopping_points),
                 
-                {"data":train_set,
-                 "labels":output_train_labels.flatten(),
+                {"data":data_train,
+                 "labels":labels_train,
                  "label_dict":np.unique(labels).astype(str),
-                 "test_data":validation_set,
-                 "test_labels":all_validation_labels,
+                 "test_data":data_test,
+                 "test_labels":labels_test,
                  "id_data":train_instance_names,
                  "id_test_data":validation_instance_names,
                  "file_name":os.path.basename(path_to_output),
