@@ -2,7 +2,6 @@ library(tidyverse)
 library(IUCNN)
 library(devtools)
 document()
-setwd('~/GitHub/IUCNN/orchid_data')
 
 # load occurrence data
 load('orchid_data_iucnn/orchid_original_training_occurrences.rda')

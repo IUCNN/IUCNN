@@ -543,7 +543,10 @@ get_confusion_matrix <- function(best_model){
 }
 
 
-evaluate_model <- function(features,labels,best_model){
+evaluate_model <- function(features,
+                           labels,
+                           best_model,
+                           return_plot){
 
   res = train_iucnn(features,
                     labels,
@@ -570,7 +573,9 @@ evaluate_model <- function(features,labels,best_model){
                     overwrite = FALSE,
                     verbose = 0)
   summary(res)
-  plot(res)
+  if(return_plot){
+    plot(res)
+  }
   return(res)
 }
 
