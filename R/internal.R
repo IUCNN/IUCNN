@@ -423,9 +423,9 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
 rank_models <- function(model_testing_results,rank_mode='val_acc'){
   if (rank_mode == 'val_acc'){ # highest validation accuracy
     sorted_model_testing_results = model_testing_results[order(model_testing_results$val_acc,decreasing = TRUE),]
-  }else if (rank_mode == 2){ # lowest validation loss
+  }else if (rank_mode == 'val_loss'){ # lowest validation loss
     sorted_model_testing_results = model_testing_results[order(model_testing_results$validation_loss,decreasing = FALSE),]
-  }else if (rank_mode == 3){ # smallest weighted misclassification error
+  }else if (rank_mode == 'weighted_error'){ # smallest weighted misclassification error
     if (typeof(model_testing_results$confusion_LC)=='character'){
       LC_weighted_errors = get_weighted_errors(model_testing_results,'confusion_LC',1)
       NT_weighted_errors = get_weighted_errors(model_testing_results,'confusion_NT',2)
@@ -441,7 +441,7 @@ rank_models <- function(model_testing_results,rank_mode='val_acc'){
     total_error_all_rows = rowSums(data.frame(t(matrix(unlist(error_list), nrow=length(error_list), byrow=TRUE))))
     model_testing_results['weighted_error'] = total_error_all_rows
     sorted_model_testing_results = model_testing_results[order(model_testing_results$weighted_error,decreasing = FALSE),]
-  }else if (rank_mode == 4){ # fewest class misclassifications
+  }else if (rank_mode == 'total_class_matches'){ # fewest class misclassifications
     if (typeof(model_testing_results$confusion_LC)=='character'){
       sum_false_classes = rowSums(model_testing_results[,c('delta_LC','delta_NT','delta_VU','delta_EN','delta_CR')])
     }else{
@@ -450,14 +450,12 @@ rank_models <- function(model_testing_results,rank_mode='val_acc'){
     model_testing_results['total_class_error'] = sum_false_classes
     sorted_model_testing_results = model_testing_results[order(model_testing_results$total_class_error,decreasing = FALSE),]
   }else{
-    stop(paste0('Invalid choice rank_mode = ',rank_mode))
+    stop(paste0('Invalid choice rank_mode = \'',rank_mode,'\'. Choose from \'val_acc\',\'val_loss\',\'weighted_error\',or \'total_class_matches\''))
   }
   return(sorted_model_testing_results)
 }
 
 evaluate_iucnn <- function(model_testing_results, criterion = 'val_acc', force_dropout = FALSE, write_file = FALSE, outfile=NULL){
-  # get_best_model should rank the models instead of only getting best !!!!!!!!!!!!!!!!!
-  # then select best model or best model with dropout if force_dropout==TRUE!!!!!!!!!!!!!!!!!!
   ranked_models = rank_models(model_testing_results,rank_mode = criterion)
   if (force_dropout==TRUE){
     best_model = ranked_models[ranked_models$dropout_rate>0,][1,]
