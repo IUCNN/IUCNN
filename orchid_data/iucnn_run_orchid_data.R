@@ -2,7 +2,6 @@ library(tidyverse)
 library(IUCNN)
 library(devtools)
 document()
-setwd('~/GitHub/IUCNN/orchid_data')
 
 run_feature_importance <- function(features_tmp,labels_tmp,modeltest_logfile,n_permutations=100){
   model_testing_results_tmp = read.csv(modeltest_logfile,sep='\t')

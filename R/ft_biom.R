@@ -124,5 +124,7 @@ ft_biom <- function(x,
     biom <- biom[,c(TRUE, colSums(biom[,-1]) > 0)]
   }
 
+  names(biom)[-1] <- paste("biome_", names(biom)[-1], sep = "")
+
   return(biom)
 }
