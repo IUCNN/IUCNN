@@ -1,0 +1,48 @@
+Best model:
+ mode: nn-reg
+ level: broad
+ dropout_rate: 0.1
+ seed: 1234
+ max_epochs: 5000
+ patience: 200
+ n_layers: 40_20
+ use_bias: TRUE
+ rescale_features: FALSE
+ randomize_instances: TRUE
+ mc_dropout: TRUE
+ mc_dropout_reps: 100
+ act_f: relu
+ act_f_out: tanh
+ cv_fold: 5
+ validation_fraction: 0
+ label_stretch_factor: 1.2
+ label_noise_factor: 0
+ final_train_epoch_all: 446_343_445_720_623
+ final_train_epoch_mean: 515
+ train_acc: 0.91836
+ val_acc: 0.810638
+ training_loss: 0.438599
+ validation_loss: 0.956593
+ confusion_LC: NaN
+ confusion_NT: NaN
+ confusion_VU: NaN
+ confusion_EN: NaN
+ confusion_CR: NaN
+ confusion_0: 359_80
+ confusion_1: 87_356
+ delta_LC: NaN
+ delta_NT: NaN
+ delta_VU: NaN
+ delta_EN: NaN
+ delta_CR: NaN
+ delta_0: 7
+ delta_1: 7
+
+Training accuracy: 0.918
+Accuracy on unseen data: 0.811
+Label detail: 2 Classes (broad)
+
+Confusion matrix (Rows: true labels, Columns: predicted labels):
+               Not threatened Threatened
+Not Threatened            359         80
+Threatened                 87        356

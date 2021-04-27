@@ -1,0 +1,51 @@
+Best model:
+ mode: nn-reg
+ level: detail
+ dropout_rate: 0.3
+ seed: 1234
+ max_epochs: 5000
+ patience: 200
+ n_layers: 50_30_10
+ use_bias: TRUE
+ rescale_features: FALSE
+ randomize_instances: TRUE
+ mc_dropout: TRUE
+ mc_dropout_reps: 100
+ act_f: relu
+ act_f_out: tanh
+ cv_fold: 5
+ validation_fraction: 0
+ label_stretch_factor: 1.2
+ label_noise_factor: 0
+ final_train_epoch_all: 368_644_479_175_245
+ final_train_epoch_mean: 382
+ train_acc: 0.63376
+ val_acc: 0.53024
+ training_loss: 0.270124
+ validation_loss: 0.558522
+ confusion_LC: 287_39_35_19_3
+ confusion_NT: 32_5_13_4_0
+ confusion_VU: 37_22_35_28_1
+ confusion_EN: 33_20_51_114_6
+ confusion_CR: 8_7_14_38_22
+ confusion_0: NaN
+ confusion_1: NaN
+ delta_LC: 14
+ delta_NT: 39
+ delta_VU: 25
+ delta_EN: 21
+ delta_CR: 57
+ delta_0: NaN
+ delta_1: NaN
+
+Training accuracy: 0.634
+Accuracy on unseen data: 0.53
+Label detail: 5 Classes (detail)
+
+Confusion matrix (Rows: true labels, Columns: predicted labels):
+    LC NT VU  EN CR
+LC 287 39 35  19  3
+NT  32  5 13   4  0
+VU  37 22 35  28  1
+EN  33 20 51 114  6
+CR   8  7 14  38 22

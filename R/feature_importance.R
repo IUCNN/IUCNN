@@ -100,7 +100,13 @@ feature_importance <- function(x,
         ffb[[block_name]] <- selected_features
       }
     }else{
+      if (is.null(names(feature_blocks))){
+        names(feature_blocks) = feature_blocks
+      }
       ffb <- feature_blocks
+      if ('species' %in% names(ffb)){
+        ffb['species'] <- NULL
+      }
     }
   }
 

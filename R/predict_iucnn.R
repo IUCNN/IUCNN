@@ -61,7 +61,7 @@
 
 predict_iucnn <- function(x,
                           model,
-                          validation_model=NULL,
+                          acc_thres_tbl=NULL,
                           target_acc = 0.0,
                           verbose = 0,
                           return_raw = FALSE,
@@ -87,14 +87,10 @@ predict_iucnn <- function(x,
   if (target_acc == 0){
     confidence_threshold = NULL
   }else{
-   if (class(validation_model) == "iucnn_model"){
-     if (validation_model$dropout == FALSE){
-       stop('target_acc argument can only be used for models trained with mc_dropout. Retrain your model and specify a dropout rate > 0 to use this option')
-     }else{
-       confidence_threshold = validation_model$accthres_tbl[min(which(validation_model$accthres_tbl[,2] > target_acc)),][1]
-     }
-   }else{
-     stop('When choosing target_acc > 0 you need to provide the validation model (output of the evaluate_model() function)')
+   if (class(acc_thres_tbl)[1] == "matrix"){
+     confidence_threshold = acc_thres_tbl[min(which(acc_thres_tbl[,2] > target_acc)),][1]
+    }else{
+     stop('Table with accuracy thresholds required when choosing target_acc > 0. Produce this table using the get_accthres_table function.')
    }
   }
 
@@ -140,7 +136,7 @@ predict_iucnn <- function(x,
                          model_dir = model$trained_model_path,
                          verbose = verbose,
                          iucnn_mode = model$model,
-                         dropout = validation_model$mc_dropout,
+                         dropout = model$mc_dropout,
                          dropout_reps = 100,
                          confidence_threshold = confidence_threshold,
                          rescale_labels_boolean = model$rescale_labels_boolean,

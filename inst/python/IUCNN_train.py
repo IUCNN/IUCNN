@@ -179,28 +179,12 @@ def iucnn_train(dataset,
             current = stop
         return index_output
 
-    def get_confidence_threshold(model,prm_est_mean,test_labels,target_acc=0.9):
-        # if iucnn_mode == 'nn-class':
-        #     if mc_dropout:
-        #         prm_est_reps = np.array([model.predict(test_data) for i in np.arange(dropout_reps)])
-        #         prm_est_mean = np.mean(prm_est_reps,axis=0)
-        #     else:
-        #         prm_est_mean = model.predict(test_data)
-        # elif iucnn_mode == 'nn-reg':
-        #     label_cats = np.arange(max(min_max_label)+1)
-        #     if mc_dropout:
-        #         prm_est_reps_unscaled = np.array([model.predict(test_data).flatten() for i in np.arange(dropout_reps)])
-        #         predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps_unscaled])
-        #         prm_est_mean = turn_reg_output_into_softmax(predictions_raw,label_cats)
-        #     else:
-        #         prm_est_reps_unscaled = model.predict(test_data).flatten()
-        #         predictions_raw = rescale_labels(prm_est_reps_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
-        #         prm_est_mean = np.round(predictions_raw, 0).astype(int)
+    def get_confidence_threshold(predicted_labels,true_labels,target_acc=0.9):
         # CALC TRADEOFFS
         tbl_results = []
         for i in np.linspace(0.01, 0.99, 99):
             try:
-                scores = get_accuracy_threshold(prm_est_mean, test_labels, threshold=i)
+                scores = get_accuracy_threshold(predicted_labels, true_labels, threshold=i)
                 tbl_results.append([i, scores['accuracy'], scores['retained_samples']])
             except:
                 pass
@@ -460,7 +444,7 @@ def iucnn_train(dataset,
         accthres_tbl = np.nan
     else:
         if mc_dropout:
-            accthres_tbl = get_confidence_threshold(model,all_validation_predictions_raw,all_validation_labels,target_acc=None)
+            accthres_tbl = get_confidence_threshold(all_validation_predictions_raw,all_validation_labels,target_acc=None)
         else:
             accthres_tbl = np.nan
         confusion_matrix = np.array(tf.math.confusion_matrix(all_validation_labels,all_validation_predictions))        

@@ -420,11 +420,11 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
   return(list(dataset,labels,instance_names))
 }
 
-get_best_model <- function(model_testing_results,rank_mode=1){
-  if (rank_mode == 1){ # highest validation accuracy
-    best_model = model_testing_results[which((model_testing_results$val_acc == max(model_testing_results$val_acc,na.rm = TRUE))),]
+rank_models <- function(model_testing_results,rank_mode='val_acc'){
+  if (rank_mode == 'val_acc'){ # highest validation accuracy
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$val_acc,decreasing = TRUE),]
   }else if (rank_mode == 2){ # lowest validation loss
-    best_model = model_testing_results[which((model_testing_results$validation_loss == min(model_testing_results$validation_loss,na.rm = TRUE))),]
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$validation_loss,decreasing = FALSE),]
   }else if (rank_mode == 3){ # smallest weighted misclassification error
     if (typeof(model_testing_results$confusion_LC)=='character'){
       LC_weighted_errors = get_weighted_errors(model_testing_results,'confusion_LC',1)
@@ -439,21 +439,100 @@ get_best_model <- function(model_testing_results,rank_mode=1){
       error_list = list(not_threatened_weighted_errors,threatened_weighted_errors)
     }
     total_error_all_rows = rowSums(data.frame(t(matrix(unlist(error_list), nrow=length(error_list), byrow=TRUE))))
-    best_row_index = which.min(total_error_all_rows)
-    best_model = model_testing_results[best_row_index,]
+    model_testing_results['weighted_error'] = total_error_all_rows
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$weighted_error,decreasing = FALSE),]
   }else if (rank_mode == 4){ # fewest class misclassifications
     if (typeof(model_testing_results$confusion_LC)=='character'){
       sum_false_classes = rowSums(model_testing_results[,c('delta_LC','delta_NT','delta_VU','delta_EN','delta_CR')])
     }else{
       sum_false_classes = rowSums(model_testing_results[,c('delta_0','delta_1')])
     }
-    best_row_index = which.min(sum_false_classes)
-    best_model = model_testing_results[best_row_index,]
+    model_testing_results['total_class_error'] = sum_false_classes
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$total_class_error,decreasing = FALSE),]
   }else{
     stop(paste0('Invalid choice rank_mode = ',rank_mode))
   }
-  return(best_model)
+  return(sorted_model_testing_results)
 }
+
+evaluate_iucnn <- function(model_testing_results, criterion = 'val_acc', force_dropout = FALSE, write_file = FALSE, outfile=NULL){
+  # get_best_model should rank the models instead of only getting best !!!!!!!!!!!!!!!!!
+  # then select best model or best model with dropout if force_dropout==TRUE!!!!!!!!!!!!!!!!!!
+  ranked_models = rank_models(model_testing_results,rank_mode = criterion)
+  if (force_dropout==TRUE){
+    best_model = ranked_models[ranked_models$dropout_rate>0,][1,]
+  }else{
+    best_model = ranked_models[1,]
+  }
+  cat("Best model:\n")
+  cat('',sprintf("%s: %s\n", names(best_model), best_model))
+  cat("\n")
+  train_acc = best_model$train_acc
+  val_acc = best_model$val_acc
+  label_detail = best_model$level
+  cm = get_confusion_matrix(best_model)
+
+  if (label_detail == 'broad'){
+    n_classes = 2
+    maxlab = 1
+  }else if (label_detail == 'detail'){
+    n_classes = 5
+    maxlab = 4
+  }else{
+    stop(paste0('Unknown label level: \'',label_detail, '\'. Currently only supporting \'broad\' (N=2) or \'detail\' (N=5)'))
+  }
+
+  cat(sprintf("Training accuracy: %s\n",
+              round(train_acc, 3)))
+
+  cat(sprintf("Accuracy on unseen data: %s\n",
+              round(val_acc, 3)))
+
+  cat(sprintf("Label detail: %s Classes (%s)\n\n",
+              n_classes,
+              label_detail))
+
+  cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
+  print(cm)
+
+  if (write_file==TRUE){
+    if (is.null(outfile)){
+      outfile = 'evaluation_best_model.txt'
+    }
+    sink(outfile)
+
+    cat("Best model:\n")
+    cat('',sprintf("%s: %s\n", names(best_model), c(best_model)))
+    cat("\n")
+    cat(sprintf("Training accuracy: %s\n",
+                round(train_acc, 3)))
+
+    cat(sprintf("Accuracy on unseen data: %s\n",
+                round(val_acc, 3)))
+
+    cat(sprintf("Label detail: %s Classes (%s)\n\n",
+                n_classes,
+                label_detail))
+
+    cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
+    print(cm)
+    sink()
+    print(paste0('Model evaluation results of best model written to ',outfile))
+  }
+
+  out_obj = NULL
+  out_obj$best_model = best_model
+  out_obj$criterion = criterion
+  out_obj$force_dropout = force_dropout
+  out_obj$train_acc = train_acc
+  out_obj$val_acc = val_acc
+  out_obj$label_detail = label_detail
+  out_obj$confusion_matrix = cm
+  class(out_obj) <- "iucnn_eval"
+
+  return(out_obj)
+  }
+
 
 plot_predictions <- function(predictions,title=NULL){
   colors = NULL
@@ -533,18 +612,24 @@ get_confusion_matrix <- function(best_model){
     target_cols = as.character(best_model[,c('confusion_LC','confusion_NT','confusion_VU','confusion_EN','confusion_CR')])
     count_strings = strsplit(target_cols,'_')
     confusion_matrix = matrix(as.integer(unlist(count_strings)), nrow=length(count_strings), byrow=TRUE)
+    confusion_matrix = data.frame(confusion_matrix,row.names = c('LC','NT','VU','EN','CR'))
+    names(confusion_matrix) = c('LC','NT','VU','EN','CR')
     #estimates_per_class = colSums(confusion_matrix)
   }else{
     target_cols = as.character(best_model[,c('confusion_0','confusion_1')])
     count_strings = strsplit(target_cols,'_')
     confusion_matrix = matrix(as.integer(unlist(count_strings)), nrow=length(count_strings), byrow=TRUE)
+    confusion_matrix = data.frame(confusion_matrix,row.names = c('Not Threatened','Threatened'))
+    names(confusion_matrix) = c('Not threatened','Threatened')
   }
   return(confusion_matrix)
 }
 
 
-evaluate_model <- function(features,labels,best_model){
-
+get_accthres_table <- function(features,labels,best_model){
+  if (best_model$dropout_rate == 0){
+    stop(paste0('Provided model has dropout_rate of 0.\n Acc-thres_tbl can only be computed for dropout models.\n Set \'force_dropout = TRUE\' in evaluate_iucnn function to get best dropout model.'))
+  }
   res = train_iucnn(features,
                     labels,
                     path_to_output = "",
@@ -569,9 +654,9 @@ evaluate_model <- function(features,labels,best_model){
                     save_model = FALSE,
                     overwrite = FALSE,
                     verbose = 0)
-  summary(res)
-  plot(res)
-  return(res)
+  #summary(res)
+  #plot(res)
+  return(res$accthres_tbl)
 }
 
 rnd <- function(x) trunc(x+sign(x)*0.5)
