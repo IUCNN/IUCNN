@@ -2,6 +2,7 @@ library(tidyverse)
 library(IUCNN)
 library(devtools)
 document()
+setwd('~/GitHub/IUCNN/orchid_data')
 
 run_feature_importance <- function(features_tmp,labels_tmp,modeltest_logfile,n_permutations=100){
   model_testing_results_tmp = read.csv(modeltest_logfile,sep='\t')
@@ -128,15 +129,15 @@ model_testing_results_detail_reg = modeltest_iucnn(selected_features,
                                         labels_train_detail,
                                         logfile_detail_reg,
                                         seed = 1234,
-                                        dropout_rate = c(0.3),
-                                        n_layers = c('50_50_50_50_50','50_40_30_20_10_5','50_50_50_50_50_50_50'),
+                                        dropout_rate = c(0.,0.1,0.3),
+                                        n_layers = c('30','40_20','50_30_10'),
                                         cv_fold = 5,
                                         validation_fraction = 0.,
                                         mode = 'nn-reg',
-                                        act_f_out = c('tanh'),
-                                        label_stretch_factor = c(1.2),
+                                        act_f_out = c('tanh','sigmoid'),
+                                        label_stretch_factor = c(0.8,1.0,1.2),
                                         label_noise_factor = 0.0,
-                                        init_logfile = FALSE,
+                                        init_logfile = TRUE,
                                         recycle_settings = FALSE)
 
 #model_testing_results_detail_reg = read.csv(logfile_detail_reg,sep='\t')
