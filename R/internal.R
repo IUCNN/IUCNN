@@ -189,7 +189,7 @@ calculate_accuracy <- function(bnn_data,
 bnn_predict <- function(features,
                         instance_id,
                         model_path,
-                        target_acc,
+                        post_cutoff,
                         filename,
                         post_summary_mode=1){
 
@@ -201,7 +201,7 @@ bnn_predict <- function(features,
                           pickle_file = model_path,
                           instance_id = instance_id,
                           fname = filename,
-                          target_acc = target_acc,
+                          post_cutoff = post_cutoff,
                           post_summary_mode = post_summary_mode
   )
 
@@ -223,9 +223,9 @@ subsample_n_per_class <- function(features,
   return(list(features, labels))
 }
 
-log_results <- function(res,logfile,init_logfile=FALSE){
+log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
-    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","delta_LC","delta_NT","delta_VU","delta_EN","delta_CR","delta_0","delta_1")
+    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","delta_LC","delta_NT","delta_VU","delta_EN","delta_CR","delta_0","delta_1","model_outpath")
     if(file.exists(logfile)){
       overwrite_prompt = readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
@@ -286,7 +286,8 @@ log_results <- function(res,logfile,init_logfile=FALSE){
           round(res$training_loss,6),
           round(res$validation_loss,6),
           confusion_matrix_lines,
-          ratio_prediction_lines),sep="\t",file=logfile,append=T)
+          ratio_prediction_lines,
+          iucnn_model_out),sep="\t",file=logfile,append=T)
     cat('\n',file=logfile,append=T)
   message(paste0("Model-testing results written to file: ",logfile))
   }
@@ -455,13 +456,23 @@ rank_models <- function(model_testing_results,rank_mode='val_acc'){
   return(sorted_model_testing_results)
 }
 
-evaluate_iucnn <- function(model_testing_results, criterion = 'val_acc', force_dropout = FALSE, write_file = FALSE, outfile=NULL){
+best_model_iucnn <- function(model_testing_results, criterion = 'val_acc', require_dropout = FALSE){
   ranked_models = rank_models(model_testing_results,rank_mode = criterion)
-  if (force_dropout==TRUE){
+  if (require_dropout==TRUE){
     best_model = ranked_models[ranked_models$dropout_rate>0,][1,]
   }else{
     best_model = ranked_models[1,]
   }
+
+  cat("Best model:\n")
+  cat('',sprintf("%s: %s\n", names(best_model), best_model))
+  cat("\n")
+
+  iucnn_model = readRDS(best_model$model_outpath)
+  return(iucnn_model)
+  }
+
+model_summary <- function(best_model,write_file = FALSE, outfile_name=NULL){
   cat("Best model:\n")
   cat('',sprintf("%s: %s\n", names(best_model), best_model))
   cat("\n")
@@ -494,10 +505,10 @@ evaluate_iucnn <- function(model_testing_results, criterion = 'val_acc', force_d
   print(cm)
 
   if (write_file==TRUE){
-    if (is.null(outfile)){
-      outfile = 'evaluation_best_model.txt'
+    if (is.null(outfile_name)){
+      outfile_name = 'evaluation_best_model.txt'
     }
-    sink(outfile)
+    sink(outfile_name)
 
     cat("Best model:\n")
     cat('',sprintf("%s: %s\n", names(best_model), c(best_model)))
@@ -515,21 +526,26 @@ evaluate_iucnn <- function(model_testing_results, criterion = 'val_acc', force_d
     cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
     print(cm)
     sink()
-    print(paste0('Model evaluation results of best model written to ',outfile))
+    print(paste0('Model evaluation results of best model written to ',outfile_name))
   }
 
-  out_obj = NULL
-  out_obj$best_model = best_model
-  out_obj$criterion = criterion
-  out_obj$force_dropout = force_dropout
-  out_obj$train_acc = train_acc
-  out_obj$val_acc = val_acc
-  out_obj$label_detail = label_detail
-  out_obj$confusion_matrix = cm
-  class(out_obj) <- "iucnn_eval"
+}
 
-  return(out_obj)
+
+evaluate_iucnn <- function(res){
+  if (res$dropout_rate == 0){
+    warning('No acc-thres-tbl and class-freq calculation. Provide model with dropout_rate > 0 to enable these functions.')
   }
+  summary(res)
+  plot(res)
+  get_mc_dropout_cat_counts
+  cat_count_out = get_mc_dropout_cat_counts(res)
+  accthres_tbl = res$accthres_tbl
+
+}
+
+
+
 
 
 plot_predictions <- function(predictions,title=NULL){
@@ -624,37 +640,45 @@ get_confusion_matrix <- function(best_model){
 }
 
 
-get_accthres_table <- function(features,labels,best_model){
-  if (best_model$dropout_rate == 0){
-    stop(paste0('Provided model has dropout_rate of 0.\n Acc-thres_tbl can only be computed for dropout models.\n Set \'force_dropout = TRUE\' in evaluate_iucnn function to get best dropout model.'))
+get_mc_dropout_cat_counts <- function(res,nreps = 1000){
+
+  if (class(res$validation_labels)=="numeric"){
+    warning('This model contains no validation set. No sampled_cat_freqs can be calculated for this model.')
+    cat_count_all_matrix = NaN
+    true_cat_count = NaN
+
+  }else{
+    true_cat_count = get_cat_count(res$validation_labels,max_cat = nlabs-1)
+
+    if (res$mc_dropout){
+      probs = res$validation_predictions_raw
+      nlabs = dim(probs)[2]
+      n_instances = dim(probs)[1]
+      cat_mcdropout_sample = c()
+      for (i in 1:n_instances){
+        cat_sample = replicate(nreps,sample(1:nlabs-1, size = 1, prob=probs[i,]))
+        cat_mcdropout_sample = c(cat_mcdropout_sample,c(cat_sample))
+      }
+      cat_mcdropout_sample_matrix = matrix(cat_mcdropout_sample, nrow=nreps)
+      cat_count_all = c()
+      for (row_id in 1:nreps){
+        row = cat_mcdropout_sample_matrix[row_id,]
+        cat_count_sample = get_cat_count(row,max_cat = nlabs-1)
+        cat_count_all = c(cat_count_all,cat_count_sample)
+      }
+      cat_count_all_matrix = t(matrix(cat_count_all, ncol=nreps))
+
+    }else{
+      cat_count_all_matrix = NaN
+    }
+
   }
-  res = train_iucnn(features,
-                    labels,
-                    path_to_output = "",
-                    best_model = FALSE,
-                    mode = best_model$mode,
-                    validation_fraction = best_model$validation_fraction,
-                    cv_fold = best_model$cv_fold,
-                    seed = best_model$seed,
-                    max_epochs = best_model$max_epochs,
-                    patience = best_model$patience,
-                    n_layers = best_model$n_layers,
-                    use_bias = best_model$use_bias,
-                    act_f = best_model$act_f,
-                    act_f_out = best_model$act_f_out,
-                    label_stretch_factor = best_model$label_stretch_factor,
-                    randomize_instances = best_model$randomize_instances,
-                    dropout_rate = best_model$dropout_rate,
-                    mc_dropout = best_model$mc_dropout,
-                    mc_dropout_reps = best_model$mc_dropout_reps,
-                    label_noise_factor = best_model$label_noise_factor,
-                    rescale_features = best_model$rescale_features,
-                    save_model = FALSE,
-                    overwrite = FALSE,
-                    verbose = 0)
-  #summary(res)
-  #plot(res)
-  return(res$accthres_tbl)
+
+  output = NULL
+  output$predicted_class_count = cat_count_all_matrix
+  output$true_class_count = true_cat_count
+  return (output)
 }
 
 rnd <- function(x) trunc(x+sign(x)*0.5)
+

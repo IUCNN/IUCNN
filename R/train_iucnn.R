@@ -101,7 +101,7 @@
 train_iucnn <- function(x,
                         lab,
                         path_to_output = "iuc_nn_model",
-                        best_model = FALSE,
+                        production_model = NULL,
                         mode = 'nn-class',
                         validation_fraction = 0.1,
                         cv_fold = 1,
@@ -144,27 +144,30 @@ train_iucnn <- function(x,
   assert_logical(overwrite)
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
-  if (class(best_model)=="data.frame"){
-    #warning("Model settings are being adopted from info provided under 'best_model' flag. All other provided model settings are being ignored. validation_fraction is set to 0 and cv_fold to 1.")
-    mode = best_model$mode
-    dropout_rate = best_model$dropout_rate
-    seed = best_model$seed
-    max_epochs = best_model$final_train_epoch_all
-    max_epochs = round(mean(as.numeric(strsplit(max_epochs,'_')[[1]])))
-    patience = NULL
-    n_layers = best_model$n_layers
-    use_bias = best_model$use_bias
-    rescale_features = best_model$rescale_features
-    randomize_instances = best_model$randomize_instances
-    mc_dropout = best_model$mc_dropout
-    mc_dropout_reps = 100
-    act_f = best_model$act_f
-    act_f_out = best_model$act_f_out
-    cv_fold = 1
+
+  provided_model = production_model
+  if (class(provided_model)=="iucnn_model"){
+    mode = provided_model$model
     validation_fraction = 0.
-    label_stretch_factor = best_model$label_stretch_factor
-    label_noise_factor = best_model$label_noise_factor
-    overwrite = TRUE
+    cv_fold = 1
+    seed = provided_model$seed
+    max_epochs = round(mean(provided_model$final_training_epoch))
+    patience = NULL
+    n_layers = paste(provided_model$n_layers,collapse='_')
+    use_bias = provided_model$use_bias
+    act_f = provided_model$act_f
+    act_f_out = provided_model$act_f_out
+    label_stretch_factor = provided_model$label_stretch_factor
+    randomize_instances = provided_model$randomize_instances
+    dropout_rate = provided_model$dropout_rate
+    mc_dropout = provided_model$mc_dropout
+    mc_dropout_reps = provided_model$mc_dropout_reps
+    label_noise_factor = provided_model$label_noise_factor
+    rescale_features = provided_model$rescale_features
+    # save accthres_tbl to output, since this will be needed to predict
+    accthres_tbl_stored = provided_model$accthres_tbl
+  }else{
+    accthres_tbl_stored = NaN
   }
 
   # check if the model directory already exists
@@ -313,38 +316,39 @@ train_iucnn <- function(x,
                       save_model = save_model
     )
 
-    validation_labels <- as.vector(res[[1]])
-    validation_predictions <- as.vector(res[[2]])
-    validation_predictions_raw <- res[[3]]
+    validation_labels <- as.vector(res$validation_labels)
+    validation_predictions <- as.vector(res$validation_predictions)
+    validation_predictions_raw <- res$validation_predictions_raw
 
-    training_accuracy <- res[[4]]
-    validation_accuracy <- res[[5]]
+    training_accuracy <- res$training_accuracy
+    validation_accuracy <- res$validation_accuracy
 
-    training_loss <- res[[6]]
-    validation_loss <- res[[7]]
+    training_loss <- res$training_loss
+    validation_loss <- res$validation_loss
 
-    training_loss_history <- res[[8]]
-    validation_loss_history <- res[[9]]
+    training_loss_history <- res$training_loss_history
+    validation_loss_history <- res$validation_loss_history
 
-    training_accuracy_history <- res[[10]]
-    validation_accuracy_history <- res[[11]]
+    training_accuracy_history <- res$training_accuracy_history
+    validation_accuracy_history <- res$validation_accuracy_history
 
-    training_mae_history <- res[[12]]
-    validation_mae_history <- res[[13]]
+    training_mae_history <- res$training_mae_history
+    validation_mae_history <- res$validation_mae_history
 
-    rescale_labels_boolean <- res[[14]]
-    label_rescaling_factor <- res[[15]]
-    min_max_label <- as.vector(res[[16]])
-    label_stretch_factor <- res[[17]]
+    rescale_labels_boolean <- res$rescale_labels_boolean
+    label_rescaling_factor <- res$label_rescaling_factor
+    min_max_label <- as.vector(res$min_max_label)
+    label_stretch_factor <- res$label_stretch_factor
 
-    activation_function <- res[[18]]
-    trained_model_path <- res[[19]]
+    activation_function <- res$activation_function
+    trained_model_path <- res$trained_model_path
 
-    confusion_matrix <- res[[20]]
-    accthres_tbl <- res[[21]]
-    stopping_point <- res[[22]]
+    confusion_matrix <- res$confusion_matrix
+    accthres_tbl <- res$accthres_tbl
+    stopping_point <- res$stopping_point
 
-    input_data <- res[[23]]
+    input_data <- res$input_data
+    sample_categorical <- get_mc_dropout_cat_counts(res)
     }
 
   named_res <- NULL
@@ -357,8 +361,10 @@ train_iucnn <- function(x,
   named_res$label_stretch_factor <- label_stretch_factor
 
   named_res$trained_model_path <- trained_model_path
+  if (class(accthres_tbl)=='numeric'){accthres_tbl = accthres_tbl_stored}
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
+  named_res$sampled_cat_freqs <- sample_categorical
 
   named_res$model <- mode
   named_res$seed <- seed

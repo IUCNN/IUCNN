@@ -65,8 +65,8 @@ plot.iucnn_model <- function(x, ...){
            col = c("darkblue", "darkred", "black"),
            lty = c(1, 1, 2),
            pch = c(1,2,NA),
-           cex = .5)
+           cex = 0.7)
 
   }
-
+  par(mfrow = c(1,1))
 }

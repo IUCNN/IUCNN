@@ -282,6 +282,8 @@ def iucnn_train(dataset,
     val_acc_histories = {}
     train_mae_histories = {}
     val_mae_histories = {}
+
+    all_model_outpaths = []
     
     
     for it, __ in enumerate(train_index_blocks):
@@ -415,9 +417,14 @@ def iucnn_train(dataset,
                 os.makedirs(path_to_output)
             model_outpath = os.path.join(path_to_output, 'nn_model_%i'%it)
             model.save( model_outpath )
-            print("IUC-NN model saved at: ", path_to_output)
+            print("IUC-NN model saved at: ", model_outpath,flush=True)
         else:
             model_outpath = ''
+        all_model_outpaths.append(model_outpath)
+
+    # export model outpath as string instead of list for a non-CV model
+    if len(all_model_outpaths) == 1:
+        all_model_outpaths = all_model_outpaths[0]
     
     # print stats to screen
     avg_train_acc = np.mean(train_acc_per_fold)
@@ -465,49 +472,50 @@ def iucnn_train(dataset,
         data_test = validation_set
         labels_test = all_validation_labels.flatten()        
         
-    output = [
-                all_validation_labels,
-                all_validation_predictions,
-                all_validation_predictions_raw,
+    output = {
+                'validation_labels':all_validation_labels,
+                'validation_predictions':all_validation_predictions,
+                'validation_predictions_raw':all_validation_predictions_raw,
                 
-                avg_train_acc,
-                avg_validation_acc,
+                'training_accuracy':avg_train_acc,
+                'validation_accuracy':avg_validation_acc,
 
-                avg_train_loss,
-                avg_validation_loss,
+                'training_loss':avg_train_loss,
+                'validation_loss':avg_validation_loss,
                 
-                training_histories,
-                validation_histories,
+                'training_loss_history':training_histories,
+                'validation_loss_history':validation_histories,
 
-                train_acc_histories,
-                val_acc_histories,
+                'training_accuracy_history':train_acc_histories,
+                'validation_accuracy_history':val_acc_histories,
                 
-                train_mae_histories,
-                val_mae_histories,
+                'training_mae_history':train_mae_histories,
+                'validation_mae_history':val_mae_histories,
                 
-                rescale_labels_boolean,
-                rescale_factor,
-                np.array(min_max_label),
-                stretch_factor_rescaled_labels,
+                'rescale_labels_boolean':rescale_labels_boolean,
+                'label_rescaling_factor':rescale_factor,
+                'min_max_label':np.array(min_max_label),
+                'label_stretch_factor':stretch_factor_rescaled_labels,
                 
-                act_f_out,
-                model_outpath,
+                'activation_function':act_f_out,
+                'trained_model_path':all_model_outpaths,
                 
-                confusion_matrix,
-                accthres_tbl,
-                np.array(stopping_points),
+                'confusion_matrix':confusion_matrix,
+                'mc_dropout':mc_dropout,
+                'accthres_tbl':accthres_tbl,
+                'stopping_point':np.array(stopping_points),
                 
-                {"data":data_train,
-                 "labels":labels_train,
-                 "label_dict":np.unique(labels).astype(str),
-                 "test_data":data_test,
-                 "test_labels":labels_test,
-                 "id_data":train_instance_names,
-                 "id_test_data":validation_instance_names,
-                 "file_name":os.path.basename(path_to_output),
-                 "feature_names":feature_names
-                 }
-                ]
+                'input_data':   {"data":data_train,
+                                "labels":labels_train,
+                                "label_dict":np.unique(labels).astype(str),
+                                "test_data":data_test,
+                                "test_labels":labels_test,
+                                "id_data":train_instance_names,
+                                "id_test_data":validation_instance_names,
+                                "file_name":os.path.basename(path_to_output),
+                                "feature_names":feature_names
+                                }
+    }
     
     return output
 

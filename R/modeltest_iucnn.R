@@ -6,6 +6,7 @@
 modeltest_iucnn <- function(x,
                             lab,
                             logfile = 'model_testing_logfile.txt',
+                            model_outpath = 'modeltest',
                             mode = 'nn-class',
                             cv_fold = 5,
                             validation_fraction = 0.0,
@@ -48,6 +49,23 @@ modeltest_iucnn <- function(x,
   assert_logical(init_logfile)
   assert_logical(recycle_settings)
 
+  if (file.exists(model_outpath)){
+    if (init_logfile==TRUE){
+      # we are starting with a new modeltest-logfile from scratch, so we will also attempt to overwrite the modeltest dir
+      overwrite_prompt = readline(prompt="Specified model_outpath dir already exists. Do you want to overwrite? [Y/n]: ")
+      if (overwrite_prompt == 'Y'){
+        unlink(model_outpath, recursive=TRUE)
+      }else{
+        stop('Not overwriting existing model_outpath dir. Please specify different model_outpath.')
+      }
+    }else{
+      # in this case we will be adding new models to the same output dir without overwriting anything
+      do_nothing = TRUE
+    }
+  }else{
+    dir.create(model_outpath)
+  }
+
   # data_out = process_iucnn_input(x,lab = lab, mode = mode, outpath = '.', write_data_files = FALSE, verbose=0)
   # dataset = data_out[[1]]
   # labels = data_out[[2]]
@@ -61,7 +79,7 @@ modeltest_iucnn <- function(x,
     model_configurations_df = read.csv(logfile,sep='\t')
 
     # init new logfile
-    log_results(NaN,new_logfile,init_logfile=TRUE)
+    log_results(NaN,new_logfile,NaN,init_logfile=TRUE)
 
     for (row_id in 1:dim(model_configurations_df)[1]){
       print(paste0('Running model ',row_id,'/',dim(model_configurations_df)[1]))
@@ -87,7 +105,7 @@ modeltest_iucnn <- function(x,
       res = train_iucnn(x = x,
                         lab = lab,
                         mode=mode,
-                        path_to_output = '',
+                        path_to_output = paste0(model_outpath,'/model_',row_id),
                         cv_fold = cv_fold,
                         seed = seed,
                         max_epochs = max_epochs,
@@ -104,11 +122,13 @@ modeltest_iucnn <- function(x,
                         mc_dropout_reps = mc_dropout_reps,
                         label_noise_factor = label_noise_factor,
                         rescale_features = rescale_features,
-                        save_model = FALSE,
+                        save_model = TRUE,
                         overwrite = TRUE,
                         verbose = 0
       )
-      log_results(res,new_logfile,init_logfile=FALSE)
+      iucnn_model_path = paste0(model_outpath,'/model_',row_id,'/iucnn_model.rds')
+      saveRDS(res, iucnn_model_path)
+      log_results(res,new_logfile,iucnn_model_path,init_logfile=FALSE)
     }
     outfile = new_logfile
   }else{
@@ -123,13 +143,17 @@ modeltest_iucnn <- function(x,
       }
     }
     if (init_logfile == TRUE){
-      log_results(NaN,logfile,init_logfile=init_logfile)
+      log_results(NaN,logfile,NaN,init_logfile=init_logfile)
+      delta_i = 0
+    }else{
+      model_configurations_df = read.csv(logfile,sep='\t')
+      delta_i = dim(model_configurations_df)[1]
     }
 
     permutations = do.call(expand.grid, list(cv_fold,n_layers,dropout_rate,use_bias,seed,label_stretch_factor,label_noise_factor,act_f,act_f_out,max_epochs,patience,randomize_instances,rescale_features,mc_dropout,mc_dropout_reps,mode,validation_fraction))
     n_permutations = dim(permutations)[1]
 
-    message(paste0("Running model test for ",n_permutations," models. This can be quite time-intensive."))
+    message(paste0("Running model test for ",n_permutations," models. This may take a while..."))
 
     for (i in 1:n_permutations){
       print(paste0('Running model ',i,'/',n_permutations))
@@ -165,7 +189,7 @@ modeltest_iucnn <- function(x,
       res = train_iucnn(x = x,
                         lab = lab,
                         mode = mode_i,
-                        path_to_output = '',
+                        path_to_output = paste0(model_outpath,'/model_',i+delta_i),
                         cv_fold = cv_fold_i,
                         seed = seed_i,
                         max_epochs = max_epochs_i,
@@ -182,11 +206,13 @@ modeltest_iucnn <- function(x,
                         mc_dropout_reps = mc_dropout_reps_i,
                         label_noise_factor = label_noise_factor_i,
                         rescale_features = rescale_features_i,
-                        save_model = FALSE,
+                        save_model = TRUE,
                         overwrite = TRUE,
                         verbose = 0
       )
-      log_results(res,logfile,init_logfile=FALSE)
+      iucnn_model_path = paste0(model_outpath,'/model_',i+delta_i,'/iucnn_model.rds')
+      saveRDS(res, iucnn_model_path)
+      log_results(res,logfile,iucnn_model_path,init_logfile=FALSE)
     }
     outfile = logfile
   }

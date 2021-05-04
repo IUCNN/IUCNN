@@ -61,7 +61,6 @@
 
 predict_iucnn <- function(x,
                           model,
-                          acc_thres_tbl=NULL,
                           target_acc = 0.0,
                           verbose = 0,
                           return_raw = FALSE,
@@ -69,6 +68,14 @@ predict_iucnn <- function(x,
 
   # assertions
   assert_class(x, classes = "data.frame")
+  assert_class(model, classes = "iucnn_model")
+
+
+  if (model$cv_fold > 1){
+    stop("Provided model consists of multiple cross-validation (CV) folds.\nCV models are only used for model evaluation in IUCNN.\nRetrain your chosen model without using CV.\nTo do this you can use the train_iucnn function and simply provide your CV model under the \'production_model\' flag.")
+  }
+
+
 
 
   # check that the same features are in training and prediction
@@ -87,13 +94,13 @@ predict_iucnn <- function(x,
   if (target_acc == 0){
     confidence_threshold = NULL
   }else{
-   if (class(acc_thres_tbl)[1] == "matrix"){
+    acc_thres_tbl = model$accthres_tbl
+    if (class(acc_thres_tbl)[1] == "matrix"){
      confidence_threshold = acc_thres_tbl[min(which(acc_thres_tbl[,2] > target_acc)),][1]
     }else{
-     stop('Table with accuracy thresholds required when choosing target_acc > 0. Produce this table using the get_accthres_table function.')
+     stop('Table with accuracy thresholds required when choosing target_acc > 0.\nThis is only available for models where \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
    }
   }
-
 
   data_out = process_iucnn_input(x,mode = mode, outpath = '.', write_data_files = FALSE)
 
@@ -109,9 +116,9 @@ predict_iucnn <- function(x,
     postpr <- bnn_predict(features = as.matrix(dataset),
                           instance_id = as.matrix(instance_names),
                           model_path = model$trained_model_path,
-                          target_acc = target_acc,
+                          post_cutoff = confidence_threshold,
                           filename = 'prediction',
-                          post_summary_mode = 1
+                          post_summary_mode = 0
                           )
 
     if (return_raw==TRUE){
@@ -122,8 +129,6 @@ predict_iucnn <- function(x,
       predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],1,which.max)-1
       predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
       predictions[not_nan_boolean] <- predictions_tmp
-      pred_out$predictions = predictions
-      return(pred_out)
     }
 
 
@@ -156,18 +161,19 @@ predict_iucnn <- function(x,
         predictions[not_nan_boolean] <- predictions_tmp
       }
 
-      # Translate prediction to original labels
-      if(return_IUCN){
-        lu <- model$input_data$lookup.labels
-        names(lu) <- model$input_data$lookup.lab.num.z
-
-        predictions <- lu[predictions+1]
-        names(predictions) <- NULL
-      }
-      pred_out$predictions = predictions
-      return(pred_out)
     }
   }
+  # Translate prediction to original labels
+  if(return_IUCN){
+    lu <- model$input_data$lookup.labels
+    names(lu) <- model$input_data$lookup.lab.num.z
+
+    predictions <- lu[predictions+1]
+    names(predictions) <- NULL
+  }
+  pred_out$predictions = predictions
+  return(pred_out)
+
 }
 
 

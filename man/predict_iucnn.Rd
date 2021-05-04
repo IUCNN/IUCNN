@@ -7,7 +7,6 @@
 predict_iucnn(
   x,
   model,
-  acc_thres_tbl = NULL,
   target_acc = 0,
   verbose = 0,
   return_raw = FALSE,
