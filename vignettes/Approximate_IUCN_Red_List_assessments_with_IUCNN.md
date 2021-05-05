@@ -283,7 +283,7 @@ res_4 <- train_iucnn(x = features_train,
 
 ### Feature importance
 You can use the `feature_importance` function to gauge the importance of different feature blocks for model performance. The function will randomize individual feature blocks and return the decrease in model performance caused by the randomization. If you have used other than the default features, you can define feature blocks using the `feature_blocks` option. 
-```{r}
+```{r, eval = FALSE}
 feature_importance(x = res_1)
 ```
 

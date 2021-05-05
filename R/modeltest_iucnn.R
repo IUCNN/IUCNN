@@ -50,7 +50,7 @@ modeltest_iucnn <- function(x,
   assert_logical(recycle_settings)
 
   if (file.exists(model_outpath)){
-    if (init_logfile==TRUE){
+    if (init_logfile == TRUE){
       # we are starting with a new modeltest-logfile from scratch, so we will also attempt to overwrite the modeltest dir
       overwrite_prompt = readline(prompt="Specified model_outpath dir already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){

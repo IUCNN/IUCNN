@@ -3,6 +3,7 @@ Title: Neural Networks to Approximate IUCN Red List Conservation Assessments
 Version: 0.9.4
 Authors@R: c(person(given = "Alexander", family = "Zizka", email = "alexander.zizka@idiv.de",
                     role = c("aut", "cre")),
+             person(given = "Tobias", family = "Andermann", role = "ctb")
              person(given = "Daniele", family = "Silvestro", role = "ctb")
   )
 Description: Train neural networks based on geographic species occurrences, environmental data and existing IUCN Red List assessments to predict the conservation status of "Not Evaluated" or "Data Deficient" species, for any taxon or geographic region of interest.
