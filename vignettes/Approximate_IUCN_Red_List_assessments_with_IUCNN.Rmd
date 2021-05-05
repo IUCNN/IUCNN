@@ -105,7 +105,7 @@ The following code is used to set up and train a neural network model with 3 hid
 ```{r}
 res_1 <- train_iucnn(x = features_train,
                      lab = labels_train, 
-                     model_name = "iucnn_model_1")
+                     path_to_output = "iucnn_model_1")
 ```
 
 You can use the `summary` and `plot` methods to get an overview on the training process and model performance. 
@@ -113,7 +113,6 @@ You can use the `summary` and `plot` methods to get an overview on the training 
 ```{r}
 summary(res_1)
 plot(res_1)
-
 ```
 
 ## Predict IUCN Global Red List status
@@ -293,6 +292,10 @@ You can use the `feature_importance` function to gauge the importance of differe
 ```{r}
 feature_importance(x = res_1)
 ```
+
+### Model testing
+
+TOBI explain here
 
 ## 3) Status prediction
 The `predict_iucnn` function offer some function to customize predictions. The most important option in many cases is `target_acc`. With this option you can set a target overall accuracy that the model needs to achieve. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as DD (Data Deficient).
