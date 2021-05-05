@@ -13,6 +13,7 @@ modeltest_iucnn <- function(x,
                             n_layers = c('50_30_10','30'),
                             dropout_rate = c(0.0,0.1,0.3),
                             use_bias = TRUE,
+                            balance_classes = FALSE,
                             seed = 1234,
                             label_stretch_factor = 1.0,
                             label_noise_factor = 0.0,
@@ -37,6 +38,7 @@ modeltest_iucnn <- function(x,
   assert_numeric(dropout_rate, lower = 0, upper = 1)
   assert_character(n_layers)
   assert_logical(use_bias)
+  assert_logical(balance_classes)
   assert_numeric(seed)
   assert_numeric(label_stretch_factor, lower = 0, upper = 2)
   assert_numeric(label_noise_factor, lower = 0, upper = 1)
@@ -91,6 +93,7 @@ modeltest_iucnn <- function(x,
       patience = row$patience
       n_layers = row$n_layers
       use_bias = row$use_bias
+      balance_classes = row$balance_classes
       rescale_features = row$rescale_features
       randomize_instances = row$randomize_instances
       mc_dropout = row$mc_dropout
@@ -113,6 +116,7 @@ modeltest_iucnn <- function(x,
                         validation_fraction = validation_fraction,
                         n_layers = n_layers,
                         use_bias = use_bias,
+                        balance_classes = balance_classes,
                         act_f = act_f,
                         act_f_out = act_f_out,
                         label_stretch_factor = label_stretch_factor,
@@ -150,7 +154,7 @@ modeltest_iucnn <- function(x,
       delta_i = dim(model_configurations_df)[1]
     }
 
-    permutations = do.call(expand.grid, list(cv_fold,n_layers,dropout_rate,use_bias,seed,label_stretch_factor,label_noise_factor,act_f,act_f_out,max_epochs,patience,randomize_instances,rescale_features,mc_dropout,mc_dropout_reps,mode,validation_fraction))
+    permutations = do.call(expand.grid, list(cv_fold,n_layers,dropout_rate,use_bias,seed,label_stretch_factor,label_noise_factor,act_f,act_f_out,max_epochs,patience,randomize_instances,rescale_features,mc_dropout,mc_dropout_reps,mode,validation_fraction,balance_classes))
     n_permutations = dim(permutations)[1]
 
     message(paste0("Running model test for ",n_permutations," models. This may take a while..."))
@@ -174,7 +178,8 @@ modeltest_iucnn <- function(x,
       mc_dropout_i = as.logical(settings[[14]])
       mc_dropout_reps_i = as.integer(settings[[15]])
       mode_i = as.character(settings[[16]])
-      validation_fraction = as.numeric(settings[[17]])
+      validation_fraction_i = as.numeric(settings[[17]])
+      balance_classes_i = as.logical(settings[[18]])
 
       # set out act fun if chosen auto
       if (act_f_out_i == 'auto'){
@@ -194,9 +199,10 @@ modeltest_iucnn <- function(x,
                         seed = seed_i,
                         max_epochs = max_epochs_i,
                         patience = patience_i,
-                        validation_fraction = validation_fraction,
+                        validation_fraction = validation_fraction_i,
                         n_layers = n_layers_i,
                         use_bias = use_bias_i,
+                        balance_classes = balance_classes_i,
                         act_f = act_f_i,
                         act_f_out = act_f_out_i,
                         label_stretch_factor = label_stretch_factor_i,

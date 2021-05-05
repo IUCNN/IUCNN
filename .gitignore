@@ -14,4 +14,6 @@ manual_tests
 training_stats.pdf
 HFP*
 iuc_nn_model_feature_importance.txt
+orchid_data
+.DS_Store
 iucnn_model*

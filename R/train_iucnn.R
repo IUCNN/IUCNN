@@ -110,6 +110,7 @@ train_iucnn <- function(x,
                         patience = 200,
                         n_layers = '60_60_20',
                         use_bias = TRUE,
+                        balance_classes = FALSE,
                         act_f = "relu",
                         act_f_out = "auto",
                         label_stretch_factor = 1.0,
@@ -156,6 +157,7 @@ train_iucnn <- function(x,
     patience <- NULL
     n_layers <- paste(provided_model$n_layers,collapse='_')
     use_bias <- provided_model$use_bias
+    balance_classes <- provided_model$balance_classes
     act_f <- provided_model$act_f
     act_f_out <- provided_model$act_f_out
     label_stretch_factor <- provided_model$label_stretch_factor
@@ -311,6 +313,7 @@ train_iucnn <- function(x,
                       patience = patience,
                       n_layers = as.list(n_layers),
                       use_bias = use_bias,
+                      balance_classes = balance_classes,
                       act_f = act_f,
                       act_f_out = act_f_out,
                       stretch_factor_rescaled_labels = label_stretch_factor,
@@ -382,6 +385,7 @@ train_iucnn <- function(x,
   named_res$max_epochs <- max_epochs
   named_res$n_layers <- n_layers
   named_res$use_bias <- use_bias
+  named_res$balance_classes <- balance_classes
   named_res$rescale_features <- rescale_features
   named_res$act_f <- act_f
   named_res$act_f_out <- activation_function

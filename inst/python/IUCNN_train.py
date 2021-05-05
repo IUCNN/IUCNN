@@ -22,6 +22,7 @@ def iucnn_train(dataset,
                 patience,
                 n_layers,
                 use_bias,
+                balance_classes,
                 act_f,
                 act_f_out,
                 stretch_factor_rescaled_labels,
@@ -213,12 +214,30 @@ def iucnn_train(dataset,
             softmax_probs_mean = np.array([[len(np.where(predictions[:,i]==j)[0])/len(predictions[:,i]) for j in label_cats] for  i in np.arange(predictions.shape[1])])
             return softmax_probs_mean
 
+    def supersample_classes(train_ids,labels):
+        train_ids = np.array(train_ids)
+        labels = labels.flatten()
+        train_labels = labels[train_ids]
+        max_class_count = max(np.unique(train_labels,return_counts=True)[1])
+        final_train_ids = []
+        for i in np.unique(train_labels):
+            train_ids_class = train_ids[train_labels == i]
+            n_in_class = len(train_labels[train_labels == i])
+            delta_n_inst = max_class_count-n_in_class
+            drawn_inst_ind = np.random.choice(train_ids_class,delta_n_inst,replace=True)
+            train_ids_final = np.concatenate([train_ids_class,drawn_inst_ind])
+            final_train_ids.append(train_ids_final)
+        ids_class_balance = np.concatenate(final_train_ids)
+        np.random.shuffle(ids_class_balance)
+        return(ids_class_balance)
+
     # randomize data
     if seed > 0:
         np.random.seed(seed)
         tf.random.set_seed(seed)
     if rescale_features:
-        dataset = (dataset - dataset.min(axis=0)) / (dataset.max(axis=0) - dataset.min(axis=0))
+        print('rescale_features flag is being ignored, this function is currently not supported',flush=True)
+        #dataset = (dataset - dataset.min(axis=0)) / (dataset.max(axis=0) - dataset.min(axis=0))
     if dropout_rate>0:
         dropout = True
     else:
@@ -243,6 +262,9 @@ def iucnn_train(dataset,
         min_max_label = [min(labels),max(labels)]
     else:
         quit('Invalid mode provided. Choose from "nn-class", "nn-reg", or "bnn-class"')
+    if balance_classes:
+        print('Super-sampling minority classes to reach class balance for training.',flush=True)
+    
     
     rescale_factor = max(labels)
     rescaled_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
@@ -285,7 +307,9 @@ def iucnn_train(dataset,
 
     all_model_outpaths = []
     
-    
+    orig_dataset = dataset
+    orig_labels = labels
+
     for it, __ in enumerate(train_index_blocks):
         if cv:
             validation_ids = train_index_blocks[it] # in case of cv, choose one of the k chunks as test set
@@ -296,9 +320,21 @@ def iucnn_train(dataset,
             train_ids = list(train_index_blocks[it])
             print("Training model on %i training instances (%i validation instances)..."%(len(train_ids),len(validation_ids)),flush=True)
         
+        
+        # these are just to keep track of the true, unaltered arrays for output
+        orig_train_set = dataset[train_ids,:]
+        orig_train_labels = labels[train_ids]
+        all_validation_labels.append(labels[validation_ids])
+
+        # supersample train_ids if balance_class mode is active
+        if balance_classes:
+            train_ids = supersample_classes(train_ids,labels)
+
+        # define train and validation set
         train_set = dataset[train_ids,:]
         validation_set = dataset[validation_ids,:]
-        
+
+        # fix labels depending on whether it's regression or classification model
         labels_cat = tf.keras.utils.to_categorical(labels)
         n_class = labels_cat.shape[1]
         if mode == 'nn-class':
@@ -311,14 +347,7 @@ def iucnn_train(dataset,
             #labels_for_training = np.array([np.random.normal(i,noise_radius/3) for i in labels_for_training])
             labels_for_training = np.array([np.random.uniform(i-noise_radius,i+noise_radius) for i in labels_for_training])
             labels_for_validation = rescaled_labels[validation_ids]
-            optimize_for_this = "val_mae"      
-
-        # these are just to keep track of the true, unaltered (not-rescaled) labels for output
-        output_train_labels = labels[train_ids]
-        all_validation_labels.append(labels[validation_ids])
-        
-        train_instance_names = instance_names[train_ids]
-        validation_instance_names = instance_names[validation_ids]
+            optimize_for_this = "val_mae"
 
         # run for set number of iterations, no early stopping
         if patience is None:
@@ -457,20 +486,27 @@ def iucnn_train(dataset,
         confusion_matrix = np.array(tf.math.confusion_matrix(all_validation_labels,all_validation_predictions))        
 
     if validation_fraction == 0 and cv_k < 2:
-        data_train = dataset
-        labels_train = labels
+        data_train = orig_dataset
+        labels_train = orig_labels
         data_test = np.nan
         labels_test = np.nan
+        train_instance_names = instance_names
+        validation_instance_names = instance_names
     elif validation_fraction == 0 and cv_k > 1:
-        data_train = dataset
-        labels_train = labels
-        data_test = dataset
-        labels_test = labels
+        data_train = orig_dataset
+        labels_train = orig_labels
+        data_test = orig_dataset
+        labels_test = orig_labels
+        train_instance_names = instance_names
+        validation_instance_names = instance_names
     else:
-        data_train = train_set
-        labels_train = output_train_labels.flatten()
+        data_train = orig_train_set
+        labels_train = orig_train_labels.flatten()
         data_test = validation_set
-        labels_test = all_validation_labels.flatten()        
+        labels_test = all_validation_labels.flatten()
+        train_instance_names = instance_names[train_ids]
+        validation_instance_names = instance_names[validation_ids]
+
         
     output = {
                 'validation_labels':all_validation_labels,
@@ -507,7 +543,7 @@ def iucnn_train(dataset,
                 
                 'input_data':   {"data":data_train,
                                 "labels":labels_train,
-                                "label_dict":np.unique(labels).astype(str),
+                                "label_dict":np.unique(orig_labels).astype(str),
                                 "test_data":data_test,
                                 "test_labels":labels_test,
                                 "id_data":train_instance_names,
