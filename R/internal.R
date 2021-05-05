@@ -1,4 +1,4 @@
-#' @importFrom  reticulate import
+#' @importFrom reticulate import
 #' @importFrom utils read.table
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select left_join mutate
@@ -29,29 +29,14 @@ bnn_load_data <- function(features,
                           from_file = FALSE){
   # source python function
   bn <- reticulate::import("np_bnn")
-  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
-  if(all_class_in_testset == TRUE){
-    all_class_in_testset_switch <-  as.integer(1)
-  }else{
-    all_class_in_testset_switch <-  as.integer(0)
-  }
-  if(header == TRUE){
-    header_switch <-  as.integer(1)
-  }else{
-    header_switch <-  as.integer(0)
-  }
-  if(instance_id == TRUE){
-    instance_id_switch <- as.integer(1)
-  }else{
-    instance_id_switch <- as.integer(0)
-  }
+
   dat <- bn$get_data(features,
                     labels,
                     seed = as.integer(seed),
                     testsize = testsize, # 10% test set
-                    all_class_in_testset = all_class_in_testset_switch,
-                    header = header_switch, # input data has a header
-                    instance_id = instance_id_switch, # input data includes column with names of instances
+                    all_class_in_testset = as.integer(all_class_in_testset),
+                    header = as.integer(header), # input data has a header
+                    instance_id = as.integer(instance_id), # input data includes column with names of instances
                     from_file = from_file)
   return(dat)
 }
@@ -69,26 +54,14 @@ create_BNN_model <- function(feature_data,
 
   # source python function
   bn <- reticulate::import("np_bnn")
-  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
-
-  if(use_class_weight == TRUE){
-    use_class_weight_switch = as.integer(1)
-  }else{
-    use_class_weight_switch = as.integer(0)
-  }
-  if(use_bias_node==TRUE){
-    use_bias_node_switch = as.integer(1)
-  }else{
-    use_bias_node_switch = as.integer(0)
-  }
 
   alphas <- as.integer(c(0, 0))
 
   bnn_model <- bn$npBNN(feature_data,
                        n_nodes = as.integer(as.list(n_nodes_list)),
-                       use_class_weights = use_class_weight_switch,
+                       use_class_weights = as.integer(use_class_weight),
                        actFun = bn$ActFun(fun = actfun),
-                       use_bias_node = use_bias_node_switch,
+                       use_bias_node = as.integer(use_bias_node),
                        prior_f = as.integer(prior),
                        p_scale = as.integer(p_scale),
                        seed = as.integer(seed),
@@ -110,13 +83,6 @@ MCMC_setup <- function(bnn_model,
 
   # source python function
   bn <- reticulate::import("np_bnn")
-  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
-
-  if(sample_from_prior == TRUE){
-    sample_from_prior_switch <- as.integer(1)
-  }else{
-    sample_from_prior_switch <- as.integer(0)
-  }
 
   mcmc <- bn$MCMC(bnn_model,
                  update_f = update_f,
@@ -126,7 +92,7 @@ MCMC_setup <- function(bnn_model,
                  sampling_f = as.integer(sampling_f),
                  print_f = as.integer(print_f),
                  n_post_samples = as.integer(n_post_samples),
-                 sample_from_prior = sample_from_prior_switch,
+                 sample_from_prior = as.integer(sample_from_prior),
                  likelihood_tempering = likelihood_tempering)
   return(mcmc)
 }
@@ -139,18 +105,11 @@ run_MCMC <- function(bnn_model,
 
   # source python function
   bn <- reticulate::import("np_bnn")
-  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
-
-  if(log_all_weights == TRUE){
-    log_all_weights_switch <- as.integer(1)
-  }else{
-    log_all_weights_switch <- as.integer(0)
-  }
 
   # initialize output files
   logger <- bn$postLogger(bnn_model,
                          filename = filename_stem,
-                         log_all_weights = log_all_weights_switch)
+                         log_all_weights = as.integer(log_all_weights))
 
   # run MCMC
   bn$run_mcmc(bnn_model, mcmc_object, logger)
@@ -162,7 +121,7 @@ calculate_accuracy <- function(bnn_data,
                                logger,
                                bnn_model,
                                data = 'test',
-                               post_summary_mode=1){
+                               post_summary_mode = 1){
 
   # source python function
   bn <- reticulate::import("np_bnn")
@@ -225,24 +184,69 @@ subsample_n_per_class <- function(features,
 
 log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
-    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","balance_classes","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","delta_LC","delta_NT","delta_VU","delta_EN","delta_CR","delta_0","delta_1","model_outpath")
+    header <- c("mode",
+                "level",
+                "dropout_rate",
+                "seed",
+                "max_epochs",
+                "patience",
+                "n_layers",
+                "use_bias",
+                "balance_classes",
+                "rescale_features",
+                "randomize_instances",
+                "mc_dropout",
+                "mc_dropout_reps",
+                "act_f",
+                "act_f_out",
+                "cv_fold",
+                "validation_fraction",
+                "label_stretch_factor",
+                "label_noise_factor",
+                "final_train_epoch_all",
+                "final_train_epoch_mean",
+                "train_acc",
+                "val_acc",
+                "training_loss",
+                "validation_loss",
+                "confusion_LC",
+                "confusion_NT",
+                "confusion_VU",
+                "confusion_EN",
+                "confusion_CR",
+                "confusion_0",
+                "confusion_1",
+                "delta_LC",
+                "delta_NT",
+                "delta_VU",
+                "delta_EN",
+                "delta_CR",
+                "delta_0",
+                "delta_1",
+                "model_outpath")
     if(file.exists(logfile)){
-      overwrite_prompt = readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
+      overwrite_prompt <-  readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
-        cat(header,file=logfile,sep="\t")
+        cat(header,file=logfile, sep = "\t")
         cat('\n',file=logfile,append=T)
       }else{
         stop('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=FALSE')
       }
     }else{
-      cat(header,file=logfile,sep="\t")
-      cat('\n',file=logfile,append=T)
+      cat(header, file = logfile,sep="\t")
+      cat('\n', file = logfile, append = TRUE)
     }
   }
   if (class(res)=="iucnn_model"){
-    if (length(res$input_data$lookup.lab.num.z)==2){
+    if (length(res$input_data$lookup.lab.num.z) == 2){
       label_level = 'broad'
-      ratio_prediction_lines = c(NaN,NaN,NaN,NaN,NaN,abs(get_cat_count(res$validation_labels,max_cat = 1)-get_cat_count(res$validation_predictions,max_cat = 1)))
+      ratio_prediction_lines = c(NaN,
+                                 NaN,
+                                 NaN,
+                                 NaN,
+                                 NaN,
+                                 abs(get_cat_count(res$validation_labels,max_cat = 1) -
+                                       get_cat_count(res$validation_predictions,max_cat = 1)))
       confusion_matrix_lines = c(NaN,
                                  NaN,
                                  NaN,
@@ -252,7 +256,10 @@ log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
                                  paste(res$confusion_matrix[2,], collapse = '_'))
     }else{
       label_level = 'detail'
-      ratio_prediction_lines = c(abs(get_cat_count(res$validation_labels,max_cat = 4)-get_cat_count(res$validation_predictions,max_cat = 4)),NaN,NaN)
+      ratio_prediction_lines = c(abs(get_cat_count(res$validation_labels, max_cat = 4) -
+                                       get_cat_count(res$validation_predictions, max_cat = 4)),
+                                 NaN,
+                                 NaN)
       confusion_matrix_lines = c(paste(res$confusion_matrix[1,], collapse = '_'),
                                  paste(res$confusion_matrix[2,], collapse = '_'),
                                  paste(res$confusion_matrix[3,], collapse = '_'),
@@ -288,20 +295,25 @@ log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
           round(res$validation_loss,6),
           confusion_matrix_lines,
           ratio_prediction_lines,
-          iucnn_model_out),sep="\t",file=logfile,append=T)
-    cat('\n',file=logfile,append=T)
-  message(paste0("Model-testing results written to file: ",logfile))
+          iucnn_model_out), sep="\t", file = logfile, append = TRUE)
+    cat('\n', file = logfile, append = TRUE)
+  message(paste0("Model-testing results written to file: ", logfile))
   }
 }
 
 
-process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_files=FALSE, verbose=1){
+process_iucnn_input <- function(x,
+                                lab = NaN,
+                                mode = NaN,
+                                outpath = '.',
+                                write_data_files = FALSE,
+                                verbose = 1){
   if (typeof(lab) == 'double'){ # aka if lab=NaN when running from predict_iucnn
     # complete cases only
     tmp.in <- x[complete.cases(x),]
     if(nrow(tmp.in) != nrow(x)){
       mis <- x[!complete.cases(x),]
-      if (verbose ==1){
+      if (verbose == 1){
         warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
       }
     }
@@ -328,14 +340,14 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
     # check if species were lost by the merging
     if(nrow(tmp.in) != nrow(x)){
       mis <- x$species[!x$species %in% tmp$species]
-      if (verbose ==1){
+      if (verbose == 1){
         warning("Labels for species not found, species removed.\n", paste(mis, "\n"))
       }
     }
 
     if(nrow(tmp.in) != nrow(lab$labels)){
       mis <- lab$labels$species[!lab$labels$species %in% tmp$species]
-      if (verbose ==1){
+      if (verbose == 1){
         warning("Features for species not found, species removed.\n", paste(mis, "\n"))
       }
     }
@@ -345,7 +357,7 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
 
     if(nrow(tmp) != nrow(tmp.in)){
       mis <- tmp.in[!complete.cases(tmp.in),]
-      if (verbose ==1){
+      if (verbose == 1){
         warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
       }
     }
@@ -359,12 +371,12 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
     t1 <- nrow(tmp)
 
     if(t1 < 200){
-      if (verbose ==1){
+      if (verbose == 1){
         warning("The number of training taxa is low, consider including more species")
       }
     }
 
-    if (verbose ==1){
+    if (verbose == 1){
       message(sprintf("%s species included in model training", t1))
     }
 
@@ -376,7 +388,7 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
         warning("Classes unbalanced")
       }
     }
-    if (verbose ==1){
+    if (verbose == 1){
       message(sprintf("Class max/min representation ratio: %s", round(max(t2) / min(t2), 1)))
     }
     # prepare input data for the python function
@@ -395,242 +407,262 @@ process_iucnn_input <- function(x, lab=NaN, mode=NaN, outpath='.', write_data_fi
 
     # prepare labels to start at 0
     if(min(labels$labels) != 0){
-      if (verbose ==1){
-        warning(sprintf("Labels need to start at 0. Labels substracted with %s", min(labels$labels)))
+      if (verbose == 1){
+        warning(sprintf("Labels need to start at 0. Labels substracted with %s",
+                        min(labels$labels)))
       }
 
-      labels <-  labels %>%
+      labels <- labels %>%
         dplyr::mutate(labels = .data$labels - min(.data$labels))
     }
 
-    if (mode=='bnn-class'){
+    if (mode =='bnn-class'){
       # in the current npbnn function we need to add a dummy column of instance names
       labels[['names']] <- replicate(length(labels$labels),'sp.')
       labels <- labels[, c('names','labels')]
     }
 
   }
-  if (write_data_files == TRUE){
-    write.table(as.matrix(dataset),paste(outpath,'iucnn_input_features.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
+  if (write_data_files){
+    write.table(as.matrix(dataset),
+                paste(outpath,'iucnn_input_features.txt' , sep = '/'),
+                sep = '\t',
+                quote = FALSE,
+                row.names = FALSE)
     if (typeof(lab) == 'list'){
-      write.table(as.matrix(labels),paste(outpath,'iucnn_input_labels.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
+      write.table(as.matrix(labels),paste(outpath,'iucnn_input_labels.txt',sep = '/'),
+                  sep = '\t',
+                  quote = FALSE,
+                  row.names = FALSE)
     }
-    write.table(as.matrix(instance_names),paste(outpath,'iucnn_input_instance_names.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
-    write.table(names(dataset),paste(outpath,'iucnn_input_feature_names.txt',sep = '/'),sep='\t',quote=FALSE,row.names=FALSE)
+    write.table(as.matrix(instance_names), paste(outpath,'iucnn_input_instance_names.txt', sep = '/'),
+                sep = '\t',
+                quote = FALSE,
+                row.names = FALSE)
+    write.table(names(dataset),paste(outpath,'iucnn_input_feature_names.txt',sep = '/'),
+                sep = '\t',
+                quote = FALSE,
+                row.names = FALSE)
   }
 
   return(list(dataset,labels,instance_names))
 }
 
-rank_models <- function(model_testing_results,rank_mode='val_acc'){
-  if (rank_mode == 'val_acc'){ # highest validation accuracy
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$val_acc,decreasing = TRUE),]
-  }else if (rank_mode == 'val_loss'){ # lowest validation loss
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$validation_loss,decreasing = FALSE),]
-  }else if (rank_mode == 'weighted_error'){ # smallest weighted misclassification error
-    if (typeof(model_testing_results$confusion_LC)=='character'){
-      LC_weighted_errors = get_weighted_errors(model_testing_results,'confusion_LC',1)
-      NT_weighted_errors = get_weighted_errors(model_testing_results,'confusion_NT',2)
-      VU_weighted_errors = get_weighted_errors(model_testing_results,'confusion_VU',3)
-      EN_weighted_errors = get_weighted_errors(model_testing_results,'confusion_EN',4)
-      CR_weighted_errors = get_weighted_errors(model_testing_results,'confusion_CR',5)
-      error_list = list(LC_weighted_errors,NT_weighted_errors,VU_weighted_errors,EN_weighted_errors,CR_weighted_errors)
-    }else{
-      not_threatened_weighted_errors = get_weighted_errors(model_testing_results,'confusion_0',1)
-      threatened_weighted_errors = get_weighted_errors(model_testing_results,'confusion_1',2)
-      error_list = list(not_threatened_weighted_errors,threatened_weighted_errors)
+
+rank_models <- function(model_testing_results, rank_mode = "val_acc") {
+  if (rank_mode == "val_acc") {
+    # highest validation accuracy
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$val_acc, decreasing = TRUE), ]
+  } else if (rank_mode == "val_loss") {
+    # lowest validation loss
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$validation_loss, decreasing = FALSE), ]
+  } else if (rank_mode == "weighted_error") {
+    # smallest weighted misclassification error
+    if (typeof(model_testing_results$confusion_LC) == "character") {
+      LC_weighted_errors = get_weighted_errors(model_testing_results, "confusion_LC", 1)
+      NT_weighted_errors = get_weighted_errors(model_testing_results, "confusion_NT", 2)
+      VU_weighted_errors = get_weighted_errors(model_testing_results, "confusion_VU", 3)
+      EN_weighted_errors = get_weighted_errors(model_testing_results, "confusion_EN", 4)
+      CR_weighted_errors = get_weighted_errors(model_testing_results, "confusion_CR", 5)
+      error_list = list(LC_weighted_errors,
+                        NT_weighted_errors,
+                        VU_weighted_errors,
+                        EN_weighted_errors,
+                        CR_weighted_errors)
+    } else {
+      not_threatened_weighted_errors = get_weighted_errors(model_testing_results, "confusion_0", 1)
+      threatened_weighted_errors = get_weighted_errors(model_testing_results, "confusion_1", 2)
+      error_list = list(not_threatened_weighted_errors, threatened_weighted_errors)
     }
-    total_error_all_rows = rowSums(data.frame(t(matrix(unlist(error_list), nrow=length(error_list), byrow=TRUE))))
-    model_testing_results['weighted_error'] = total_error_all_rows
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$weighted_error,decreasing = FALSE),]
-  }else if (rank_mode == 'total_class_matches'){ # fewest class misclassifications
-    if (typeof(model_testing_results$confusion_LC)=='character'){
-      sum_false_classes = rowSums(model_testing_results[,c('delta_LC','delta_NT','delta_VU','delta_EN','delta_CR')])
-    }else{
-      sum_false_classes = rowSums(model_testing_results[,c('delta_0','delta_1')])
+    total_error_all_rows = rowSums(data.frame(t(matrix(unlist(error_list), nrow = length(error_list), byrow = TRUE))))
+    model_testing_results["weighted_error"] = total_error_all_rows
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$weighted_error, decreasing = FALSE), ]
+  } else if (rank_mode == "total_class_matches") {
+
+    # fewest class misclassifications
+    if (typeof(model_testing_results$confusion_LC) == "character") {
+      sum_false_classes = rowSums(model_testing_results[, c("delta_LC", "delta_NT", "delta_VU", "delta_EN", "delta_CR")])
+    } else {
+      sum_false_classes = rowSums(model_testing_results[, c("delta_0", "delta_1")])
     }
-    model_testing_results['total_class_error'] = sum_false_classes
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$total_class_error,decreasing = FALSE),]
-  }else{
-    stop(paste0('Invalid choice rank_mode = \'',rank_mode,'\'. Choose from \'val_acc\',\'val_loss\',\'weighted_error\',or \'total_class_matches\''))
+    model_testing_results["total_class_error"] = sum_false_classes
+    sorted_model_testing_results = model_testing_results[order(model_testing_results$total_class_error, decreasing = FALSE), ]
+  } else {
+    stop(paste0("Invalid choice rank_mode = '",
+                rank_mode,
+                "'. Choose from 'val_acc','val_loss','weighted_error',or 'total_class_matches'"))
   }
   return(sorted_model_testing_results)
 }
 
-best_model_iucnn <- function(model_testing_results, criterion = 'val_acc', require_dropout = FALSE){
-  ranked_models = rank_models(model_testing_results,rank_mode = criterion)
-  if (require_dropout==TRUE){
-    best_model = ranked_models[ranked_models$dropout_rate>0,][1,]
-  }else{
-    best_model = ranked_models[1,]
+best_model_iucnn <- function(model_testing_results,
+                             criterion = "val_acc",
+                             require_dropout = FALSE) {
+  ranked_models = rank_models(model_testing_results, rank_mode = criterion)
+  if (require_dropout) {
+    best_model = ranked_models[ranked_models$dropout_rate > 0, ][1, ]
+  } else {
+    best_model = ranked_models[1, ]
   }
 
   cat("Best model:\n")
-  cat('',sprintf("%s: %s\n", names(best_model), best_model))
+  cat("", sprintf("%s: %s\n", names(best_model), best_model))
   cat("\n")
 
   iucnn_model = readRDS(best_model$model_outpath)
   return(iucnn_model)
-  }
+}
 
-model_summary <- function(best_model,write_file = FALSE, outfile_name=NULL){
+model_summary <- function(best_model,
+                          write_file = FALSE,
+                          outfile_name = NULL) {
   cat("Best model:\n")
-  cat('',sprintf("%s: %s\n", names(best_model), best_model))
+  cat("", sprintf("%s: %s\n", names(best_model), best_model))
   cat("\n")
+
   train_acc = best_model$train_acc
   val_acc = best_model$val_acc
   label_detail = best_model$level
   cm = get_confusion_matrix(best_model)
 
-  if (label_detail == 'broad'){
+  if (label_detail == "broad") {
     n_classes = 2
     maxlab = 1
-  }else if (label_detail == 'detail'){
+  } else if (label_detail == "detail") {
     n_classes = 5
     maxlab = 4
-  }else{
-    stop(paste0('Unknown label level: \'',label_detail, '\'. Currently only supporting \'broad\' (N=2) or \'detail\' (N=5)'))
+  } else {
+    stop(paste0("Unknown label level: '",
+                label_detail,
+                "'. Currently only supporting 'broad' (N=2) or 'detail' (N=5)"))
   }
 
-  cat(sprintf("Training accuracy: %s\n",
-              round(train_acc, 3)))
+  cat(sprintf("Training accuracy: %s\n", round(train_acc, 3)))
 
-  cat(sprintf("Accuracy on unseen data: %s\n",
-              round(val_acc, 3)))
+  cat(sprintf("Accuracy on unseen data: %s\n", round(val_acc, 3)))
 
-  cat(sprintf("Label detail: %s Classes (%s)\n\n",
-              n_classes,
-              label_detail))
+  cat(sprintf("Label detail: %s Classes (%s)\n\n", n_classes, label_detail))
 
   cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
   print(cm)
 
-  if (write_file==TRUE){
-    if (is.null(outfile_name)){
-      outfile_name = 'evaluation_best_model.txt'
+  if (write_file) {
+    if (is.null(outfile_name)) {
+      outfile_name = "evaluation_best_model.txt"
     }
     sink(outfile_name)
 
     cat("Best model:\n")
-    cat('',sprintf("%s: %s\n", names(best_model), c(best_model)))
+    cat("", sprintf("%s: %s\n", names(best_model), c(best_model)))
     cat("\n")
-    cat(sprintf("Training accuracy: %s\n",
-                round(train_acc, 3)))
+    cat(sprintf("Training accuracy: %s\n", round(train_acc, 3)))
 
-    cat(sprintf("Accuracy on unseen data: %s\n",
-                round(val_acc, 3)))
+    cat(sprintf("Accuracy on unseen data: %s\n", round(val_acc, 3)))
 
-    cat(sprintf("Label detail: %s Classes (%s)\n\n",
-                n_classes,
-                label_detail))
+    cat(sprintf("Label detail: %s Classes (%s)\n\n", n_classes, label_detail))
 
     cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
     print(cm)
     sink()
-    print(paste0('Model evaluation results of best model written to ',outfile_name))
+    print(paste0("Model evaluation results of best model written to ", outfile_name))
   }
-
 }
 
 
-evaluate_iucnn <- function(res){
-  if (res$dropout_rate == 0){
-    warning('No acc-thres-tbl and class-freq calculation. Provide model with dropout_rate > 0 to enable these functions.')
+evaluate_iucnn <- function(res) {
+  if (res$dropout_rate == 0) {
+    warning("No acc-thres-tbl and class-freq calculation. Provide model with dropout_rate > 0 to enable these functions.")
   }
   summary(res)
   plot(res)
+
   get_mc_dropout_cat_counts
   cat_count_out = get_mc_dropout_cat_counts(res)
   accthres_tbl = res$accthres_tbl
-
 }
 
-
-get_weighted_errors <- function(model_testing_results,colname='confusion_LC',true_index=1){
-  stat_col = strsplit(model_testing_results[,colname],'_')
-  a = data.frame(matrix(unlist(stat_col), nrow=length(stat_col), byrow=TRUE))
-  weighted_errors = c()
-  for (i in 1:dim(a)[1]){
-    row = as.numeric(a[i,])
-    weighted_error = sum(abs((1:dim(a)[2]-true_index))*row)
-    weighted_errors = c(weighted_errors,weighted_error)
+get_weighted_errors <- function(model_testing_results,
+                                colname = "confusion_LC",
+                                true_index = 1) {
+  stat_col <- strsplit(model_testing_results[, colname], "_")
+  a <- data.frame(matrix(unlist(stat_col), nrow = length(stat_col), byrow = TRUE))
+  weighted_errors <- c()
+  for (i in 1:dim(a)[1]) {
+    row <- as.numeric(a[i, ])
+    weighted_error <- sum(abs((1:dim(a)[2] - true_index)) * row)
+    weighted_errors <- c(weighted_errors, weighted_error)
   }
   return(weighted_errors)
 }
 
-get_cat_count <- function(target_vector, max_cat = 4){
-  cat_counts = c()
-  for (i in 0:max_cat){
-    cat_counts = c(cat_counts, length(target_vector[target_vector == i]))
+get_cat_count <- function(target_vector,
+                          max_cat = 4) {
+  cat_counts <- c()
+  for (i in 0:max_cat) {
+    cat_counts <- c(cat_counts, length(target_vector[target_vector == i]))
   }
   return(cat_counts)
 }
 
-get_confusion_matrix <- function(best_model){
-  if (typeof(best_model$confusion_LC) == 'character'){
-    target_cols = as.character(best_model[, c('confusion_LC','confusion_NT','confusion_VU','confusion_EN','confusion_CR')])
-    count_strings = strsplit(target_cols,'_')
-    confusion_matrix = matrix(as.integer(unlist(count_strings)),
-                              nrow = length(count_strings),
-                              byrow = TRUE)
-    confusion_matrix = data.frame(confusion_matrix,
-                                  row.names = c('LC','NT','VU','EN','CR'))
-    names(confusion_matrix) = c('LC','NT','VU','EN','CR')
-    #estimates_per_class = colSums(confusion_matrix)
-  }else{
-    target_cols = as.character(best_model[,c('confusion_0','confusion_1')])
-    count_strings = strsplit(target_cols,'_')
-    confusion_matrix = matrix(as.integer(unlist(count_strings)),
-                              nrow = length(count_strings),
-                              byrow = TRUE)
-    confusion_matrix = data.frame(confusion_matrix,row.names = c('Not Threatened','Threatened'))
-    names(confusion_matrix) = c('Not threatened','Threatened')
+get_confusion_matrix <- function(best_model) {
+  if (typeof(best_model$confusion_LC) == "character") {
+    target_cols <- as.character(best_model[, c("confusion_LC", "confusion_NT", "confusion_VU", "confusion_EN", "confusion_CR")])
+    count_strings <- strsplit(target_cols, "_")
+
+    confusion_matrix <- matrix(as.integer(unlist(count_strings)), nrow = length(count_strings), byrow = TRUE)
+    confusion_matrix <- data.frame(confusion_matrix, row.names = c("LC", "NT", "VU", "EN", "CR"))
+    names(confusion_matrix) <- c("LC", "NT", "VU", "EN", "CR")
+  } else {
+    target_cols <- as.character(best_model[, c("confusion_0", "confusion_1")])
+    count_strings <- strsplit(target_cols, "_")
+
+    confusion_matrix <- matrix(as.integer(unlist(count_strings)), nrow = length(count_strings), byrow = TRUE)
+    confusion_matrix <- data.frame(confusion_matrix, row.names = c("Not Threatened", "Threatened"))
+    names(confusion_matrix) <- c("Not threatened", "Threatened")
   }
   return(confusion_matrix)
 }
 
 
-get_mc_dropout_cat_counts <- function(res, nreps = 1000){
+get_mc_dropout_cat_counts <- function(res,
+                                      nreps = 1000) {
 
-  if (is.nan(res$validation_labels[1])){
-    warning('This model contains no validation set. No sampled_cat_freqs can be calculated for this model.')
+  if (is.nan(res$validation_labels[1])) {
+    warning("This model contains no validation set. No sampled_cat_freqs can be calculated for this model.")
     cat_count_all_matrix <- NaN
     true_cat_count <- NaN
 
-  }else{
+  } else {
     nlabs <- length(res$input_data$label_dict)
-    true_cat_count <- get_cat_count(res$validation_labels,max_cat = nlabs-1)
+    true_cat_count <- get_cat_count(res$validation_labels, max_cat = nlabs - 1)
 
-    if (res$mc_dropout){
+    if (res$mc_dropout) {
       probs <- res$validation_predictions_raw
       n_instances <- dim(probs)[1]
       cat_mcdropout_sample <- c()
-      for (i in 1:n_instances){
-        cat_sample <- replicate(nreps,sample(1:nlabs-1,
-                                             size = 1,
-                                             prob = probs[i,]))
-        cat_mcdropout_sample <- c(cat_mcdropout_sample,c(cat_sample))
+      for (i in 1:n_instances) {
+        cat_sample <- replicate(nreps, sample(1:nlabs - 1, size = 1, prob = probs[i, ]))
+        cat_mcdropout_sample <- c(cat_mcdropout_sample, c(cat_sample))
       }
       cat_mcdropout_sample_matrix <- matrix(cat_mcdropout_sample, nrow = nreps)
       cat_count_all <- c()
-      for (row_id in 1:nreps){
-        row <- cat_mcdropout_sample_matrix[row_id,]
-        cat_count_sample <- get_cat_count(row,max_cat = nlabs-1)
-        cat_count_all <- c(cat_count_all,cat_count_sample)
+      for (row_id in 1:nreps) {
+        row <- cat_mcdropout_sample_matrix[row_id, ]
+        cat_count_sample <- get_cat_count(row, max_cat = nlabs - 1)
+        cat_count_all <- c(cat_count_all, cat_count_sample)
       }
       cat_count_all_matrix <- t(matrix(cat_count_all, ncol = nreps))
 
-    }else{
+    } else {
       cat_count_all_matrix <- NaN
     }
 
   }
 
-  output = NULL
-  output$predicted_class_count = cat_count_all_matrix
-  output$true_class_count = true_cat_count
-  return (output)
+  output <- NULL
+  output$predicted_class_count <- cat_count_all_matrix
+  output$true_class_count <- true_cat_count
+  return(output)
 }
 
-rnd <- function(x) trunc(x+sign(x)*0.5)
-
+rnd <- function(x) trunc(x + sign(x) * 0.5)

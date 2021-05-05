@@ -49,7 +49,7 @@ print(cm)
 
 #' @export
 #' @method plot iucnn_model
-#' @importFrom graphics abline legend points text
+#' @importFrom graphics abline legend par points text title
 plot.iucnn_model <- function(x, ...){
 
   par_prev <- par()
@@ -60,7 +60,10 @@ plot.iucnn_model <- function(x, ...){
   }
 
   for (i in 1:x$cv_fold){
-    plot(x$training_loss_history[[i]], type = "n", ylab = "Loss", xlab = "Epoch",
+    plot(x$training_loss_history[[i]],
+         type = "n",
+         ylab = "Loss",
+         xlab = "Epoch",
          ylim = c(min(min(x$training_loss_history[[i]]),
                       min(x$validation_loss_history[[i]])),
                   max(max(x$training_loss_history[[i]]),
@@ -74,7 +77,8 @@ plot.iucnn_model <- function(x, ...){
            type = "b",
            col = "darkred",
            pch = 2)
-    abline(v = x$final_training_epoch[[i]], lty = 2)
+    abline(v = x$final_training_epoch[[i]],
+           lty = 2)
     title(paste0('CV-fold ', i))
     legend(x = "topright",
            legend = c("Training", "Validation", "Final epoch"),
@@ -91,8 +95,8 @@ plot.iucnn_model <- function(x, ...){
 
 #' @export
 #' @method plot iucnn_predictions
-#' @importFrom graphics abline barplot
-plot.iucnn_predictions <- function(x){
+#' @importFrom graphics abline barplot par
+plot.iucnn_predictions <- function(x, ...){
 
   # count the different categories
   counts <- table(x$predictions)
