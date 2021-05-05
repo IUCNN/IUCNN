@@ -10,7 +10,7 @@ train_iucnn(
   path_to_output = "iuc_nn_model",
   production_model = NULL,
   mode = "nn-class",
-  validation_fraction = 0.1,
+  validation_fraction = 0.2,
   cv_fold = 1,
   seed = 1234,
   max_epochs = 1000,

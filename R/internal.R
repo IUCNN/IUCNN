@@ -622,17 +622,22 @@ get_cat_count <- function(target_vector, max_cat = 4){
 }
 
 get_confusion_matrix <- function(best_model){
-  if (typeof(best_model$confusion_LC)=='character'){
-    target_cols = as.character(best_model[,c('confusion_LC','confusion_NT','confusion_VU','confusion_EN','confusion_CR')])
+  if (typeof(best_model$confusion_LC) == 'character'){
+    target_cols = as.character(best_model[, c('confusion_LC','confusion_NT','confusion_VU','confusion_EN','confusion_CR')])
     count_strings = strsplit(target_cols,'_')
-    confusion_matrix = matrix(as.integer(unlist(count_strings)), nrow=length(count_strings), byrow=TRUE)
-    confusion_matrix = data.frame(confusion_matrix,row.names = c('LC','NT','VU','EN','CR'))
+    confusion_matrix = matrix(as.integer(unlist(count_strings)),
+                              nrow = length(count_strings),
+                              byrow = TRUE)
+    confusion_matrix = data.frame(confusion_matrix,
+                                  row.names = c('LC','NT','VU','EN','CR'))
     names(confusion_matrix) = c('LC','NT','VU','EN','CR')
     #estimates_per_class = colSums(confusion_matrix)
   }else{
     target_cols = as.character(best_model[,c('confusion_0','confusion_1')])
     count_strings = strsplit(target_cols,'_')
-    confusion_matrix = matrix(as.integer(unlist(count_strings)), nrow=length(count_strings), byrow=TRUE)
+    confusion_matrix = matrix(as.integer(unlist(count_strings)),
+                              nrow = length(count_strings),
+                              byrow = TRUE)
     confusion_matrix = data.frame(confusion_matrix,row.names = c('Not Threatened','Threatened'))
     names(confusion_matrix) = c('Not threatened','Threatened')
   }
@@ -640,36 +645,38 @@ get_confusion_matrix <- function(best_model){
 }
 
 
-get_mc_dropout_cat_counts <- function(res,nreps = 1000){
+get_mc_dropout_cat_counts <- function(res, nreps = 1000){
 
-  if (res$validation_labels == 'NaN'){
+  if (is.nan(res$validation_labels[1])){
     warning('This model contains no validation set. No sampled_cat_freqs can be calculated for this model.')
-    cat_count_all_matrix = NaN
-    true_cat_count = NaN
+    cat_count_all_matrix <- NaN
+    true_cat_count <- NaN
 
   }else{
-    probs = res$validation_predictions_raw
-    nlabs = dim(probs)[2]
-    true_cat_count = get_cat_count(res$validation_labels,max_cat = nlabs-1)
+    probs <- res$validation_predictions_raw
+    nlabs <- dim(probs)[2]
+    true_cat_count <- get_cat_count(res$validation_labels,max_cat = nlabs-1)
 
     if (res$mc_dropout){
-      n_instances = dim(probs)[1]
-      cat_mcdropout_sample = c()
+      n_instances <- dim(probs)[1]
+      cat_mcdropout_sample <- c()
       for (i in 1:n_instances){
-        cat_sample = replicate(nreps,sample(1:nlabs-1, size = 1, prob=probs[i,]))
-        cat_mcdropout_sample = c(cat_mcdropout_sample,c(cat_sample))
+        cat_sample <- replicate(nreps,sample(1:nlabs-1,
+                                             size = 1,
+                                             prob = probs[i,]))
+        cat_mcdropout_sample <- c(cat_mcdropout_sample,c(cat_sample))
       }
-      cat_mcdropout_sample_matrix = matrix(cat_mcdropout_sample, nrow=nreps)
-      cat_count_all = c()
+      cat_mcdropout_sample_matrix <- matrix(cat_mcdropout_sample, nrow = nreps)
+      cat_count_all <- c()
       for (row_id in 1:nreps){
-        row = cat_mcdropout_sample_matrix[row_id,]
-        cat_count_sample = get_cat_count(row,max_cat = nlabs-1)
-        cat_count_all = c(cat_count_all,cat_count_sample)
+        row <- cat_mcdropout_sample_matrix[row_id,]
+        cat_count_sample <- get_cat_count(row,max_cat = nlabs-1)
+        cat_count_all <- c(cat_count_all,cat_count_sample)
       }
-      cat_count_all_matrix = t(matrix(cat_count_all, ncol=nreps))
+      cat_count_all_matrix <- t(matrix(cat_count_all, ncol = nreps))
 
     }else{
-      cat_count_all_matrix = NaN
+      cat_count_all_matrix <- NaN
     }
 
   }

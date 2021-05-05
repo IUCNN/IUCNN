@@ -147,36 +147,42 @@ train_iucnn <- function(x,
 
   provided_model <- production_model
 
-  if (class(provided_model)=="iucnn_model"){
-    mode = provided_model$model
-    validation_fraction = 0.
-    cv_fold = 1
-    seed = provided_model$seed
-    max_epochs = round(mean(provided_model$final_training_epoch))
-    patience = NULL
-    n_layers = paste(provided_model$n_layers,collapse='_')
-    use_bias = provided_model$use_bias
-    act_f = provided_model$act_f
-    act_f_out = provided_model$act_f_out
-    label_stretch_factor = provided_model$label_stretch_factor
-    randomize_instances = provided_model$randomize_instances
-    dropout_rate = provided_model$dropout_rate
-    mc_dropout = provided_model$mc_dropout
-    mc_dropout_reps = provided_model$mc_dropout_reps
-    label_noise_factor = provided_model$label_noise_factor
-    rescale_features = provided_model$rescale_features
+  if (class(provided_model) == "iucnn_model"){
+    mode <- provided_model$model
+    validation_fraction <- 0.
+    cv_fold <- 1
+    seed <- provided_model$seed
+    max_epochs <- round(mean(provided_model$final_training_epoch))
+    patience <- NULL
+    n_layers <- paste(provided_model$n_layers,collapse='_')
+    use_bias <- provided_model$use_bias
+    act_f <- provided_model$act_f
+    act_f_out <- provided_model$act_f_out
+    label_stretch_factor <- provided_model$label_stretch_factor
+    randomize_instances <- provided_model$randomize_instances
+    dropout_rate <- provided_model$dropout_rate
+    mc_dropout <- provided_model$mc_dropout
+    mc_dropout_reps <- provided_model$mc_dropout_reps
+    label_noise_factor <- provided_model$label_noise_factor
+    rescale_features <- provided_model$rescale_features
     # save accthres_tbl to output, since this will be needed to predict
-    accthres_tbl_stored = provided_model$accthres_tbl
+    accthres_tbl_stored <- provided_model$accthres_tbl
   }else{
-    accthres_tbl_stored = NaN
+    accthres_tbl_stored <- NaN
   }
 
   # check if the model directory already exists
   if(dir.exists(file.path(path_to_output))& !overwrite){
-    stop(sprintf("Directory %s exists. Provide alternative 'path_to_output' or set `overwrite` to TRUE.", path_to_output))
+    stop(sprintf("Directory %s exists. Provide alternative 'path_to_output' or set `overwrite` to TRUE.",
+                 path_to_output))
   }
 
-  data_out = process_iucnn_input(x,lab = lab, mode = mode, outpath = '.', write_data_files = FALSE, verbose=verbose)
+  data_out = process_iucnn_input(x,
+                                 lab = lab,
+                                 mode = mode,
+                                 outpath = '.',
+                                 write_data_files = FALSE,
+                                 verbose=verbose)
 
   dataset = data_out[[1]]
   labels = data_out[[2]]
@@ -279,11 +285,11 @@ train_iucnn <- function(x,
 
     activation_function <- act_f_out
     trained_model_path <- pklfile_path
-    patience = NaN
-    validation_fraction = validation_fraction
+    patience <- NaN
+    validation_fraction <- validation_fraction
 
-    accthres_tbl = NaN
-    stopping_point = NaN
+    accthres_tbl <- NaN
+    stopping_point <- NaN
 
   }else{
 
@@ -362,7 +368,9 @@ train_iucnn <- function(x,
   named_res$label_stretch_factor <- label_stretch_factor
 
   named_res$trained_model_path <- trained_model_path
-  if (accthres_tbl=='NaN'){accthres_tbl = accthres_tbl_stored}
+
+  if(is.nan(accthres_tbl[1])){accthres_tbl = accthres_tbl_stored}
+
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
   named_res$sampled_cat_freqs <- sample_categorical

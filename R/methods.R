@@ -21,10 +21,14 @@ cat(sprintf("Label detail: %s Classes (%s)\n\n",
 
 cat("Label representation\n")
 
-maxlab = max(object$validation_predictions)
-tel <- data.frame(0:maxlab,get_cat_count(object$validation_predictions,max_cat = maxlab))
+maxlab <- max(object$validation_predictions)
+tel <- data.frame(0:maxlab,
+                  get_cat_count(object$validation_predictions,
+                                max_cat = maxlab))
 names(tel) = c("Var1","Freq")
-trl <- data.frame(0:maxlab,get_cat_count(object$validation_labels,max_cat = maxlab))
+trl <- data.frame(0:maxlab,
+                  get_cat_count(object$validation_labels,
+                                max_cat = maxlab))
 names(trl) = c("Var1","Freq")
 lab <- merge(trl,tel, by = "Var1")
 
@@ -48,23 +52,33 @@ print(cm)
 #' @importFrom graphics abline legend points text
 plot.iucnn_model <- function(x, ...){
 
-  x$validation_accuracy_history
-  x$training_accuracy_history
-  x$final_training_epoch
+  # x$validation_accuracy_history
+  # x$training_accuracy_history
+  # x$final_training_epoch
 
-  par(mfrow=c(rnd(x$cv_fold/2),2),mar = c(2, 2, 2, 2))
+  par(mfrow = c(rnd(x$cv_fold/2),2),
+      mar = c(2, 2, 2, 2))
+
   for (i in 1:x$cv_fold){
     plot(x$training_loss_history[[i]], type = "n", ylab = "Loss", xlab = "Epoch",
-         ylim = c(min(min(x$training_loss_history[[i]]), min(x$validation_loss_history[[i]])), max(max(x$training_loss_history[[i]]), max(x$validation_loss_history[[i]]))))
-    points(x$training_loss_history[[i]], type = "b", col = "darkblue", pch = 1)
-    points(x$validation_loss_history[[i]], type = "b", col = "darkred", pch = 2)
+         ylim = c(min(min(x$training_loss_history[[i]]),
+                      min(x$validation_loss_history[[i]])),
+                  max(max(x$training_loss_history[[i]]),
+                      max(x$validation_loss_history[[i]]))))
+
+    points(x$training_loss_history[[i]],
+           type = "b",
+           col = "darkblue",
+           pch = 1)
+    points(x$validation_loss_history[[i]],
+           type = "b", col = "darkred", pch = 2)
     abline(v = x$final_training_epoch[[i]], lty = 2)
     title(paste0('CV-fold ', i))
     legend(x = "topright",
            legend = c("Training", "Validation", "Final epoch"),
            col = c("darkblue", "darkred", "black"),
            lty = c(1, 1, 2),
-           pch = c(1,2,NA),
+           pch = c(1, 2, NA),
            cex = 0.7)
 
   }
