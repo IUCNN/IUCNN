@@ -225,7 +225,7 @@ subsample_n_per_class <- function(features,
 
 log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
-    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","delta_LC","delta_NT","delta_VU","delta_EN","delta_CR","delta_0","delta_1","model_outpath")
+    header = c("mode","level","dropout_rate","seed","max_epochs","patience","n_layers","use_bias","balance_classes","rescale_features","randomize_instances","mc_dropout","mc_dropout_reps","act_f","act_f_out","cv_fold","validation_fraction","label_stretch_factor","label_noise_factor","final_train_epoch_all","final_train_epoch_mean","train_acc","val_acc","training_loss","validation_loss","confusion_LC","confusion_NT","confusion_VU","confusion_EN","confusion_CR","confusion_0","confusion_1","delta_LC","delta_NT","delta_VU","delta_EN","delta_CR","delta_0","delta_1","model_outpath")
     if(file.exists(logfile)){
       overwrite_prompt = readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
@@ -269,6 +269,7 @@ log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
           res$patience,
           paste(res$n_layers, collapse = '_'),
           res$use_bias,
+          res$balance_classes,
           res$rescale_features,
           res$randomize_instances,
           res$mc_dropout,
