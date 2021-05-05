@@ -124,7 +124,7 @@ ft_clim <- function(x,
                                  .data$range_bio11, .data$range_bio12,
                                  .data$range_bio15, .data$range_bio17))
   }else{
-    out <- bind_cols(bio, range)
+    out <- left_join(bio, range, by = "species")
   }
   # return
   return(out)
