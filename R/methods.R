@@ -104,7 +104,12 @@ plot.iucnn_predictions <- function(x, ...){
   # set colors for relevant categories
   if( all(nchar(names(counts)) == 2)){
     cats <- c('LC', 'NT', 'VU', 'EN' ,'CR', 'NA')
-    colors <- c('#60C659', '#CCE226', '#F9E814', '#FC7F3F', '#D81E05', '#C1B5A5')
+    colors <- c('#60C659',
+                '#CCE226',
+                '#F9E814',
+                '#FC7F3F',
+                '#D81E05',
+                '#C1B5A5')
   }else{
     colors <-  c('lightgreen', 'orange')
     names(colors) <- c('Not Threatened', 'Threatened')

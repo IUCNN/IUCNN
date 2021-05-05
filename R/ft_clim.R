@@ -89,13 +89,14 @@ ft_clim <- function(x,
     dplyr::bind_cols(bio_ex %>%  as_tibble()) %>%
     group_by(.data$species)
 
-  min <- range_inp %>% dplyr::summarize_all(quantile, probs = 0.05, na.rm = TRUE)
-  max <- range_inp %>% dplyr::summarize_all(quantile, probs = 0.95, na.rm = TRUE)
+  min <- range_inp %>%
+    dplyr::summarize_all(quantile, probs = 0.05, na.rm = TRUE)
+  max <- range_inp %>%
+    dplyr::summarize_all(quantile, probs = 0.95, na.rm = TRUE)
 
   range <- data.frame(species = min$species,
                       max[, -1] - min[, -1])
   names(range)[-1] <- paste("range_", names(range)[-1], sep = "")
-
 
   # Rescale, I feel this needs some more though/justification, but Daniele is happy with it for now
   if(rescale){

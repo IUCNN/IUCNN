@@ -64,8 +64,8 @@ are >200 MB each and downloading may
 take some time on first execution.
 }
 \details{
-By default four categories of increasing human footprint index ( 1 = lowest, 4 = highest)
-are selected and rescaled.
+By default four categories of increasing human footprint index
+( 1 = lowest, 4 = highest) are selected and rescaled.
 }
 \examples{
 \dontrun{

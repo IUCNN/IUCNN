@@ -84,36 +84,40 @@ predict_iucnn <- function(x,
   test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
   if(!test1){
     mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
-    stop("Feature mismatch, missing in training features: \n", paste0(mis, collapse = ", "))
+    stop("Feature mismatch, missing in training features: \n",
+         paste0(mis, collapse = ", "))
   }
 
   test2 <- all(model$input_data$feature_names %in% names(x))
   if(!test2){
     mis <- model$input_data$feature_names[!model$input_data$feature_names %in% names(x)]
-    stop("Feature mismatch, missing in prediction features: \n", paste0(mis, collapse = ", "))
+    stop("Feature mismatch, missing in prediction features: \n",
+         paste0(mis, collapse = ", "))
   }
 
   if (target_acc == 0){
-    confidence_threshold = NULL
+    confidence_threshold <- NULL
   }else{
-    acc_thres_tbl = model$accthres_tbl
+    acc_thres_tbl <- model$accthres_tbl
     if (class(acc_thres_tbl)[1] == "matrix"){
-     confidence_threshold = acc_thres_tbl[min(which(acc_thres_tbl[,2] > target_acc)),][1]
+     confidence_threshold <- acc_thres_tbl[min(which(acc_thres_tbl[,2] >
+                                                       target_acc)),][1]
     }else{
      stop('Table with accuracy thresholds required when choosing target_acc > 0.
           This is only available for models where \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
    }
   }
 
-  data_out = process_iucnn_input(x,mode = mode, outpath = '.', write_data_files = FALSE)
+  data_out <- process_iucnn_input(x,mode = mode, outpath = '.',
+                                  write_data_files = FALSE)
 
-  dataset = data_out[[1]]
-  instance_names = data_out[[3]]
+  dataset <- data_out[[1]]
+  instance_names <- data_out[[3]]
 
   message("Predicting conservation status")
 
-  pred_out = NULL
-  pred_out$names = instance_names
+  pred_out <- NULL
+  pred_out$names <- instance_names
 
   if(model$model == 'bnn-class'){
     postpr <- bnn_predict(features = as.matrix(dataset),
@@ -125,11 +129,13 @@ predict_iucnn <- function(x,
                           )
 
     if (return_raw){
-      pred_out$predictions = postpr$post_prob_predictions
+      pred_out$predictions <- postpr$post_prob_predictions
       return(pred_out)
     }else{
       not_nan_boolean <- complete.cases(postpr$post_prob_predictions)
-      predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],1,which.max)-1
+      predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],
+                               1,
+                               which.max)-1
       predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
       predictions[not_nan_boolean] <- predictions_tmp
     }
@@ -137,7 +143,8 @@ predict_iucnn <- function(x,
 
   }else{
     # source python function
-    reticulate::source_python(system.file("python", "IUCNN_predict.py", package = "IUCNN"))
+    reticulate::source_python(system.file("python", "IUCNN_predict.py",
+                                          package = "IUCNN"))
 
     # run predict function
     out <- iucnn_predict(feature_set = as.matrix(dataset),
@@ -152,14 +159,14 @@ predict_iucnn <- function(x,
                          min_max_label = model$min_max_label_rescaled,
                          stretch_factor_rescaled_labels = model$label_stretch_factor)
     if (return_raw){
-      pred_out$predictions = out
+      pred_out$predictions <- out
       return(pred_out)
     }else{
       if (model$model == 'nn-reg'){
         predictions <- round(out)
       }else{
         not_nan_boolean <- complete.cases(out)
-        predictions_tmp <- apply(out[not_nan_boolean,],1,which.max)-1
+        predictions_tmp <- apply(out[not_nan_boolean,], 1, which.max) - 1
         predictions <- rep(NA, dim(out)[1])
         predictions[not_nan_boolean] <- predictions_tmp
       }

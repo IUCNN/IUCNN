@@ -39,7 +39,10 @@ prep_features <- function(x,
                           species = "species",
                           lon = "decimallongitude",
                           lat = "decimallatitude",
-                          type = c("geographic", "biomes", "climate", "humanfootprint")){
+                          type = c("geographic",
+                                   "biomes",
+                                   "climate",
+                                   "humanfootprint")){
 
   # assertions
   assert_data_frame(x)

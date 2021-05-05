@@ -18,10 +18,12 @@
 #' \code{\link{prep_labels}} containing the labels for all species.
 #'@param mode character string. Choose between the IUCNN models
 #'"nn-class" (default, tensorflow neural network classifier),
-#'"nn-reg" (tensorflow neural network regression), or "bnn-class" (Bayesian neural network classifier)
+#'"nn-reg" (tensorflow neural network regression), or
+#'"bnn-class" (Bayesian neural network classifier)
 #'@param path_to_output character string. The path to the location
 #'where the IUCNN model shall be saved
-#'@param validation_split numeric. The fraction of the input data used as validation set.
+#'@param validation_split numeric. The fraction of the i
+#'nput data used as validation set.
 #'@param test_fraction numeric. The fraction of the input data used as test set.
 #'@param seed reset the python random seed.
 #'@param max_epochs integer. The maximum number of epochs.
@@ -34,14 +36,17 @@
 #' respectively. Note that the number of nodes in the output
 #' layer is automatically determined based on
 #'the number of unique labels in the training set.
-#'@param use_bias logical. Specifies if a bias node is used in the first hidden layer (default=TRUE).
-#'@param act_f character string. Specifies the activation function should be used in the hidden layers.
+#'@param use_bias logical. Specifies if a bias node is used in
+#'the first hidden layer (default=TRUE).
+#'@param act_f character string. Specifies the activation
+#'function should be used in the hidden layers.
 #'Available options are: "relu" (default), "tanh", "sigmoid"
 #'@param act_f_out character string. Similar to act_f, this specifies
 #'the activation function for the output
 #'layer. When setting to "auto" (default), a suitable output activation
 #' function will be chosen based on the
-#'chosen mode. Other valid options are "softmax" (nn-class, bnn-class), "tanh" (nn-reg),
+#'chosen mode. Other valid options are "softmax"
+#'(nn-class, bnn-class), "tanh" (nn-reg),
 #'"sigmoid" (nn-reg), or no activation function "" (nn-reg)
 #'@param label_stretch_factor numeric. When choosing mode "nn-reg" the
 #'labels will be rescaled and this rescaling can be
@@ -57,13 +62,15 @@
 #'(only available for modes nn-class and nn-reg).
 #'@param label_noise_factor numeric. Add random noise to the input labels after
 #' rescaling to give the categorical labels a more
-#'continuous spread before training the regression model (only available for mode nn-reg).
+#'continuous spread before training the regression model
+#'(only available for mode nn-reg).
 #'@param rescale_features logical. Set to TRUE if all feature
 #'values shall be rescaled
 #'to values between 0 and 1 prior to training (default=FALSE).
 #'@param patience integer. Number of epochs with no improvement
 #' after which training will be stopped.
-#'@param overwrite logical. If TRUE existing models are overwritten. Default is to FALSE,
+#'@param overwrite logical. If TRUE existing models are
+#'overwritten. Default is to FALSE,
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 #'tutorial on how to run IUCNN.o
@@ -179,25 +186,25 @@ train_iucnn <- function(x,
                  path_to_output))
   }
 
-  data_out = process_iucnn_input(x,
+  data_out <- process_iucnn_input(x,
                                  lab = lab,
                                  mode = mode,
                                  outpath = '.',
                                  write_data_files = FALSE,
                                  verbose=verbose)
 
-  dataset = data_out[[1]]
-  labels = data_out[[2]]
-  instance_names = data_out[[3]]
+  dataset <- data_out[[1]]
+  labels <- data_out[[2]]
+  instance_names <- data_out[[3]]
 
-  n_layers = as.numeric(strsplit(n_layers,'_')[[1]])
+  n_layers <- as.numeric(strsplit(n_layers,'_')[[1]])
 
   # set out act fun if chosen auto
   if (act_f_out == 'auto'){
     if (mode == 'nn-reg'){
-      act_f_out  <-  'tanh'
+      act_f_out  <- 'tanh'
     }else{
-      act_f_out  <-  'softmax'
+      act_f_out  <- 'softmax'
     }
   }
 
@@ -208,7 +215,7 @@ train_iucnn <- function(x,
   }
 
   if (mode == 'bnn-class'){
-    act_f = 'swish'
+    act_f <- 'swish'
     print('Activation function for BNN model is hard-coded to be "swish" and is not affected by the act_f setting.')
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,
@@ -217,7 +224,8 @@ train_iucnn <- function(x,
                              testsize = validation_fraction,
                              all_class_in_testset=FALSE,
                              header = TRUE, # input data has a header
-                             instance_id = TRUE, # input data includes names of instances
+                             # input data includes names of instances
+                             instance_id = TRUE,
                              from_file = FALSE
     )
 
@@ -259,19 +267,25 @@ train_iucnn <- function(x,
     pklfile_path <- as.character(py_get_attr(logger, '_pklfile'))
 
     validation_labels <- bnn_data$test_labels
-    validation_predictions <- apply(post_pr_test$post_prob_predictions, 1, which.max) - 1
+    validation_predictions <- apply(post_pr_test$post_prob_predictions,
+                                    1,
+                                    which.max) - 1
     validation_predictions_raw <- post_pr_test$post_prob_predictions
 
     confusion_matrix <- post_pr_test$confusion_matrix
-    confusion_matrix <- confusion_matrix[1:dim(confusion_matrix)[1] - 1, 1:dim(confusion_matrix)[2] - 1] #remove the sum row and column
+    confusion_matrix <- confusion_matrix[1:dim(confusion_matrix)[1] - 1,
+                                         1:dim(confusion_matrix)[2] - 1] #remove the sum row and column
 
     training_accuracy <- log_file_content$accuracy[length(log_file_content$accuracy)]
     validation_accuracy <- post_pr_test$mean_accuracy
 
-    training_loss <- (-log_file_content$likelihood[length(log_file_content$likelihood)]) / length(bnn_data$labels)
+    training_loss <-
+      (-log_file_content$likelihood[length(log_file_content$likelihood)]) /
+      length(bnn_data$labels)
     validation_loss <- NaN
 
-    training_loss_history <- (-log_file_content$likelihood) / length(bnn_data$labels)
+    training_loss_history <-
+      (-log_file_content$likelihood) / length(bnn_data$labels)
     validation_loss_history <- NaN
 
     training_accuracy_history <- log_file_content$accuracy
@@ -372,7 +386,7 @@ train_iucnn <- function(x,
 
   named_res$trained_model_path <- trained_model_path
 
-  if(is.nan(accthres_tbl[1])){accthres_tbl = accthres_tbl_stored}
+  if(is.nan(accthres_tbl[1])){accthres_tbl <- accthres_tbl_stored}
 
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
@@ -408,8 +422,8 @@ train_iucnn <- function(x,
 
   named_res$training_loss <- training_loss
   named_res$validation_loss <- validation_loss
-
-  named_res$validation_predictions_raw <- validation_predictions_raw #softmax probs, posterior probs, or regressed values
+  #softmax probs, posterior probs, or regressed values
+  named_res$validation_predictions_raw <- validation_predictions_raw
   named_res$validation_predictions <- validation_predictions
   named_res$validation_labels <- validation_labels
 

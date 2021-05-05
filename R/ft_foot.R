@@ -9,8 +9,8 @@
 #' are >200 MB each and downloading may
 #' take some time on first execution.
 #'
-#' By default four categories of increasing human footprint index ( 1 = lowest, 4 = highest)
-#'  are selected and rescaled.
+#' By default four categories of increasing human footprint index
+#'  ( 1 = lowest, 4 = highest) are selected and rescaled.
 #'
 #' @param footp_input an object of the class raster or RasterStack
 #' with values for the human footprint index.
@@ -101,7 +101,10 @@ ft_foot <- function(x,
     }
 
     # load raster
-    footp_inp <-  raster::stack(file.path(file_path, paste("HFP", year, ".tif", sep = "")))
+    footp_inp <-  raster::stack(file.path(file_path,
+                                          paste("HFP",
+                                                year, ".tif",
+                                                sep = "")))
 
   }else{
     ## If no, download
@@ -129,10 +132,12 @@ ft_foot <- function(x,
   message("Summarizing information per species")
 
   ## classify the footprint into equal-sized bins
-  footp_ex[, -1] <- apply(footp_ex[, -1], 2, function(k){cut(k,
-                                                             breaks = breaks,
-                                                             labels = 1:(length(breaks)-1),
-                                                             right = FALSE)})
+  footp_ex[, -1] <- apply(footp_ex[, -1],
+                          2,
+                          function(k){cut(k,
+                                          breaks = breaks,
+                                          labels = 1:(length(breaks)-1),
+                                          right = FALSE)})
 
   # prepare feature summary
   out <- footp_ex %>%

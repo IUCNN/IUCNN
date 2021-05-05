@@ -51,8 +51,11 @@ modeltest_iucnn <- function(x,
 
   if (file.exists(model_outpath)) {
     if (init_logfile == TRUE) {
-      # we are starting with a new modeltest-logfile from scratch, so we will also attempt to overwrite the modeltest dir
-      overwrite_prompt <- readline(prompt = "Specified model_outpath dir already exists. Do you want to overwrite? [Y/n]: ")
+      # we are starting with a new modeltest-logfile from scratch,
+      #so we will also attempt to overwrite the modeltest dir
+      overwrite_prompt <-
+        readline(prompt = "Specified model_outpath dir already exists. Do you want to overwrite? [Y/n]: ")
+
       if (overwrite_prompt == "Y") {
         unlink(model_outpath, recursive = TRUE)
       } else {
@@ -124,7 +127,9 @@ modeltest_iucnn <- function(x,
                          overwrite = TRUE,
                          verbose = 0)
 
-      iucnn_model_path <- paste0(model_outpath, "/model_", row_id, "/iucnn_model.rds")
+      iucnn_model_path <- paste0(model_outpath, "/model_",
+                                 row_id,
+                                 "/iucnn_model.rds")
 
       #write results to disk
       saveRDS(res, iucnn_model_path)
@@ -133,7 +138,9 @@ modeltest_iucnn <- function(x,
     outfile <- new_logfile
   } else {
     if (cv_fold > 1) {
-      message("Evaluating models using ", cv_fold, "-fold cross-validation (validation_fraction setting is ignored).")
+      message("Evaluating models using ",
+              cv_fold,
+              "-fold cross-validation (validation_fraction setting is ignored).")
       validation_fraction <- 0
     } else {
       if (validation_fraction == 0) {
@@ -175,7 +182,9 @@ modeltest_iucnn <- function(x,
                                               balance_classes))
     n_permutations <- dim(permutations)[1]
 
-    message(paste0("Running model test for ", n_permutations, " models. This may take a while..."))
+    message(paste0("Running model test for ",
+                   n_permutations,
+                   " models. This may take a while..."))
 
     for (i in 1:n_permutations) {
       print(paste0("Running model ", i, "/", n_permutations))
@@ -212,7 +221,9 @@ modeltest_iucnn <- function(x,
       res <- train_iucnn(x = x,
                          lab = lab,
                          mode = mode_i,
-                         path_to_output = paste0(model_outpath, "/model_", i + delta_i),
+                         path_to_output = paste0(model_outpath,
+                                                 "/model_",
+                                                 i + delta_i),
                          cv_fold = cv_fold_i,
                          seed = seed_i,
                          max_epochs = max_epochs_i,
@@ -233,7 +244,10 @@ modeltest_iucnn <- function(x,
                          save_model = TRUE,
                          overwrite = TRUE,
                          verbose = 0)
-      iucnn_model_path <- paste0(model_outpath, "/model_", i + delta_i, "/iucnn_model.rds")
+
+      iucnn_model_path <- paste0(model_outpath,
+                                 "/model_", i + delta_i,
+                                 "/iucnn_model.rds")
       saveRDS(res, iucnn_model_path)
       log_results(res, logfile, iucnn_model_path, init_logfile = FALSE)
     }

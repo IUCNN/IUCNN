@@ -14,23 +14,32 @@ prep_labels(
 )
 }
 \arguments{
-\item{x}{a data.frame or a list. If a data.frame, two columns with the species names and IUCN categories
-respectively. The column names are defined by the species and labels arguments. If a list, expecting
+\item{x}{a data.frame or a list. If a data.frame,
+two columns with the species names and IUCN categories
+respectively. The column names are defined by the
+species and labels arguments. If a list, expecting
 the format as returned by \link[rredlist]{rl_search}.}
 
-\item{species}{a character string. The name of the column with the species names.}
+\item{species}{a character string. The name of the
+column with the species names.}
 
-\item{labels}{a character string. The name of the column with the labels (assessment categories).}
+\item{labels}{a character string. The name of the
+column with the labels (assessment categories).}
 
-\item{accepted_labels}{a character string. The labels to be converted in to numeric values.
-Entries with labels not mentioned (e.g. "DD") will be removed. The numeric labels returned by the
+\item{accepted_labels}{a character string. The labels
+to be converted in to numeric values.
+Entries with labels not mentioned (e.g. "DD") will be removed.
+The numeric labels returned by the
 function will correspond to the order in this argument.
 For instance with default settings, LC -> 0, CR -> 4.}
 
-\item{level}{a character string. The level of output level detail. IF "detail"
-full IUCN categories, if "broad" then 0 = Not threatened, and 1 = Threatened.}
+\item{level}{a character string. The level of output
+level detail. IF "detail"
+full IUCN categories, if "broad" then
+0 = Not threatened, and 1 = Threatened.}
 
-\item{threatened}{a character string. Only if level=="broad", Which labels to consider threatened.}
+\item{threatened}{a character string. Only if level=="broad",
+Which labels to consider threatened.}
 }
 \value{
 a data.frame with species names and numeric labels
@@ -39,8 +48,8 @@ a data.frame with species names and numeric labels
 Converting IUCN category labels into numeric categories required by \code{\link{train_iucnn}}.
 }
 \note{
-See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
-tutorial on how to run IUCNN.
+See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
+for a tutorial on how to run IUCNN.
 }
 \examples{
 data("training_labels")

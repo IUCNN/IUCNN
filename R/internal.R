@@ -2,7 +2,7 @@
 #' @importFrom utils read.table
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select left_join mutate
-
+#' @importFrom utils write.table
 
 get_footp <- function(x, file_path){
   test <- file.exists(file.path(file_path,
@@ -156,7 +156,7 @@ bnn_predict <- function(features,
   bn <- reticulate::import("np_bnn")
 
 
-  post_pr = bn$predictBNN(as.matrix(features),
+  post_pr <- bn$predictBNN(as.matrix(features),
                           pickle_file = model_path,
                           instance_id = instance_id,
                           fname = filename,
@@ -182,7 +182,9 @@ subsample_n_per_class <- function(features,
   return(list(features, labels))
 }
 
-log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
+log_results <- function(res,logfile,
+                        iucnn_model_out,
+                        init_logfile = FALSE){
   if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
     header <- c("mode",
                 "level",
@@ -227,8 +229,8 @@ log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
     if(file.exists(logfile)){
       overwrite_prompt <-  readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
       if (overwrite_prompt == 'Y'){
-        cat(header,file=logfile, sep = "\t")
-        cat('\n',file=logfile,append=T)
+        cat(header, file = logfile, sep = "\t")
+        cat('\n', file = logfile, append = TRUE)
       }else{
         stop('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=FALSE')
       }
@@ -237,17 +239,17 @@ log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
       cat('\n', file = logfile, append = TRUE)
     }
   }
-  if (class(res)=="iucnn_model"){
+  if (class(res) == "iucnn_model"){
     if (length(res$input_data$lookup.lab.num.z) == 2){
-      label_level = 'broad'
-      ratio_prediction_lines = c(NaN,
+      label_level <- 'broad'
+      ratio_prediction_lines <- c(NaN,
                                  NaN,
                                  NaN,
                                  NaN,
                                  NaN,
                                  abs(get_cat_count(res$validation_labels,max_cat = 1) -
                                        get_cat_count(res$validation_predictions,max_cat = 1)))
-      confusion_matrix_lines = c(NaN,
+      confusion_matrix_lines <- c(NaN,
                                  NaN,
                                  NaN,
                                  NaN,
@@ -255,12 +257,12 @@ log_results <- function(res,logfile,iucnn_model_out,init_logfile=FALSE){
                                  paste(res$confusion_matrix[1,], collapse = '_'),
                                  paste(res$confusion_matrix[2,], collapse = '_'))
     }else{
-      label_level = 'detail'
-      ratio_prediction_lines = c(abs(get_cat_count(res$validation_labels, max_cat = 4) -
+      label_level <- 'detail'
+      ratio_prediction_lines <- c(abs(get_cat_count(res$validation_labels, max_cat = 4) -
                                        get_cat_count(res$validation_predictions, max_cat = 4)),
                                  NaN,
                                  NaN)
-      confusion_matrix_lines = c(paste(res$confusion_matrix[1,], collapse = '_'),
+      confusion_matrix_lines <- c(paste(res$confusion_matrix[1,], collapse = '_'),
                                  paste(res$confusion_matrix[2,], collapse = '_'),
                                  paste(res$confusion_matrix[3,], collapse = '_'),
                                  paste(res$confusion_matrix[4,], collapse = '_'),
@@ -452,45 +454,57 @@ process_iucnn_input <- function(x,
 rank_models <- function(model_testing_results, rank_mode = "val_acc") {
   if (rank_mode == "val_acc") {
     # highest validation accuracy
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$val_acc, decreasing = TRUE), ]
+    sorted_model_testing_results <-
+      model_testing_results[order(model_testing_results$val_acc, decreasing = TRUE), ]
   } else if (rank_mode == "val_loss") {
     # lowest validation loss
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$validation_loss, decreasing = FALSE), ]
+    sorted_model_testing_results <-
+      model_testing_results[order(model_testing_results$validation_loss, decreasing = FALSE), ]
   } else if (rank_mode == "weighted_error") {
     # smallest weighted misclassification error
     if (typeof(model_testing_results$confusion_LC) == "character") {
-      LC_weighted_errors = get_weighted_errors(model_testing_results, "confusion_LC", 1)
-      NT_weighted_errors = get_weighted_errors(model_testing_results, "confusion_NT", 2)
-      VU_weighted_errors = get_weighted_errors(model_testing_results, "confusion_VU", 3)
-      EN_weighted_errors = get_weighted_errors(model_testing_results, "confusion_EN", 4)
-      CR_weighted_errors = get_weighted_errors(model_testing_results, "confusion_CR", 5)
-      error_list = list(LC_weighted_errors,
+      LC_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_LC", 1)
+      NT_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_NT", 2)
+      VU_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_VU", 3)
+      EN_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_EN", 4)
+      CR_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_CR", 5)
+      error_list <- list(LC_weighted_errors,
                         NT_weighted_errors,
                         VU_weighted_errors,
                         EN_weighted_errors,
                         CR_weighted_errors)
     } else {
-      not_threatened_weighted_errors = get_weighted_errors(model_testing_results, "confusion_0", 1)
-      threatened_weighted_errors = get_weighted_errors(model_testing_results, "confusion_1", 2)
-      error_list = list(not_threatened_weighted_errors, threatened_weighted_errors)
+      not_threatened_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_0", 1)
+      threatened_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_1", 2)
+      error_list <- list(not_threatened_weighted_errors, threatened_weighted_errors)
     }
-    total_error_all_rows = rowSums(data.frame(t(matrix(unlist(error_list), nrow = length(error_list), byrow = TRUE))))
-    model_testing_results["weighted_error"] = total_error_all_rows
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$weighted_error, decreasing = FALSE), ]
+    total_error_all_rows <- rowSums(data.frame(t(matrix(unlist(error_list),
+                                                       nrow = length(error_list),
+                                                       byrow = TRUE))))
+    model_testing_results["weighted_error"] <-  total_error_all_rows
+    sorted_model_testing_results <-
+      model_testing_results[order(model_testing_results$weighted_error,
+                                  decreasing = FALSE), ]
   } else if (rank_mode == "total_class_matches") {
 
     # fewest class misclassifications
     if (typeof(model_testing_results$confusion_LC) == "character") {
-      sum_false_classes = rowSums(model_testing_results[, c("delta_LC", "delta_NT", "delta_VU", "delta_EN", "delta_CR")])
+      sum_false_classes <- rowSums(model_testing_results[, c("delta_LC",
+                                                             "delta_NT",
+                                                             "delta_VU",
+                                                             "delta_EN",
+                                                             "delta_CR")])
     } else {
-      sum_false_classes = rowSums(model_testing_results[, c("delta_0", "delta_1")])
+      sum_false_classes <- rowSums(model_testing_results[, c("delta_0", "delta_1")])
     }
-    model_testing_results["total_class_error"] = sum_false_classes
-    sorted_model_testing_results = model_testing_results[order(model_testing_results$total_class_error, decreasing = FALSE), ]
+    model_testing_results["total_class_error"] <- sum_false_classes
+    sorted_model_testing_results <-
+      model_testing_results[order(model_testing_results$total_class_error,
+                                  decreasing = FALSE), ]
   } else {
     stop(paste0("Invalid choice rank_mode = '",
                 rank_mode,
-                "'. Choose from 'val_acc','val_loss','weighted_error',or 'total_class_matches'"))
+                "'. Choose from 'val_acc','val_loss','weighted_error' ,or 'total_class_matches'"))
   }
   return(sorted_model_testing_results)
 }
@@ -498,18 +512,18 @@ rank_models <- function(model_testing_results, rank_mode = "val_acc") {
 best_model_iucnn <- function(model_testing_results,
                              criterion = "val_acc",
                              require_dropout = FALSE) {
-  ranked_models = rank_models(model_testing_results, rank_mode = criterion)
+  ranked_models <- rank_models(model_testing_results, rank_mode = criterion)
   if (require_dropout) {
-    best_model = ranked_models[ranked_models$dropout_rate > 0, ][1, ]
+    best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]
   } else {
-    best_model = ranked_models[1, ]
+    best_model <- ranked_models[1, ]
   }
 
   cat("Best model:\n")
   cat("", sprintf("%s: %s\n", names(best_model), best_model))
   cat("\n")
 
-  iucnn_model = readRDS(best_model$model_outpath)
+  iucnn_model <-  readRDS(best_model$model_outpath)
   return(iucnn_model)
 }
 
@@ -520,17 +534,17 @@ model_summary <- function(best_model,
   cat("", sprintf("%s: %s\n", names(best_model), best_model))
   cat("\n")
 
-  train_acc = best_model$train_acc
-  val_acc = best_model$val_acc
-  label_detail = best_model$level
-  cm = get_confusion_matrix(best_model)
+  train_acc <- best_model$train_acc
+  val_acc <- best_model$val_acc
+  label_detail <- best_model$level
+  cm <- get_confusion_matrix(best_model)
 
   if (label_detail == "broad") {
-    n_classes = 2
-    maxlab = 1
+    n_classes <- 2
+    maxlab <- 1
   } else if (label_detail == "detail") {
-    n_classes = 5
-    maxlab = 4
+    n_classes <- 5
+    maxlab <- 4
   } else {
     stop(paste0("Unknown label level: '",
                 label_detail,
@@ -548,7 +562,7 @@ model_summary <- function(best_model,
 
   if (write_file) {
     if (is.null(outfile_name)) {
-      outfile_name = "evaluation_best_model.txt"
+      outfile_name <- "evaluation_best_model.txt"
     }
     sink(outfile_name)
 
@@ -577,8 +591,8 @@ evaluate_iucnn <- function(res) {
   plot(res)
 
   get_mc_dropout_cat_counts
-  cat_count_out = get_mc_dropout_cat_counts(res)
-  accthres_tbl = res$accthres_tbl
+  cat_count_out <- get_mc_dropout_cat_counts(res)
+  accthres_tbl <- res$accthres_tbl
 }
 
 get_weighted_errors <- function(model_testing_results,
@@ -606,18 +620,27 @@ get_cat_count <- function(target_vector,
 
 get_confusion_matrix <- function(best_model) {
   if (typeof(best_model$confusion_LC) == "character") {
-    target_cols <- as.character(best_model[, c("confusion_LC", "confusion_NT", "confusion_VU", "confusion_EN", "confusion_CR")])
+    target_cols <- as.character(best_model[, c("confusion_LC",
+                                               "confusion_NT",
+                                               "confusion_VU",
+                                               "confusion_EN",
+                                               "confusion_CR")])
     count_strings <- strsplit(target_cols, "_")
 
-    confusion_matrix <- matrix(as.integer(unlist(count_strings)), nrow = length(count_strings), byrow = TRUE)
-    confusion_matrix <- data.frame(confusion_matrix, row.names = c("LC", "NT", "VU", "EN", "CR"))
+    confusion_matrix <- matrix(as.integer(unlist(count_strings)),
+                               nrow = length(count_strings),
+                               byrow = TRUE)
+    confusion_matrix <- data.frame(confusion_matrix,
+                                   row.names = c("LC", "NT", "VU", "EN", "CR"))
     names(confusion_matrix) <- c("LC", "NT", "VU", "EN", "CR")
   } else {
     target_cols <- as.character(best_model[, c("confusion_0", "confusion_1")])
     count_strings <- strsplit(target_cols, "_")
 
-    confusion_matrix <- matrix(as.integer(unlist(count_strings)), nrow = length(count_strings), byrow = TRUE)
-    confusion_matrix <- data.frame(confusion_matrix, row.names = c("Not Threatened", "Threatened"))
+    confusion_matrix <- matrix(as.integer(unlist(count_strings)),
+                               nrow = length(count_strings), byrow = TRUE)
+    confusion_matrix <- data.frame(confusion_matrix,
+                                   row.names = c("Not Threatened", "Threatened"))
     names(confusion_matrix) <- c("Not threatened", "Threatened")
   }
   return(confusion_matrix)
@@ -641,7 +664,9 @@ get_mc_dropout_cat_counts <- function(res,
       n_instances <- dim(probs)[1]
       cat_mcdropout_sample <- c()
       for (i in 1:n_instances) {
-        cat_sample <- replicate(nreps, sample(1:nlabs - 1, size = 1, prob = probs[i, ]))
+        cat_sample <- replicate(nreps, sample(1:nlabs - 1,
+                                              size = 1,
+                                              prob = probs[i, ]))
         cat_mcdropout_sample <- c(cat_mcdropout_sample, c(cat_sample))
       }
       cat_mcdropout_sample_matrix <- matrix(cat_mcdropout_sample, nrow = nreps)

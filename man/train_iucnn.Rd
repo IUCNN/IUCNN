@@ -46,7 +46,8 @@ where the IUCNN model shall be saved}
 
 \item{mode}{character string. Choose between the IUCNN models
 "nn-class" (default, tensorflow neural network classifier),
-"nn-reg" (tensorflow neural network regression), or "bnn-class" (Bayesian neural network classifier)}
+"nn-reg" (tensorflow neural network regression), or
+"bnn-class" (Bayesian neural network classifier)}
 
 \item{seed}{reset the python random seed.}
 
@@ -65,16 +66,19 @@ respectively. Note that the number of nodes in the output
 layer is automatically determined based on
 the number of unique labels in the training set.}
 
-\item{use_bias}{logical. Specifies if a bias node is used in the first hidden layer (default=TRUE).}
+\item{use_bias}{logical. Specifies if a bias node is used in
+the first hidden layer (default=TRUE).}
 
-\item{act_f}{character string. Specifies the activation function should be used in the hidden layers.
+\item{act_f}{character string. Specifies the activation
+function should be used in the hidden layers.
 Available options are: "relu" (default), "tanh", "sigmoid"}
 
 \item{act_f_out}{character string. Similar to act_f, this specifies
 the activation function for the output
 layer. When setting to "auto" (default), a suitable output activation
 function will be chosen based on the
-chosen mode. Other valid options are "softmax" (nn-class, bnn-class), "tanh" (nn-reg),
+chosen mode. Other valid options are "softmax"
+(nn-class, bnn-class), "tanh" (nn-reg),
 "sigmoid" (nn-reg), or no activation function "" (nn-reg)}
 
 \item{label_stretch_factor}{numeric. When choosing mode "nn-reg" the
@@ -94,15 +98,18 @@ less reliant on individual nodes/weights
 
 \item{label_noise_factor}{numeric. Add random noise to the input labels after
 rescaling to give the categorical labels a more
-continuous spread before training the regression model (only available for mode nn-reg).}
+continuous spread before training the regression model
+(only available for mode nn-reg).}
 
 \item{rescale_features}{logical. Set to TRUE if all feature
 values shall be rescaled
 to values between 0 and 1 prior to training (default=FALSE).}
 
-\item{overwrite}{logical. If TRUE existing models are overwritten. Default is to FALSE,}
+\item{overwrite}{logical. If TRUE existing models are
+overwritten. Default is to FALSE,}
 
-\item{validation_split}{numeric. The fraction of the input data used as validation set.}
+\item{validation_split}{numeric. The fraction of the i
+nput data used as validation set.}
 
 \item{test_fraction}{numeric. The fraction of the input data used as test set.}
 }

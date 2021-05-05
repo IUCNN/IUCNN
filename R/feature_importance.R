@@ -1,25 +1,39 @@
 #' Evaluate relative importance of training features
 #'
-#' Uses a model generated with \code{\link{train_iucnn}} to evaluate how much each feature or
-#' group of features contributes to the accuracy of the test set predictions. The function
-#' implements the concept of permutation feature importance, in which the values in a given
-#' feature column of the test set are shuffled randomly among all samples. Then the feature
-#' data manipulated in this manner are used to predict labels for the test set and the accuracy
-#' is compared to that of the original feature data. The difference (delta accuracy) can be
-#' interpreted as a measure of how important a given feature or group of features is for the
+#' Uses a model generated with \code{\link{train_iucnn}}
+#' to evaluate how much each feature or
+#' group of features contributes to the accuracy of
+#'  the test set predictions. The function
+#' implements the concept of permutation feature importance,
+#'  in which the values in a given
+#' feature column of the test set are shuffled randomly
+#'  among all samples. Then the feature
+#' data manipulated in this manner are used to predict
+#' labels for the test set and the accuracy
+#' is compared to that of the original feature data.
+#'  The difference (delta accuracy) can be
+#' interpreted as a measure of how important a
+#' given feature or group of features is for the
 #' trained NN to make accurate predictions.
 #'
-#' By default this function groups the features into geographic, climatic, biome, and human
-#' footprint features and determines the importance of each of these blocks of features. The
+#' By default this function groups the features
+#' into geographic, climatic, biome, and human
+#' footprint features and determines the importance
+#' of each of these blocks of features. The
 #' feature blocks can be manually defined using the feature_blocks argument.
 #'
-#'@param x iucnn_model object, as produced as output when running \code{\link{train_iucnn}}
-#'@param feature_blocks a list. Default behavior is to group the features into geographic, climatic,
-#'biome, and human footprint features. Provide custom list of feature names or indices to define other
+#'@param x iucnn_model object, as produced as output
+#'when running \code{\link{train_iucnn}}
+#'@param feature_blocks a list. Default behavior is to
+#' group the features into geographic, climatic,
+#'biome, and human footprint features. Provide custom
+#'list of feature names or indices to define other
 #'feature blocks. If feature
 #'indices are provided as in this example, turn provide_indices flag to TRUE.
-#'@param n_permutations an integer. Defines how many iterations of shuffling feature values and
-#'predicting the resulting accuracy are being executed. The mean and standard deviation of the
+#'@param n_permutations an integer. Defines how many
+#' iterations of shuffling feature values and
+#'predicting the resulting accuracy are being executed.
+#'The mean and standard deviation of the
 #'delta accuracy are being summarized from these permutations.
 #'@param provide_indices logical. Set to TRUE if custom \code{feature_blocks}
 #'are provided as indices. Default is FALSE.
@@ -67,32 +81,65 @@ feature_importance <- function(x,
                                unlink_features_within_block = TRUE){
   # assertions
   assert_class(x, "iucnn_model")
-  assert_numeric(n_permutations)
-  assert_logical(verbose)
   assert_class(feature_blocks, "list")
+  assert_numeric(n_permutations)
   assert_logical(provide_indices)
+  assert_logical(verbose)
   assert_logical(unlink_features_within_block)
 
-  #reticulate::source_python(system.file("python", "bnn_library.py", package = "IUCNN"))
   if (length(feature_blocks) == 0){
     ffb <- list(
-      geographic = c("tot_occ","uni_occ","mean_lat","mean_lon","lat_range",
-                     "lon_range","lat_hemisphere","eoo","aoo"),
-      human_footprint = c("humanfootprint_1993_1","humanfootprint_1993_2",
-                          "humanfootprint_1993_3","humanfootprint_1993_4",
-                          "humanfootprint_2009_1","humanfootprint_2009_2",
-                          "humanfootprint_2009_3","humanfootprint_2009_4"),
-      climate = c("bio1","bio4","bio11","bio12","bio15","bio17","range_bio1",
-                  "range_bio4","range_bio11","range_bio12",
-                  "range_bio15","range_bio17"),
-      biomes = c("1","2","7","10","13","3","4","5",
-                 "6","11","98","8","12","9","14","99")
+      geographic = c("tot_occ",
+                     "uni_occ",
+                     "mean_lat",
+                     "mean_lon",
+                     "lat_range",
+                     "lon_range",
+                     "lat_hemisphere",
+                     "eoo",
+                     "aoo"),
+      human_footprint = c("humanfootprint_1993_1",
+                          "humanfootprint_1993_2",
+                          "humanfootprint_1993_3",
+                          "humanfootprint_1993_4",
+                          "humanfootprint_2009_1",
+                          "humanfootprint_2009_2",
+                          "humanfootprint_2009_3",
+                          "humanfootprint_2009_4"),
+      climate = c("bio1",
+                  "bio4",
+                  "bio11",
+                  "bio12",
+                  "bio15",
+                  "bio17",
+                  "range_bio1",
+                  "range_bio4",
+                  "range_bio11",
+                  "range_bio12",
+                  "range_bio15",
+                  "range_bio17"),
+      biomes = c("biome_1",
+                 "biome_2",
+                 "biome_7",
+                 "biome_10",
+                 "biome_13",
+                 "biome_3",
+                 "biome_4",
+                 "biome_5",
+                 "biome_6",
+                 "biome_11",
+                 "biome_98",
+                 "biome_8",
+                 "biome_12",
+                 "biome_9",
+                 "biome_14",
+                 "biome_99")
     )
 
   }else{
     if (provide_indices){
-      i <-0
-      ffb <-NULL
+      i <- 0
+      ffb <- NULL
       for (block in feature_blocks){
         i <- i + 1
         selected_features <- x$input_data$feature_names[as.integer(block)]
@@ -101,7 +148,7 @@ feature_importance <- function(x,
       }
     }else{
       if (is.null(names(feature_blocks))){
-        names(feature_blocks) = feature_blocks
+        names(feature_blocks) <- feature_blocks
       }
       ffb <- feature_blocks
       if ('species' %in% names(ffb)){
@@ -146,12 +193,12 @@ feature_importance <- function(x,
     selected_cols <- feature_importance_out[,2:4]
   }else{
     if (is.nan(x$input_data$test_data)){
-      use_these_features = x$input_data$data
-      use_these_labels = x$input_data$labels
+      use_these_features <- x$input_data$data
+      use_these_labels <- x$input_data$labels
 
     }else{
-      use_these_features = x$input_data$test_data
-      use_these_labels = x$input_data$test_labels
+      use_these_features <- x$input_data$test_data
+      use_these_labels <- x$input_data$test_labels
     }
     reticulate::source_python(system.file("python", "IUCNN_feature_importance.py", package = "IUCNN"))
     feature_importance_out <- feature_importance_nn(input_features = use_these_features,
@@ -166,10 +213,14 @@ feature_importance <- function(x,
                                                    n_permutations = as.integer(n_permutations),
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
-    d <- round(data.frame(matrix(unlist(feature_importance_out), nrow=length(feature_importance_out), byrow=TRUE)), 3)
+    d <- round(data.frame(matrix(unlist(feature_importance_out),
+                                 nrow = length(feature_importance_out),
+                                 byrow=TRUE)), 3)
     d['feature_block'] <- names(feature_importance_out)
     selected_cols <- d[c('feature_block','X1','X2')]
   }
-  names(selected_cols) <- c('feature_block','feat_imp_mean','feat_imp_std')
+  names(selected_cols) <- c('feature_block',
+                            'feat_imp_mean',
+                            'feat_imp_std')
   return(selected_cols)
 }
