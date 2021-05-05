@@ -103,7 +103,7 @@ train_iucnn <- function(x,
                         path_to_output = "iuc_nn_model",
                         production_model = NULL,
                         mode = 'nn-class',
-                        validation_fraction = 0.1,
+                        validation_fraction = 0.2,
                         cv_fold = 1,
                         seed = 1234,
                         max_epochs = 1000,
@@ -362,7 +362,7 @@ train_iucnn <- function(x,
   named_res$label_stretch_factor <- label_stretch_factor
 
   named_res$trained_model_path <- trained_model_path
-  if (class(accthres_tbl)=='numeric'){accthres_tbl = accthres_tbl_stored}
+  if (accthres_tbl=='NaN'){accthres_tbl = accthres_tbl_stored}
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
   named_res$sampled_cat_freqs <- sample_categorical

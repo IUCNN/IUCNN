@@ -642,7 +642,7 @@ get_confusion_matrix <- function(best_model){
 
 get_mc_dropout_cat_counts <- function(res,nreps = 1000){
 
-  if (class(res$validation_labels)=="numeric"){
+  if (res$validation_labels == 'NaN'){
     warning('This model contains no validation set. No sampled_cat_freqs can be calculated for this model.')
     cat_count_all_matrix = NaN
     true_cat_count = NaN
