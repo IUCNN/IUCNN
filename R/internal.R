@@ -613,10 +613,10 @@ get_weighted_errors <- function(model_testing_results,colname='confusion_LC',tru
   return(weighted_errors)
 }
 
-get_cat_count <- function(target_vector,max_cat = 4){
+get_cat_count <- function(target_vector, max_cat = 4){
   cat_counts = c()
   for (i in 0:max_cat){
-    cat_counts = c(cat_counts,length(target_vector[target_vector==i]))
+    cat_counts = c(cat_counts, length(target_vector[target_vector == i]))
   }
   return(cat_counts)
 }

@@ -145,7 +145,8 @@ train_iucnn <- function(x,
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
 
-  provided_model = production_model
+  provided_model <- production_model
+
   if (class(provided_model)=="iucnn_model"){
     mode = provided_model$model
     validation_fraction = 0.
