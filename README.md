@@ -58,7 +58,7 @@ predict_iucnn(x = features_predict,
               model = m1)
 ```
 
-A more complex appraoch including model testing:
+A more complex approach including model testing:
 
 ```{r}
 library(tidyverse)

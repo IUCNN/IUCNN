@@ -306,7 +306,7 @@ pred_3 <- predict_iucnn(x = features_predict,
                         return_raw = TRUE)
 ```
 
-## 4) The number od species per category
+## 4) The number of species per category
 
 ### just get the numbers
 

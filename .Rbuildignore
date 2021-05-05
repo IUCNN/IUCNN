@@ -16,5 +16,6 @@ _site.yml
 ^manual_tests$
 ^.*HFP
 iuc_nn_model_feature_importance.txt
+^iucnn_model_*$
 training_stats.pdf
 ^codemeta\.json$

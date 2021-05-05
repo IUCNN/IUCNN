@@ -72,7 +72,9 @@ predict_iucnn <- function(x,
 
 
   if (model$cv_fold > 1){
-    stop("Provided model consists of multiple cross-validation (CV) folds.\nCV models are only used for model evaluation in IUCNN.\nRetrain your chosen model without using CV.\nTo do this you can use the train_iucnn function and simply provide your CV model under the \'production_model\' flag.")
+    stop("Provided model consists of multiple cross-validation (CV) folds.\nCV models are only used for model evaluation in IUCNN.
+         Retrain your chosen model without using CV.
+         To do this you can use the train_iucnn function and simply provide your CV model under the \'production_model\' flag.")
   }
 
 
@@ -98,7 +100,8 @@ predict_iucnn <- function(x,
     if (class(acc_thres_tbl)[1] == "matrix"){
      confidence_threshold = acc_thres_tbl[min(which(acc_thres_tbl[,2] > target_acc)),][1]
     }else{
-     stop('Table with accuracy thresholds required when choosing target_acc > 0.\nThis is only available for models where \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
+     stop('Table with accuracy thresholds required when choosing target_acc > 0.
+          This is only available for models where \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
    }
   }
 
@@ -121,7 +124,7 @@ predict_iucnn <- function(x,
                           post_summary_mode = 0
                           )
 
-    if (return_raw==TRUE){
+    if (return_raw){
       pred_out$predictions = postpr$post_prob_predictions
       return(pred_out)
     }else{
@@ -148,7 +151,7 @@ predict_iucnn <- function(x,
                          rescale_factor = model$label_rescaling_factor,
                          min_max_label = model$min_max_label_rescaled,
                          stretch_factor_rescaled_labels = model$label_stretch_factor)
-    if (return_raw==TRUE){
+    if (return_raw){
       pred_out$predictions = out
       return(pred_out)
     }else{

@@ -25,11 +25,11 @@ maxlab <- max(object$validation_predictions)
 tel <- data.frame(0:maxlab,
                   get_cat_count(object$validation_predictions,
                                 max_cat = maxlab))
-names(tel) = c("Var1","Freq")
+names(tel) <- c("Var1","Freq")
 trl <- data.frame(0:maxlab,
                   get_cat_count(object$validation_labels,
                                 max_cat = maxlab))
-names(trl) = c("Var1","Freq")
+names(trl) <- c("Var1","Freq")
 lab <- merge(trl,tel, by = "Var1")
 
 names(lab) <- c("Label", "Input_count", "Estimated_count")

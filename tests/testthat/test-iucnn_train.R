@@ -23,7 +23,7 @@ test_that("nn-class detailed works", {
   p <- predict_iucnn(x = features_predict,
                      model = m)
 
-  expect_equal(length(m), 25)
+  expect_equal(length(m), 41)
   expect_s3_class(m, "iucnn_model")
 })
 
@@ -51,6 +51,6 @@ test_that("nn-class broad works", {
   p <- predict_iucnn(x = features_predict,
                      model = m)
 
-  expect_equal(length(m), 25)
+  expect_equal(length(m), 41)
   expect_s3_class(m, "iucnn_model")
 })

@@ -93,8 +93,8 @@ prep_features <- function(x,
         out <- clim
       }
     }
-    # human footprint
 
+    # human footprint
     if("humanfootprint" %in% type){
       message("Calculating human footprint features.")
       foot <- ft_foot(x,
