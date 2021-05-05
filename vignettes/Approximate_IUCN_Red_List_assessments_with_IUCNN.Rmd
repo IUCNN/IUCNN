@@ -42,7 +42,7 @@ library(IUCNN)
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
 ```{r, eval = FALSE}
 install.packages(reticulate)
-library(reticulate)
+library("reticulate")
 install_miniconda()
 ```
 If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
@@ -50,7 +50,7 @@ If python has been installed before, you can specify the python version to sue w
 
 3. Install the tensorflow Python module
 ```{r, eval = FALSE}
-reticulate::py_install("tensorflow~=2.2.0rc4", pip = TRUE)
+reticulate::conda_install("r-reticulate","tensorflow")
 reticulate::py_install("matplotlib", pip = TRUE)
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.8.tar.gz", pip = TRUE)
 ```
@@ -121,6 +121,8 @@ You can then use the trained model to predict the conservation status of *Not Ev
 ```{r}
 predictions <- predict_iucnn(x = features_predict, 
                              model = res_1)
+
+plot(predictions)
 ```
 
 It is important to remember the following points when using IUCNN:
@@ -143,7 +145,7 @@ IUCNN contains multiple options to customize the steps of the analyses to adapt 
 ### Add and remove feature blocks
 The default labels are selected based on empirical test on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. Table 1 below explains all default features. You can exclude feature blocks using the `type` argument of the `prep_features` function. For instance, to exclude the biome features:
 
-```{r}
+```{r, eval = FALSE}
 features_train2 <- prep_features(training_occ, type = c("geographic", "climate", "humanfootprint"))
 ```
 
@@ -160,7 +162,7 @@ Table 2. Functions to obtain default features and options to customize the featu
 
 For instance:
 
-```{r}
+```{r, eval = FALSE}
 clim_features <- ft_clim(x = training_occ, 
                          type = "selected")
 
@@ -173,7 +175,7 @@ It is also possible to provide features unrelated to the default features. They 
 
 For instance:
 
-```{r}
+```{r, eval = FALSE}
 feat <- data.frame(species = c("Adansonia digitata", "Ceiba pentandra"),
                    max_plant_size_m = c(25, 50),
                    africa = c(1,1),
@@ -235,7 +237,7 @@ The `prep_labels` function may accepted any custom labels as long as they are in
 
 For instance:
 
-```{r}
+```{r, eval = FALSE}
 labels_train <- prep_labels(training_labels, 
                             level = "broad")
 ```
@@ -248,8 +250,8 @@ The `train_iucnn` function contains various options to customize the neural netw
 res_2 <- train_iucnn(x = features_train,
                    lab = labels_train, 
                    dropout_rate = 0.3,
-                   model_name = "iucnn_model_2",
-                   n_layers = 60,
+                   path_to_output= "iucnn_model_2",
+                   n_layers = "60",
                    use_bias = FALSE,
                    act_f = "sigmoid")
 ```
@@ -261,28 +263,20 @@ There are three neural network algorithms implemented in iucnn. Besides the defa
 
 The Bayesian approach has the advantage that it returns true probabilities for the classification of species into the relative output classes (e.g. 80% probability of a species to be LC). We consider this approach more suitable for classification of species into IUCN categories, than the default option. It will need more time for model training and should best be applied once you have identified the best model parameters using the default approach. You can run a BNN setting the `mode` option of `train_iucnn` to `"bnn-class"`.
 
-```{r}
+```{r, eval = FALSE}
 res_3 <- train_iucnn(x = features_train,
                     lab = labels_train, 
-                    model_name = "iucnn_model_3",
+                    path_to_output = "iucnn_model_3",
                     mode = 'bnn-class')
 ```
 
-IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of categories that can be sorted by increasing threat level, we can model the task of estimating these categories as a regression problem. To prepare the labels for optimal performance in a regression model, we need to rescale them to range from a small negative to a small positive number. This can be easily accomplished with the `prepare_labels()` function by adding the argument `rescale_labels  =TRUE` as shown below:
-
-```{r}
-data("training_labels")
-
-labels_train <- prep_labels(training_labels)
-```
-
-You will see that the output data.frame `labels_train` now contains an extra column with the rescaled labels, and some additional information stored in the column header. Now we can run the `train_iucnn()` function, specifying this time that the want to train a regression model by setting `mode = 'nn-reg'`.
+IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of categories that can be sorted by increasing threat level, we can model the task of estimating these categories as a regression problem.  You can run such a model with the `train_iucnn()` function, specifying to train a regression model by setting `mode = 'nn-reg'`.
 
 
 ```{r}
 res_4 <- train_iucnn(x = features_train,
                     lab = labels_train, 
-                    model_name = "iucnn_model_4",
+                    path_to_output = "iucnn_model_4",
                     mode = 'nn-reg',
                     rescale_features = TRUE)
 ```
@@ -311,3 +305,11 @@ pred_3 <- predict_iucnn(x = features_predict,
                         model = res_2,
                         return_raw = TRUE)
 ```
+
+## 4) The number od species per category
+
+### just get the numbers
+
+
+### Account for uncertainty
+

@@ -171,7 +171,10 @@ predict_iucnn <- function(x,
     predictions <- lu[predictions+1]
     names(predictions) <- NULL
   }
-  pred_out$predictions = predictions
+  pred_out$predictions <- predictions
+
+  class(pred_out) <- "iucnn_predictions"
+
   return(pred_out)
 
 }

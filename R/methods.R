@@ -4,7 +4,7 @@ summary.iucnn_model <-  function(object,
                                ...) {
 cat(sprintf("A model of type %s, trained on %s species and %s features.\n\n",
             object$model,
-              length(object$input_data$test_labels),
+              length(object$input_data$labels),
               length(object$input_data$feature_names)))
 
 cat(sprintf("Training accuracy: %s\n",
@@ -52,12 +52,12 @@ print(cm)
 #' @importFrom graphics abline legend points text
 plot.iucnn_model <- function(x, ...){
 
-  # x$validation_accuracy_history
-  # x$training_accuracy_history
-  # x$final_training_epoch
+  par_prev <- par()
 
-  par(mfrow = c(rnd(x$cv_fold/2),2),
-      mar = c(2, 2, 2, 2))
+  if(x$cv_fold > 1){
+    par(mfrow = c(rnd(x$cv_fold/2),2),
+        mar = c(2, 2, 2, 2))
+  }
 
   for (i in 1:x$cv_fold){
     plot(x$training_loss_history[[i]], type = "n", ylab = "Loss", xlab = "Epoch",
@@ -71,7 +71,9 @@ plot.iucnn_model <- function(x, ...){
            col = "darkblue",
            pch = 1)
     points(x$validation_loss_history[[i]],
-           type = "b", col = "darkred", pch = 2)
+           type = "b",
+           col = "darkred",
+           pch = 2)
     abline(v = x$final_training_epoch[[i]], lty = 2)
     title(paste0('CV-fold ', i))
     legend(x = "topright",
@@ -82,5 +84,42 @@ plot.iucnn_model <- function(x, ...){
            cex = 0.7)
 
   }
-  par(mfrow = c(1,1))
+  par(mfrow = par_prev$mfrow,
+      mar = par_prev$mar)
 }
+
+
+#' @export
+#' @method plot iucnn_predictions
+#' @importFrom graphics abline barplot
+plot.iucnn_predictions <- function(x){
+
+  # count the different categories
+  counts <- table(x$predictions)
+
+  # set colors for relevant categories
+  if( all(nchar(names(counts)) == 2)){
+    cats <- c('LC', 'NT', 'VU', 'EN' ,'CR', 'NA')
+    colors <- c('#60C659', '#CCE226', '#F9E814', '#FC7F3F', '#D81E05', '#C1B5A5')
+  }else{
+    colors <-  c('lightgreen', 'orange')
+    names(colors) <- c('Not Threatened', 'Threatened')
+  }
+  # check if any category is missing
+  mis <- cats[!cats %in% names(counts)]
+
+  plo <- c(counts, rep(0, length(mis)))
+  names(plo) <- c(names(counts), mis)
+
+  # order categories
+  plo <- plo[cats]
+
+  # plot
+  barplot(plo,
+          col = colors,
+          main = "Number of species per IUCN category")
+
+  abline(v = 2.5, lty = 2)
+
+}
+

@@ -15,7 +15,7 @@ install_github("azizka/IUCNN")
 2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
 ```{r}
-install.packages(reticulate)
+install.packages("reticulate")
 library(reticulate)
 install_miniconda()
 ```
@@ -24,8 +24,7 @@ If python has been installed before, you can specify the python version to sue w
 
 3. Install the tensorflow and matplotlib modules
 ```{r}
-reticulate::py_install("tensorflow~=2.2.0rc4", pip = TRUE)
-reticulate::py_install("matplotlib", pip = TRUE)
+reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.8.tar.gz", pip = TRUE)
 ```
 

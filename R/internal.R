@@ -545,62 +545,6 @@ evaluate_iucnn <- function(res){
 }
 
 
-
-
-
-plot_predictions <- function(predictions,title=NULL){
-  colors = NULL
-  colors['LC'] = '#60C659'
-  colors['NT'] = '#CCE226'
-  colors['VU'] = '#F9E814'
-  colors['EN'] = '#FC7F3F'
-  colors['CR'] = '#D81E05'
-  colors['NA'] = '#C1B5A5'
-  colors['Not Threatened'] = 'lightgreen'
-  colors['Threatened'] = 'orange'
-  NA_count = length(predictions[is.na(predictions)])
-  if('LC' %in% predictions){
-    if (is.null(title)){
-      title = 'IUCN category predictions (detail)'
-    }
-    LC_count = predictions[predictions=='LC']
-    LC_count = length(LC_count[!is.na(LC_count)])
-    NT_count = predictions[predictions=='NT']
-    NT_count = length(NT_count[!is.na(NT_count)])
-    VU_count = predictions[predictions=='VU']
-    VU_count = length(VU_count[!is.na(VU_count)])
-    EN_count = predictions[predictions=='EN']
-    EN_count = length(EN_count[!is.na(EN_count)])
-    CR_count = predictions[predictions=='CR']
-    CR_count = length(CR_count[!is.na(CR_count)])
-    if (NA_count > 0){
-      bar_names = c('LC','NT','VU','EN','CR','NA')
-      counts = c(LC_count,NT_count,VU_count,EN_count,CR_count,NA_count)
-    }else{
-      bar_names = c('LC','NT','VU','EN','CR')
-      counts = c(LC_count,NT_count,VU_count,EN_count,CR_count)
-    }
-  }else{
-    if (is.null(title)){
-      title = 'IUCN category predictions (broad)'
-    }
-    not_threat_count = predictions[predictions=='Not Threatened']
-    not_threat_count = length(not_threat_count[!is.na(not_threat_count)])
-    threat_count = predictions[predictions=='Threatened']
-    threat_count = length(threat_count[!is.na(threat_count)])
-    if (NA_count > 0){
-      bar_names = c('Not Threatened','Threatened','NA')
-      counts = c(not_threat_count,threat_count,NA_count)
-    }else{
-      bar_names = c('Not Threatened','Threatened')
-      counts = c(not_threat_count,threat_count)
-    }
-  }
-  bar_colors = as.character(colors[bar_names])
-  barplot(counts,names.arg = bar_names, col=bar_colors)
-  title(title)
-}
-
 get_weighted_errors <- function(model_testing_results,colname='confusion_LC',true_index=1){
   stat_col = strsplit(model_testing_results[,colname],'_')
   a = data.frame(matrix(unlist(stat_col), nrow=length(stat_col), byrow=TRUE))
