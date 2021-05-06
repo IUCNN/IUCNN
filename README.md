@@ -4,7 +4,7 @@
 Batch estimation of species' IUCN Red List threat status using neural networks.
 
 # Installation
-1. install IUCNN directly from Github using devtools. 
+1. Install IUCNN directly from Github using devtools. 
 ```{r}
 install.packages("devtools")
 library(devtools)
@@ -12,20 +12,30 @@ library(devtools)
 install_github("azizka/IUCNN")
 ```
 
-2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
+2. Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the `install_miniconda()` function of the package `reticulate` (this will need c. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
 ```{r}
 install.packages("reticulate")
 library(reticulate)
 install_miniconda()
 ```
-If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
 
 
-3. Install the tensorflow and matplotlib modules
+3. Install the tensorflow python library. If you are using **MacOS** or **Linux** it is recommended to install tensorflow using conda:
+```{r}
+reticulate::conda_install("r-reticulate","tensorflow=2.4")
+```
+
+If you are using **Windows**, you can install tensorflow using pip:
+
 ```{r}
 reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
-reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.8.tar.gz", pip = TRUE)
+```
+
+4. Finally install the npBNN python library from Github:
+
+```{r}
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
 ```
 
 # Usage

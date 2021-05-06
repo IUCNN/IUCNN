@@ -24,6 +24,7 @@ bnn_load_data <- function(features,
                           seed = 1234,
                           testsize = 0.1, # 10% test set
                           all_class_in_testset = TRUE,
+                          randomize_order = TRUE,
                           header = TRUE, # input data has a header
                           instance_id = TRUE,
                           from_file = FALSE){
@@ -35,6 +36,7 @@ bnn_load_data <- function(features,
                     seed = as.integer(seed),
                     testsize = testsize, # 10% test set
                     all_class_in_testset = as.integer(all_class_in_testset),
+                    randomize_order=randomize_order,
                     header = as.integer(header), # input data has a header
                     instance_id = as.integer(instance_id), # input data includes column with names of instances
                     from_file = from_file)
@@ -46,7 +48,7 @@ create_BNN_model <- function(feature_data,
                              n_nodes_list,
                              seed = 1234,
                              use_class_weight = TRUE,
-                             use_bias_node = TRUE,
+                             use_bias_node = 3,
                              actfun = 'swish',
                              prior = 1, # 0) uniform, 1) normal, 2) Cauchy, 3) Laplace
                              p_scale = 1, # std for Normal, scale parameter for Cauchy and Laplace, boundaries for Uniform

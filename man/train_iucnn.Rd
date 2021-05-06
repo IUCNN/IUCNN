@@ -18,7 +18,7 @@ train_iucnn(
   n_layers = "60_60_20",
   use_bias = TRUE,
   balance_classes = FALSE,
-  act_f = "relu",
+  act_f = "auto",
   act_f_out = "auto",
   label_stretch_factor = 1,
   randomize_instances = TRUE,

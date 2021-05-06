@@ -118,7 +118,7 @@ train_iucnn <- function(x,
                         n_layers = '60_60_20',
                         use_bias = TRUE,
                         balance_classes = FALSE,
-                        act_f = "relu",
+                        act_f = "auto",
                         act_f_out = "auto",
                         label_stretch_factor = 1.0,
                         randomize_instances = TRUE,
@@ -199,7 +199,7 @@ train_iucnn <- function(x,
 
   n_layers <- as.numeric(strsplit(n_layers,'_')[[1]])
 
-  # set out act fun if chosen auto
+  # set act fun if chosen auto
   if (act_f_out == 'auto'){
     if (mode == 'nn-reg'){
       act_f_out  <- 'tanh'
@@ -207,6 +207,14 @@ train_iucnn <- function(x,
       act_f_out  <- 'softmax'
     }
   }
+  if (act_f == 'auto'){
+    if (mode == 'bnn-class'){
+      act_f  <- 'swish'
+    }else{
+      act_f  <- 'relu'
+    }
+  }
+
 
   if (dropout_rate > 0.0){
     dropout_boolean <- TRUE
@@ -215,14 +223,17 @@ train_iucnn <- function(x,
   }
 
   if (mode == 'bnn-class'){
-    act_f <- 'swish'
-    print('Activation function for BNN model is hard-coded to be "swish" and is not affected by the act_f setting.')
+    warning('Training a BNN classification model.
+The following settings are currently not supported for BNN models and are being ignored:
+cv_fold, patience, act_f_out.
+Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps, the BNN will instead provide posterior estimates of the class labels for each instance.')
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,
                              labels,
                              seed = as.integer(seed),
                              testsize = validation_fraction,
                              all_class_in_testset=FALSE,
+                             randomize_order = randomize_instances,
                              header = TRUE, # input data has a header
                              # input data includes names of instances
                              instance_id = TRUE,
@@ -231,10 +242,17 @@ train_iucnn <- function(x,
 
     # define number of layers and nodes per layer for BNN
     # define the BNN model
+    if (use_bias){
+      bias_node_setting = 3
+    }else{
+      bias_node_setting=0
+    }
     bnn_model <- create_BNN_model(bnn_data,
                                  n_layers,
-                                 actfun = act_f,
-                                 seed = as.integer(seed)
+                                 seed = as.integer(seed),
+                                 use_class_weight = balance_classes,
+                                 use_bias_node = bias_node_setting,
+                                 actfun = act_f
     )
 
     # set up the MCMC environment
