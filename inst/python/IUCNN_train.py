@@ -485,11 +485,13 @@ def iucnn_train(dataset,
             accthres_tbl = np.nan
         confusion_matrix = np.array(tf.math.confusion_matrix(all_validation_labels,all_validation_predictions))        
 
+    no_test = False
     if validation_fraction == 0 and cv_k < 2:
         data_train = orig_dataset
         labels_train = orig_labels
         data_test = np.nan
         labels_test = np.nan
+        no_test = True
         train_instance_names = instance_names
         validation_instance_names = instance_names
     elif validation_fraction == 0 and cv_k > 1:
@@ -507,7 +509,23 @@ def iucnn_train(dataset,
         train_instance_names = instance_names[train_ids]
         validation_instance_names = instance_names[validation_ids]
 
-        
+    # sample from categorical
+    nreps = 1000
+    if mc_dropout:
+        mc_dropout_probs = all_validation_predictions_raw
+        label_dict = np.arange(mc_dropout_probs.shape[1])
+        samples = np.array([np.random.choice(label_dict, nreps, p=i) for i in mc_dropout_probs])
+        predicted_class_count = np.array([[list(col).count(i) for i in label_dict] for col in samples.T])
+    else:
+        predicted_class_count = np.nan
+
+    if no_test:
+        true_class_count = np.nan
+    else:
+        true_class_count = [list(all_validation_labels).count(i) for i in np.unique(orig_labels)]
+
+
+
     output = {
                 'validation_labels':all_validation_labels,
                 'validation_predictions':all_validation_predictions,
@@ -539,6 +557,8 @@ def iucnn_train(dataset,
                 'confusion_matrix':confusion_matrix,
                 'mc_dropout':mc_dropout,
                 'accthres_tbl':accthres_tbl,
+                'true_class_count':true_class_count,
+                'predicted_class_count':predicted_class_count,
                 'stopping_point':np.array(stopping_points),
                 
                 'input_data':   {"data":data_train,

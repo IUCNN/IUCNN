@@ -647,41 +647,41 @@ get_confusion_matrix <- function(best_model) {
 }
 
 
-get_mc_dropout_cat_counts <- function(res,
+get_mc_dropout_cat_counts <- function(mc_dropout_probs,
+                                      label_dict,
+                                      mc_dropout,
+                                      true_lab=NaN,
                                       nreps = 1000) {
 
-  if (is.nan(res$validation_labels[1])) {
-    warning("This model contains no validation set. No sampled_cat_freqs can be calculated for this model.")
+  if (mc_dropout == FALSE){
+    warning("This model contains no MC-dropout predictions for unseen data.
+            No sampled_cat_freqs can be calculated for this model.")
     cat_count_all_matrix <- NaN
     true_cat_count <- NaN
 
-  } else {
-    nlabs <- length(res$input_data$label_dict)
-    true_cat_count <- get_cat_count(res$validation_labels, max_cat = nlabs - 1)
-
-    if (res$mc_dropout) {
-      probs <- res$validation_predictions_raw
-      n_instances <- dim(probs)[1]
-      cat_mcdropout_sample <- c()
-      for (i in 1:n_instances) {
-        cat_sample <- replicate(nreps, sample(1:nlabs - 1,
-                                              size = 1,
-                                              prob = probs[i, ]))
-        cat_mcdropout_sample <- c(cat_mcdropout_sample, c(cat_sample))
-      }
-      cat_mcdropout_sample_matrix <- matrix(cat_mcdropout_sample, nrow = nreps)
-      cat_count_all <- c()
-      for (row_id in 1:nreps) {
-        row <- cat_mcdropout_sample_matrix[row_id, ]
-        cat_count_sample <- get_cat_count(row, max_cat = nlabs - 1)
-        cat_count_all <- c(cat_count_all, cat_count_sample)
-      }
-      cat_count_all_matrix <- t(matrix(cat_count_all, ncol = nreps))
-
-    } else {
-      cat_count_all_matrix <- NaN
+  }else{
+    nlabs <- length(label_dict)
+    if (is.nan(true_lab[1])){
+      true_cat_count <- NaN
+    }else{
+      true_cat_count <- get_cat_count(true_lab, max_cat = nlabs - 1)
     }
-
+    n_instances <- dim(mc_dropout_probs)[1]
+    cat_mcdropout_sample <- c()
+    for (i in 1:n_instances) {
+      cat_sample <- replicate(nreps, sample(1:nlabs - 1,
+                                            size = 1,
+                                            prob = mc_dropout_probs[i, ]))
+      cat_mcdropout_sample <- c(cat_mcdropout_sample, c(cat_sample))
+    }
+    cat_mcdropout_sample_matrix <- matrix(cat_mcdropout_sample, nrow = nreps)
+    cat_count_all <- c()
+    for (row_id in 1:nreps) {
+      row <- cat_mcdropout_sample_matrix[row_id, ]
+      cat_count_sample <- get_cat_count(row, max_cat = nlabs - 1)
+      cat_count_all <- c(cat_count_all, cat_count_sample)
+    }
+    cat_count_all_matrix <- t(matrix(cat_count_all, ncol = nreps))
   }
 
   output <- NULL

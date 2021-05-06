@@ -310,7 +310,9 @@ train_iucnn <- function(x,
   }else{
 
     # source python function
-    reticulate::source_python(system.file("python", "IUCNN_train.py", package = "IUCNN"))
+    reticulate::source_python(system.file("python",
+                                          "IUCNN_train.py",
+                                          package = "IUCNN"))
 
     # run model via python script
     res <- iucnn_train(dataset = as.matrix(dataset),
@@ -372,7 +374,10 @@ train_iucnn <- function(x,
     stopping_point <- res$stopping_point
 
     input_data <- res$input_data
-    sample_categorical <- get_mc_dropout_cat_counts(res)
+    sampled_cat_freqs <- res$predicted_class_count
+    true_cat_freqs <- res$true_class_count
+
+
     }
 
   named_res <- NULL
@@ -390,7 +395,8 @@ train_iucnn <- function(x,
 
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
-  named_res$sampled_cat_freqs <- sample_categorical
+  named_res$sampled_cat_freqs <- sampled_cat_freqs
+  named_res$true_cat_freqs <- true_cat_freqs
 
   named_res$model <- mode
   named_res$seed <- seed

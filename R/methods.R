@@ -99,7 +99,7 @@ plot.iucnn_model <- function(x, ...){
 plot.iucnn_predictions <- function(x, ...){
 
   # count the different categories
-  counts <- table(x$predictions)
+  counts <- table(x$class_predictions)
 
   # set colors for relevant categories
   if( all(nchar(names(counts)) == 2)){

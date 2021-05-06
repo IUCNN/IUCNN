@@ -36,12 +36,10 @@ def turn_reg_output_into_softmax(reg_out_rescaled,label_cats):
 
 def iucnn_predict(feature_set,
                   model_dir,
-                  verbose,
                   iucnn_mode,
                   dropout,
                   dropout_reps,
                   confidence_threshold,
-                  rescale_labels_boolean,
                   rescale_factor,
                   min_max_label,
                   stretch_factor_rescaled_labels
@@ -51,42 +49,56 @@ def iucnn_predict(feature_set,
         model = tf.keras.models.load_model(model_dir)
         if dropout:
             predictions_raw = np.array([model.predict(feature_set) for i in np.arange(dropout_reps)])
-            predictions_raw_mean = np.mean(predictions_raw,axis=0)
+            mc_dropout_probs = np.mean(predictions_raw,axis=0)
+            predictions = np.argmax(mc_dropout_probs, axis=1)
         else:
-            predictions_raw_mean = model.predict(feature_set, verbose=verbose)
-        softmax_probs = predictions_raw_mean
-        #predictions = np.argmax(predictions_raw_mean, axis=1)
+            predictions_raw = model.predict(feature_set, verbose=0)
+            mc_dropout_probs = np.nan
+            predictions = np.argmax(predictions_raw, axis=1)
+
+        
 
     elif iucnn_mode == 'nn-reg':
         model = tf.keras.models.load_model(model_dir)
         if dropout:
-            prm_est_reps = np.array([model.predict(feature_set).flatten() for i in np.arange(dropout_reps)])
-            prm_est_mean = np.mean(prm_est_reps,axis=0)
-            #prm_est_reps_rescaled = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps])
+            label_cats = np.arange(rescale_factor+1)
+            predictions_raw_unscaled = np.array([model.predict(feature_set).flatten() for i in np.arange(dropout_reps)])
+            predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in predictions_raw_unscaled]).T
+            mc_dropout_probs = turn_reg_output_into_softmax(predictions_raw.T,label_cats)
+            predictions = np.argmax(mc_dropout_probs, axis=1)
         else:
-            prm_est_mean = model.predict(feature_set).flatten()
-
-        if rescale_labels_boolean:
-            predictions_raw_mean = rescale_labels(prm_est_mean,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
-        else:
-            predictions_raw_mean = prm_est_mean
-
-        if dropout:
-            predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps])
-            label_cats = np.arange(max(min_max_label)+1)
-            softmax_probs = turn_reg_output_into_softmax(predictions_raw,label_cats)
-        #predictions = np.round(predictions_raw_mean, 0).astype(int).flatten()        
+            predictions_raw_unscaled = model.predict(feature_set).flatten()
+            predictions_raw = rescale_labels(predictions_raw_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) 
+            mc_dropout_probs = np.nan  
+            predictions = np.round(predictions_raw, 0).astype(int).flatten() 
+    
         
     if confidence_threshold:
         if not dropout:
             sys.exit('target_acc can only be used for models trained with dropout. Retrain your model and specify a dropout rate > 0 to use this option.')
         else:
             #confidence_threshold = get_confidence_threshold(model,iucnn_mode,test_data,test_labels,dropout_reps,rescale_factor,min_max_label,stretch_factor_rescaled_labels,target_acc)
-            high_pp_indices = np.where(np.max(softmax_probs, axis=1) > confidence_threshold)[0]
+            high_pp_indices = np.where(np.max(predictions_raw_mean, axis=1) > confidence_threshold)[0]
             predictions_raw_mean = turn_low_confidence_instances_to_nan(predictions_raw_mean,high_pp_indices)
             #post_softmax_probs = np.array([turn_low_pp_instances_to_nan(i,high_pp_indices) for i in post_softmax_probs])
 
-    return predictions_raw_mean
+    nreps = 1000
+    if dropout:
+        label_dict = np.arange(mc_dropout_probs.shape[1])
+        samples = np.array([np.random.choice(label_dict, nreps, p=i) for i in mc_dropout_probs])
+        predicted_class_count = np.array([[list(col).count(i) for i in label_dict] for col in samples.T])
+    else:
+        predicted_class_count = np.nan
+
+
+    out_dict = {
+        'raw_predictions':predictions_raw,
+        'sampled_cat_freqs':predicted_class_count,
+        'mc_dropout_probs':mc_dropout_probs,
+        'class_predictions':predictions
+    }
+
+    return  out_dict
 
 
 

@@ -4,14 +4,7 @@
 \alias{predict_iucnn}
 \title{Predict IUCN Categories from Features}
 \usage{
-predict_iucnn(
-  x,
-  model,
-  target_acc = 0,
-  verbose = 0,
-  return_raw = FALSE,
-  return_IUCN = TRUE
-)
+predict_iucnn(x, model, target_acc = 0, return_IUCN = TRUE)
 }
 \arguments{
 \item{x}{a data.set, containing a column "species" with the species names, and
@@ -24,7 +17,9 @@ in the same order as used for \code{\link{train_iucnn}}}
 Species that cannot be classified with
 enough certainty to reach this accuracy are classified as DD (Data Deficient).}
 
-\item{verbose}{logical, if TRUE generate additional output.}
+\item{return_IUCN}{logical. If TRUE the predicted labels are translated
+into the original labels.
+If FALSE numeric labels as used by the model are returned}
 
 \item{return_raw}{logical. Should the probabilities for the labels be returned?
 Default is FALSE.
@@ -32,10 +27,6 @@ Note that the probabilities are the direct output of the
 SoftMax function in the output layer
 of the neural network and might be an unreliable measure of statistical support for
 the result of the classification (e.g. https://arxiv.org/abs/2005.04987).}
-
-\item{return_IUCN}{logical. If TRUE the predicted labels are translated
-into the original labels.
-If FALSE numeric labels as used by the model are returned}
 }
 \value{
 a vector with the predicted labels for the input species.

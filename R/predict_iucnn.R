@@ -17,7 +17,6 @@
 #'@param target_acc numerical, 0-1. The target accuracy of the overall model.
 #' Species that cannot be classified with
 #'enough certainty to reach this accuracy are classified as DD (Data Deficient).
-#'@param verbose logical, if TRUE generate additional output.
 #'@param return_raw logical. Should the probabilities for the labels be returned?
 #'Default is FALSE.
 #'Note that the probabilities are the direct output of the
@@ -62,8 +61,6 @@
 predict_iucnn <- function(x,
                           model,
                           target_acc = 0.0,
-                          verbose = 0,
-                          return_raw = FALSE,
                           return_IUCN = TRUE){
 
   # assertions
@@ -72,9 +69,11 @@ predict_iucnn <- function(x,
 
 
   if (model$cv_fold > 1){
-    stop("Provided model consists of multiple cross-validation (CV) folds.\nCV models are only used for model evaluation in IUCNN.
-         Retrain your chosen model without using CV.
-         To do this you can use the train_iucnn function and simply provide your CV model under the \'production_model\' flag.")
+    stop("Provided model consists of multiple cross-validation (CV) folds.\n
+          CV models are only used for model evaluation in IUCNN.
+          Retrain your chosen model without using CV.
+          To do this you can use the train_iucnn function and simply
+          provide your CV model under the \'production_model\' flag.")
   }
 
 
@@ -104,7 +103,8 @@ predict_iucnn <- function(x,
                                                        target_acc)),][1]
     }else{
      stop('Table with accuracy thresholds required when choosing target_acc > 0.
-          This is only available for models where \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
+          This is only available for models where
+          \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
    }
   }
 
@@ -115,9 +115,8 @@ predict_iucnn <- function(x,
   instance_names <- data_out[[3]]
 
   message("Predicting conservation status")
-
   pred_out <- NULL
-  pred_out$names <- instance_names
+  pred_out$names <- NULL
 
   if(model$model == 'bnn-class'){
     postpr <- bnn_predict(features = as.matrix(dataset),
@@ -127,19 +126,15 @@ predict_iucnn <- function(x,
                           filename = 'prediction',
                           post_summary_mode = 0
                           )
+    not_nan_boolean <- complete.cases(postpr$post_prob_predictions)
+    predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],
+                             1,
+                             which.max)-1
+    predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
+    predictions[not_nan_boolean] <- predictions_tmp
 
-    if (return_raw){
-      pred_out$predictions <- postpr$post_prob_predictions
-      return(pred_out)
-    }else{
-      not_nan_boolean <- complete.cases(postpr$post_prob_predictions)
-      predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],
-                               1,
-                               which.max)-1
-      predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
-      predictions[not_nan_boolean] <- predictions_tmp
-    }
-
+    pred_out$raw_predictions <- postpr$post_prob_predictions
+    pred_out$class_predictions <- predictions
 
   }else{
     # source python function
@@ -147,42 +142,29 @@ predict_iucnn <- function(x,
                                           package = "IUCNN"))
 
     # run predict function
-    out <- iucnn_predict(feature_set = as.matrix(dataset),
-                         model_dir = model$trained_model_path,
-                         verbose = verbose,
-                         iucnn_mode = model$model,
-                         dropout = model$mc_dropout,
-                         dropout_reps = 100,
-                         confidence_threshold = confidence_threshold,
-                         rescale_labels_boolean = model$rescale_labels_boolean,
-                         rescale_factor = model$label_rescaling_factor,
-                         min_max_label = model$min_max_label_rescaled,
-                         stretch_factor_rescaled_labels = model$label_stretch_factor)
-    if (return_raw){
-      pred_out$predictions <- out
-      return(pred_out)
-    }else{
-      if (model$model == 'nn-reg'){
-        predictions <- round(out)
-      }else{
-        not_nan_boolean <- complete.cases(out)
-        predictions_tmp <- apply(out[not_nan_boolean,], 1, which.max) - 1
-        predictions <- rep(NA, dim(out)[1])
-        predictions[not_nan_boolean] <- predictions_tmp
-      }
-
-    }
+    pred_out <- iucnn_predict(
+                   feature_set = as.matrix(dataset),
+                   model_dir = model$trained_model_path,
+                   iucnn_mode = model$model,
+                   dropout = model$mc_dropout,
+                   dropout_reps = 100,
+                   confidence_threshold = confidence_threshold,
+                   rescale_factor = model$label_rescaling_factor,
+                   min_max_label = model$min_max_label_rescaled,
+                   stretch_factor_rescaled_labels = model$label_stretch_factor)
   }
+
   # Translate prediction to original labels
   if(return_IUCN){
     lu <- model$input_data$lookup.labels
     names(lu) <- model$input_data$lookup.lab.num.z
 
-    predictions <- lu[predictions+1]
+    predictions <- lu[pred_out$class_predictions+1]
     names(predictions) <- NULL
+    pred_out$class_predictions <- predictions
   }
-  pred_out$predictions <- predictions
 
+  pred_out$names <- instance_names
   class(pred_out) <- "iucnn_predictions"
 
   return(pred_out)

@@ -14,15 +14,20 @@ feature_importance(
 )
 }
 \arguments{
-\item{x}{iucnn_model object, as produced as output when running \code{\link{train_iucnn}}}
+\item{x}{iucnn_model object, as produced as output
+when running \code{\link{train_iucnn}}}
 
-\item{feature_blocks}{a list. Default behavior is to group the features into geographic, climatic,
-biome, and human footprint features. Provide custom list of feature names or indices to define other
+\item{feature_blocks}{a list. Default behavior is to
+group the features into geographic, climatic,
+biome, and human footprint features. Provide custom
+list of feature names or indices to define other
 feature blocks. If feature
 indices are provided as in this example, turn provide_indices flag to TRUE.}
 
-\item{n_permutations}{an integer. Defines how many iterations of shuffling feature values and
-predicting the resulting accuracy are being executed. The mean and standard deviation of the
+\item{n_permutations}{an integer. Defines how many
+iterations of shuffling feature values and
+predicting the resulting accuracy are being executed.
+The mean and standard deviation of the
 delta accuracy are being summarized from these permutations.}
 
 \item{provide_indices}{logical. Set to TRUE if custom \code{feature_blocks}
@@ -39,18 +44,27 @@ If FALSE, each feature column within a block is resorted in the same manner. Def
 a data.frame with the relative importance of each feature block (see delta_acc_mean column).
 }
 \description{
-Uses a model generated with \code{\link{train_iucnn}} to evaluate how much each feature or
-group of features contributes to the accuracy of the test set predictions. The function
-implements the concept of permutation feature importance, in which the values in a given
-feature column of the test set are shuffled randomly among all samples. Then the feature
-data manipulated in this manner are used to predict labels for the test set and the accuracy
-is compared to that of the original feature data. The difference (delta accuracy) can be
-interpreted as a measure of how important a given feature or group of features is for the
+Uses a model generated with \code{\link{train_iucnn}}
+to evaluate how much each feature or
+group of features contributes to the accuracy of
+the test set predictions. The function
+implements the concept of permutation feature importance,
+in which the values in a given
+feature column of the test set are shuffled randomly
+among all samples. Then the feature
+data manipulated in this manner are used to predict
+labels for the test set and the accuracy
+is compared to that of the original feature data.
+The difference (delta accuracy) can be
+interpreted as a measure of how important a
+given feature or group of features is for the
 trained NN to make accurate predictions.
 }
 \details{
-By default this function groups the features into geographic, climatic, biome, and human
-footprint features and determines the importance of each of these blocks of features. The
+By default this function groups the features
+into geographic, climatic, biome, and human
+footprint features and determines the importance
+of each of these blocks of features. The
 feature blocks can be manually defined using the feature_blocks argument.
 }
 \note{
