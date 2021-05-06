@@ -78,8 +78,9 @@ def iucnn_predict(feature_set,
             sys.exit('target_acc can only be used for models trained with dropout. Retrain your model and specify a dropout rate > 0 to use this option.')
         else:
             #confidence_threshold = get_confidence_threshold(model,iucnn_mode,test_data,test_labels,dropout_reps,rescale_factor,min_max_label,stretch_factor_rescaled_labels,target_acc)
-            high_pp_indices = np.where(np.max(predictions_raw_mean, axis=1) > confidence_threshold)[0]
-            predictions_raw_mean = turn_low_confidence_instances_to_nan(predictions_raw_mean,high_pp_indices)
+            high_pp_indices = np.where(np.max(mc_dropout_probs, axis=1) > confidence_threshold)[0]
+            #mc_dropout_probs = turn_low_confidence_instances_to_nan(mc_dropout_probs,high_pp_indices)
+            predictions = turn_low_confidence_instances_to_nan(predictions,high_pp_indices)
             #post_softmax_probs = np.array([turn_low_pp_instances_to_nan(i,high_pp_indices) for i in post_softmax_probs])
 
     nreps = 1000

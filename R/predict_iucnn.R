@@ -115,26 +115,19 @@ predict_iucnn <- function(x,
   instance_names <- data_out[[3]]
 
   message("Predicting conservation status")
-  pred_out <- NULL
-  pred_out$names <- NULL
 
   if(model$model == 'bnn-class'){
-    postpr <- bnn_predict(features = as.matrix(dataset),
-                          instance_id = as.matrix(instance_names),
-                          model_path = model$trained_model_path,
-                          post_cutoff = confidence_threshold,
-                          filename = 'prediction',
-                          post_summary_mode = 0
+    # source python function
+    reticulate::source_python(system.file("python",
+                                          "IUCNN_helper_functions.py",
+                                          package = "IUCNN"))
+    pred_out <- predict_bnn(features = as.matrix(dataset),
+                            model_path = model$trained_model_path,
+                            posterior_threshold = confidence_threshold,
+                            post_summary_mode = 0
                           )
-    not_nan_boolean <- complete.cases(postpr$post_prob_predictions)
-    predictions_tmp <- apply(postpr$post_prob_predictions[not_nan_boolean,],
-                             1,
-                             which.max)-1
-    predictions <- rep(NA, dim(postpr$post_prob_predictions)[1])
-    predictions[not_nan_boolean] <- predictions_tmp
 
-    pred_out$raw_predictions <- postpr$post_prob_predictions
-    pred_out$class_predictions <- predictions
+
 
   }else{
     # source python function

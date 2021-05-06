@@ -215,18 +215,14 @@ train_iucnn <- function(x,
     }
   }
 
-
-  if (dropout_rate > 0.0){
-    dropout_boolean <- TRUE
-  }else{
-    dropout_boolean <- FALSE
-  }
-
   if (mode == 'bnn-class'){
-    warning('Training a BNN classification model.
+    warning('
 The following settings are currently not supported for BNN models and are being ignored:
 cv_fold, patience, act_f_out.
-Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps, the BNN will instead provide posterior estimates of the class labels for each instance.')
+Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps, the BNN will instead provide posterior estimates of the class labels for each instance.\n')
+    if (max_epochs < 10000){
+      warning(paste0('\nNumber of MCMC generations is set to ',max_epochs,' (max_epochs). Set a value of at least max_epochs=10000 for better MCMC convergence.\n'))
+    }
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,
                              labels,
@@ -302,12 +298,15 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
       length(bnn_data$labels)
     validation_loss <- NaN
 
-    training_loss_history <-
-      (-log_file_content$likelihood) / length(bnn_data$labels)
+    training_loss_history <- list(
+      (-log_file_content$likelihood) / length(bnn_data$labels))
+    names(training_loss_history) = 'train_rep_0'
     validation_loss_history <- NaN
 
-    training_accuracy_history <- log_file_content$accuracy
-    validation_accuracy_history <- NaN
+    training_accuracy_history <- list(log_file_content$accuracy)
+    names(training_accuracy_history) = 'train_rep_0'
+    validation_accuracy_history <- list(log_file_content$test_accuracy)
+    names(validation_accuracy_history) = 'train_rep_0'
 
     training_mae_history <- NaN
     validation_mae_history <- NaN
@@ -315,15 +314,28 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
     rescale_labels_boolean <- FALSE
     label_rescaling_factor <- as.integer(max(labels$labels))
     min_max_label <- as.vector(c(min(labels$labels), max(labels$labels)))
-    label_stretch_factor <- label_stretch_factor
 
-    activation_function <- act_f_out
     trained_model_path <- pklfile_path
     patience <- NaN
     validation_fraction <- validation_fraction
 
-    accthres_tbl <- NaN
-    stopping_point <- NaN
+    # source python function
+    reticulate::source_python(system.file("python",
+                                          "IUCNN_helper_functions.py",
+                                          package = "IUCNN"))
+    acctbl_catsample <- get_acctbl_and_catsample_bnn(pklfile_path)
+
+    stopping_point <- max_epochs
+
+    accthres_tbl <- acctbl_catsample[[1]]
+    sampled_cat_freqs <- acctbl_catsample[[2]]
+    true_cat_freqs <- acctbl_catsample[[3]]
+
+    mc_dropout <- FALSE
+    mc_dropout_reps <- 0
+    dropout_rate <- 0
+    cv_fold <- 1
+
 
   }else{
 
@@ -384,7 +396,7 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
     min_max_label <- as.vector(res$min_max_label)
     label_stretch_factor <- res$label_stretch_factor
 
-    activation_function <- res$activation_function
+    act_f_out <- res$activation_function
     trained_model_path <- res$trained_model_path
 
     confusion_matrix <- res$confusion_matrix
@@ -418,7 +430,6 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
 
   named_res$model <- mode
   named_res$seed <- seed
-  named_res$dropout <- dropout_boolean
   named_res$dropout_rate <- dropout_rate
   named_res$max_epochs <- max_epochs
   named_res$n_layers <- n_layers
@@ -426,7 +437,7 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
   named_res$balance_classes <- balance_classes
   named_res$rescale_features <- rescale_features
   named_res$act_f <- act_f
-  named_res$act_f_out <- activation_function
+  named_res$act_f_out <- act_f_out
   named_res$validation_fraction <- validation_fraction
   named_res$cv_fold <- cv_fold
   named_res$patience <- patience

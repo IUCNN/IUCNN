@@ -60,34 +60,50 @@ plot.iucnn_model <- function(x, ...){
   }
 
   for (i in 1:x$cv_fold){
-    plot(x$training_loss_history[[i]],
-         type = "n",
-         ylab = "Loss",
-         xlab = "Epoch",
-         ylim = c(min(min(x$training_loss_history[[i]]),
-                      min(x$validation_loss_history[[i]])),
-                  max(max(x$training_loss_history[[i]]),
-                      max(x$validation_loss_history[[i]]))))
+    if (x$model == 'bnn-class'){
+      plot(x$training_loss_history[[i]],
+           type = "n",
+           ylab = "Loss",
+           xlab = "MCMC-it",
+           ylim = c(min(x$training_loss_history[[i]]),
+                    max(x$training_loss_history[[i]])))
 
-    points(x$training_loss_history[[i]],
-           type = "b",
-           col = "darkblue",
-           pch = 1)
-    points(x$validation_loss_history[[i]],
-           type = "b",
-           col = "darkred",
-           pch = 2)
-    abline(v = x$final_training_epoch[[i]],
-           lty = 2)
-    title(paste0('CV-fold ', i))
-    legend(x = "topright",
-           legend = c("Training", "Validation", "Final epoch"),
-           col = c("darkblue", "darkred", "black"),
-           lty = c(1, 1, 2),
-           pch = c(1, 2, NA),
-           cex = 0.7)
+      points(x$training_loss_history[[i]],
+             type = "b",
+             col = "darkblue",
+             pch = 1)
+      title(paste0('CV-fold ', i))
+    }else{
+      plot(x$training_loss_history[[i]],
+           type = "n",
+           ylab = "Loss",
+           xlab = "Epoch",
+           ylim = c(min(min(x$training_loss_history[[i]]),
+                        min(x$validation_loss_history[[i]])),
+                    max(max(x$training_loss_history[[i]]),
+                        max(x$validation_loss_history[[i]]))))
 
-  }
+      points(x$training_loss_history[[i]],
+             type = "b",
+             col = "darkblue",
+             pch = 1)
+      points(x$validation_loss_history[[i]],
+             type = "b",
+             col = "darkred",
+             pch = 2)
+      abline(v = x$final_training_epoch[[i]],
+             lty = 2)
+      title(paste0('CV-fold ', i))
+      legend(x = "topright",
+             legend = c("Training", "Validation", "Final epoch"),
+             col = c("darkblue", "darkred", "black"),
+             lty = c(1, 1, 2),
+             pch = c(1, 2, NA),
+             cex = 0.7)
+
+    }
+    }
+
   par(mfrow = par_prev$mfrow,
       mar = par_prev$mar)
 }
@@ -99,8 +115,9 @@ plot.iucnn_model <- function(x, ...){
 plot.iucnn_predictions <- function(x, ...){
 
   # count the different categories
-  counts <- table(x$class_predictions)
-
+  counts <- table(x$class_predictions) # this doens't count NaN
+  NA_count <- length(x$class_predictions[is.na(x$class_predictions)])
+  counts['NA'] <- NA_count
   # set colors for relevant categories
   if( all(nchar(names(counts)) == 2)){
     cats <- c('LC', 'NT', 'VU', 'EN' ,'CR', 'NA')

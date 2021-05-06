@@ -123,7 +123,7 @@ calculate_accuracy <- function(bnn_data,
                                logger,
                                bnn_model,
                                data = 'test',
-                               post_summary_mode = 1){
+                               post_summary_mode = 0){
 
   # source python function
   bn <- reticulate::import("np_bnn")

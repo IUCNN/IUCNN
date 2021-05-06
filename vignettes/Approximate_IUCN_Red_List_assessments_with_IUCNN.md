@@ -50,7 +50,7 @@ If python has been installed before, you can specify the python version to sue w
 
 3. Install the tensorflow Python module
 ```{r, eval = FALSE}
-reticulate::conda_install("r-reticulate","tensorflow")
+reticulate::conda_install("r-reticulate","tensorflow=2.4")
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
 ```
 
