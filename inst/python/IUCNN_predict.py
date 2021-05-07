@@ -1,3 +1,9 @@
+"""
+Created on Fri May  6 17:51:02 2021
+
+@author: Tobias Andermann (tobiasandermann88@gmail.com)
+"""
+
 import tensorflow as tf
 import numpy as np
 import os, sys
