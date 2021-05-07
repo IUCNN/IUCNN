@@ -512,10 +512,13 @@ def iucnn_train(dataset,
     # sample from categorical
     nreps = 1000
     if mc_dropout:
-        mc_dropout_probs = all_validation_predictions_raw
-        label_dict = np.arange(mc_dropout_probs.shape[1])
-        samples = np.array([np.random.choice(label_dict, nreps, p=i) for i in mc_dropout_probs])
-        predicted_class_count = np.array([[list(col).count(i) for i in label_dict] for col in samples.T])
+        if no_test:
+            predicted_class_count = np.nan
+        else:
+            mc_dropout_probs = all_validation_predictions_raw
+            label_dict = np.arange(mc_dropout_probs.shape[1])
+            samples = np.array([np.random.choice(label_dict, nreps, p=i) for i in mc_dropout_probs])
+            predicted_class_count = np.array([[list(col).count(i) for i in label_dict] for col in samples.T])
     else:
         predicted_class_count = np.nan
 
