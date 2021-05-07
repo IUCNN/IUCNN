@@ -454,15 +454,15 @@ process_iucnn_input <- function(x,
 
 
 rank_models <- function(model_testing_results, rank_by = "val_acc") {
-  if (rank_mode == "val_acc") {
+  if (rank_by == "val_acc") {
     # highest validation accuracy
     sorted_model_testing_results <-
       model_testing_results[order(model_testing_results$val_acc, decreasing = TRUE), ]
-  } else if (rank_mode == "val_loss") {
+  } else if (rank_by == "val_loss") {
     # lowest validation loss
     sorted_model_testing_results <-
       model_testing_results[order(model_testing_results$validation_loss, decreasing = FALSE), ]
-  } else if (rank_mode == "weighted_error") {
+  } else if (rank_by == "weighted_error") {
     # smallest weighted misclassification error
     if (typeof(model_testing_results$confusion_LC) == "character") {
       LC_weighted_errors <- get_weighted_errors(model_testing_results, "confusion_LC", 1)
@@ -487,7 +487,7 @@ rank_models <- function(model_testing_results, rank_by = "val_acc") {
     sorted_model_testing_results <-
       model_testing_results[order(model_testing_results$weighted_error,
                                   decreasing = FALSE), ]
-  } else if (rank_mode == "total_class_matches") {
+  } else if (rank_by == "total_class_matches") {
 
     # fewest class misclassifications
     if (typeof(model_testing_results$confusion_LC) == "character") {
@@ -504,8 +504,8 @@ rank_models <- function(model_testing_results, rank_by = "val_acc") {
       model_testing_results[order(model_testing_results$total_class_error,
                                   decreasing = FALSE), ]
   } else {
-    stop(paste0("Invalid choice rank_mode = '",
-                rank_mode,
+    stop(paste0("Invalid choice rank_by = '",
+                rank_by,
                 "'. Choose from 'val_acc','val_loss','weighted_error' ,or 'total_class_matches'"))
   }
   return(sorted_model_testing_results)
@@ -514,7 +514,7 @@ rank_models <- function(model_testing_results, rank_by = "val_acc") {
 best_model_iucnn <- function(model_testing_results,
                              criterion = "val_acc",
                              require_dropout = FALSE) {
-  ranked_models <- rank_models(model_testing_results, rank_mode = criterion)
+  ranked_models <- rank_models(model_testing_results, rank_by = criterion)
   if (require_dropout) {
     best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]
   } else {
