@@ -453,7 +453,7 @@ process_iucnn_input <- function(x,
 }
 
 
-rank_models <- function(model_testing_results, rank_mode = "val_acc") {
+rank_models <- function(model_testing_results, rank_by = "val_acc") {
   if (rank_mode == "val_acc") {
     # highest validation accuracy
     sorted_model_testing_results <-
