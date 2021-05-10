@@ -2,13 +2,10 @@
 #'
 #' Uses a model generated with \code{\link{train_iucnn}}
 #' to predict the IUCN status of
-#' Not Evaluated or Data Deficient species based on features,
-#' for instance generated
-#' from species occurrence records with \code{\link{ft_geo}},
-#' \code{\link{ft_clim}}, and \code{\link{ft_biom}}.
-#' The same features in the same order must be
-#' used for training and fitting.
-#'
+#' Not Evaluated or Data Deficient species based on features, generated
+#' from species occurrence records with \code{\link{prep_features}}.
+#' These features should be of the same type as those used for training the
+#' model.
 #'
 #'@param x a data.set, containing a column "species" with the species names, and
 #'subsequent columns with different features,
@@ -30,7 +27,8 @@
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 #'tutorial on how to run IUCNN.
 #'
-#'@return a vector with the predicted labels for the input species.
+#'@return outputs an \code{iucnn_predictions} object containing the predicted
+#'labels for the input species.
 #'
 #' @examples
 #'\dontrun{
