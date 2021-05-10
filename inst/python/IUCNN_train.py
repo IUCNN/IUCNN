@@ -358,7 +358,7 @@ def iucnn_train(dataset,
             optimize_for_this = "val_mae"
 
         # run for set number of iterations, no early stopping
-        if patience is None:
+        if patience == 0:
             print('Running training for set number of epochs: %i'%max_epochs,flush=True)
             tf.random.set_seed(seed)
             # determining optimal number of epochs
