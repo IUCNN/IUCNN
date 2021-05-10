@@ -2,7 +2,7 @@
 % Please edit documentation in R/bestmodel_iucnn.R
 \name{bestmodel_iucnn}
 \alias{bestmodel_iucnn}
-\title{Select the best model after model-testing}
+\title{Select the Best Model After Model-testing}
 \usage{
 bestmodel_iucnn(x, criterion = "val_acc", require_dropout = FALSE)
 }
@@ -10,7 +10,8 @@ bestmodel_iucnn(x, criterion = "val_acc", require_dropout = FALSE)
 \item{x}{a data.frame of model-testing results as produced
 by \code{\link{modeltest_iucnn}}}
 
-\item{criterion}{name the criterion to rank models by (default="val_acc"). Valid options are
+\item{criterion}{name the criterion to rank models by (default="val_acc").
+Valid options are
 "val_acc","val_loss","weighted_error", or "total_class_matches"
 (see details below):
 \itemize{
@@ -36,7 +37,8 @@ for certain functionalities within IUCNN, such as e.g. choosing a target
 accuracy when using predict_iucnn.}
 }
 \value{
-outputs an \code{iucnn_model} object containing all information about the best model.
+outputs an \code{iucnn_model} object containing all
+information about the best model.
 }
 \description{
 Uses a data-frame of model-testing results generated with

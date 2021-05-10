@@ -8,11 +8,7 @@
 #' Coordinate ranges are 90% quantiles, for species with
 #' less than three occurrences EOO is set to AOO.
 #'
-#'@param x a data.frame of species occurrence records including three columns with
-#'species name, longitudinal coordinates and latitudinal coordinates (both decimal).
-#'@param species a character string. The name of the column with the species names.
-#'@param lon a character string. The name of the column with the longitude.
-#'@param lat a character string. The name of the column with the latitude.
+#'@inheritParams prep_features
 #'@param rescale logical. If TRUE, the geographic features are rescaled.
 #'This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 #'feature values are returned.

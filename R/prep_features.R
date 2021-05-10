@@ -10,12 +10,17 @@
 #'Without internet access, only geographic features are calculated,
 #'if the sampbias package is not installed, the bias features are skipped.
 #'
-#'@inheritParams ft_geo
+#'@param x a data.frame of species occurrence records including three columns with
+#'species name, longitudinal coordinates and latitudinal coordinates (both decimal).
+#'@param species a character string. The name of the column with the species names.
+#'@param lon a character string. The name of the column with the longitude.
+#'@param lat a character string. The name of the column with the latitude.
 #'@param type character. The type of features to calculate. Possible options are
 #'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate},
 #'\dQuote{human footprint}.
-#'All except bias are the default.
-#'"\dQuote{bias} is only recommended up to the regional scale or below.
+#'@param download.folder character string. The folder were to save the
+#'data used for feature extraction. RElative to the working directory.
+#'Set to NULL for the working directory
 #'
 #'@return a data.frame of bias features
 #'
@@ -42,7 +47,8 @@ prep_features <- function(x,
                           type = c("geographic",
                                    "biomes",
                                    "climate",
-                                   "humanfootprint")){
+                                   "humanfootprint"),
+                          download.folder = "feature_extraction"){
 
   # assertions
   assert_data_frame(x)
@@ -50,7 +56,17 @@ prep_features <- function(x,
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_character(type)
+  assert_character(download.folder, null.ok = TRUE)
 
+  # generate folder fore data
+  if(!dir.exists(download.folder)){
+    dir.create(download.folder)
+  }
+  if(is.null(download.folder)){
+    download.folder <- getwd()
+  }else{
+    download.folder <- file.path(getwd(), download.folder)
+  }
 
   #prepare geographic features
   if("geographic" %in% type){
@@ -71,7 +87,8 @@ prep_features <- function(x,
       bio <- ft_biom(x,
                      species = species,
                      lon = lon,
-                     lat = lat)
+                     lat = lat,
+                     download.folder = download.folder)
 
       if(exists("out")){
         out <- out %>%
@@ -87,7 +104,9 @@ prep_features <- function(x,
       clim <- ft_clim(x,
                       species = species,
                       lon = lon,
-                      lat = lat)
+                      lat = lat,
+                      download.folder = download.folder
+                      )
 
       if(exists("out")){
         out <- out %>%
@@ -103,7 +122,8 @@ prep_features <- function(x,
       foot <- ft_foot(x,
                       species = species,
                       lon = lon,
-                      lat = lat)
+                      lat = lat,
+                      download.folder = download.folder)
 
       if(exists("out")){
         out <- out %>%

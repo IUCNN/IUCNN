@@ -4,8 +4,6 @@
 ^codecov\.yml$
 ^data-raw$
 ^iuc_nn_model$
-^wc10$
-^WWF_ecoregions$
 pre_submission_tests.R
 _site.yml
 ^docs$
@@ -19,3 +17,4 @@ iuc_nn_model_feature_importance.txt
 ^iucnn_model_*$
 training_stats.pdf
 ^codemeta\.json$
+^feature_extraction$

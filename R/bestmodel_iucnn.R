@@ -1,4 +1,4 @@
-#' Select the best model after model-testing
+#' Select the Best Model After Model-testing
 #'
 #' Uses a data-frame of model-testing results generated with
 #' \code{\link{modeltest_iucnn}} as input, and finds the best model
@@ -7,7 +7,8 @@
 #'
 #'@param x a data.frame of model-testing results as produced
 #'by \code{\link{modeltest_iucnn}}
-#'@param criterion name the criterion to rank models by (default="val_acc"). Valid options are
+#'@param criterion name the criterion to rank models by (default="val_acc").
+#'Valid options are
 #'"val_acc","val_loss","weighted_error", or "total_class_matches"
 #'(see details below):
 #'- val_acc: highest validation accuracy
@@ -33,7 +34,8 @@
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 #'tutorial on how to run IUCNN.
 #'
-#'@return outputs an \code{iucnn_model} object containing all information about the best model.
+#'@return outputs an \code{iucnn_model} object containing all
+#'information about the best model.
 #'
 #' @examples
 #'\dontrun{
@@ -60,8 +62,8 @@
 #' @export
 
 bestmodel_iucnn <- function(x,
-                             criterion = "val_acc",
-                             require_dropout = FALSE) {
+                            criterion = "val_acc",
+                            require_dropout = FALSE) {
   ranked_models <- rank_models(x, rank_by = criterion)
   if (require_dropout) {
     best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]

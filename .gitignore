@@ -2,8 +2,7 @@
 .Rhistory
 .RData
 inst/doc
-wc10
-WWF_ecoregions
+feature_extraction
 pre_submission_tests.R
 iuc_nn_model
 vignettes/wc10

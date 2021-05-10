@@ -9,7 +9,8 @@ prep_features(
   species = "species",
   lon = "decimallongitude",
   lat = "decimallatitude",
-  type = c("geographic", "biomes", "climate", "humanfootprint")
+  type = c("geographic", "biomes", "climate", "humanfootprint"),
+  download.folder = "feature_extraction"
 )
 }
 \arguments{
@@ -24,9 +25,11 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 
 \item{type}{character. The type of features to calculate. Possible options are
 \dQuote{geographic}, \dQuote{biome}, \dQuote{climate},
-\dQuote{human footprint}.
-All except bias are the default.
-"\dQuote{bias} is only recommended up to the regional scale or below.}
+\dQuote{human footprint}.}
+
+\item{download.folder}{character string. The folder were to save the
+data used for feature extraction. RElative to the working directory.
+Set to NULL for the working directory}
 }
 \value{
 a data.frame of bias features

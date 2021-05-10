@@ -9,6 +9,7 @@
 #' https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world
 #' and save them in the working directory
 #'
+#'@inheritParams prep_features
 #'@param biome.input s simple features collection of geometry type polygon,
 #'contain polygons of different biomes.
 #'If NULL, the WWF biome scheme is downloaded from
@@ -16,12 +17,9 @@
 #'@param biome.id a character string. The name of the column
 #'with the biome names in biome.input.
 #'Default is "BIOME"
-#'@param download.path character string. The path were to save the WWF polygons
-#'if biome.input is NULL. Default is the working directory
 #'@param remove_zeros logical. If TRUE biomes without occurrence of
 #'any species are removed from the features.
 #'Default = FALSE
-#'@inheritParams ft_geo
 #'
 #'@return a data.frame of climatic features
 #'
@@ -52,7 +50,7 @@ ft_biom <- function(x,
                      lat = "decimallatitude",
                      biome.input = NULL,
                      biome.id = "BIOME",
-                     download.path = NULL,
+                     download.folder = "feature_extraction",
                      remove_zeros = FALSE){
 
   #assertions
@@ -61,26 +59,31 @@ ft_biom <- function(x,
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_character(biome.id, null.ok = TRUE)
-  assert_character(download.path, null.ok = TRUE)
+  assert_character(download.folder, null.ok = TRUE)
   assert_logical(remove_zeros)
 
   # get biome data if necessary
   if(is.null(biome.input)){
     # set download path
-    if(is.null(download.path)){
-      download.path <- getwd()
+    if(!dir.exists(download.folder)){
+      dir.create(download.folder)
+    }
+    if(is.null(download.folder)){
+      download.folder <- getwd()
+    }else{
+      download.folder <- file.path(getwd(), download.folder)
     }
 
     # Download biomes shape
-    if(!file.exists(file.path(download.path, "WWF_ecoregions",  "official", "wwf_terr_ecos.shp"))){
+    if(!file.exists(file.path(download.folder, "WWF_ecoregions",  "official", "wwf_terr_ecos.shp"))){
       download.file("http://assets.worldwildlife.org/publications/15/files/original/official_teow.zip",
-                    destfile = file.path(download.path, "wwf_ecoregions.zip"))
-      unzip(file.path(download.path, "wwf_ecoregions.zip"),
-            exdir = file.path(download.path, "WWF_ecoregions"))
-      file.remove(file.path(download.path, "wwf_ecoregions.zip"))
+                    destfile = file.path(download.folder, "wwf_ecoregions.zip"))
+      unzip(file.path(download.folder, "wwf_ecoregions.zip"),
+            exdir = file.path(download.folder, "WWF_ecoregions"))
+      file.remove(file.path(download.folder, "wwf_ecoregions.zip"))
     }
     #load biomes
-    biome.input <- sf::st_read(dsn = file.path(download.path, "WWF_ecoregions", "official"),
+    biome.input <- sf::st_read(dsn = file.path(download.folder, "WWF_ecoregions", "official"),
                                layer = "wwf_terr_ecos", quiet = TRUE)
   }
 

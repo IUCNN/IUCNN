@@ -226,7 +226,9 @@ The following settings are currently not supported for BNN models and are being 
 cv_fold, patience, act_f_out.
 Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps, the BNN will instead provide posterior estimates of the class labels for each instance.\n')
     if (max_epochs < 10000){
-      warning(paste0('\nNumber of MCMC generations is set to ',max_epochs,' (max_epochs). Set a value of at least max_epochs=10000 for better MCMC convergence.\n'))
+      warning(paste0('\nNumber of MCMC generations is set to ',
+                     max_epochs,
+                     ' (max_epochs). Set a value of at least max_epochs=10000 for better MCMC convergence.\n'))
     }
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,

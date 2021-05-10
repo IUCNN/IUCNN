@@ -12,7 +12,8 @@ ft_clim(
   lat = "decimallatitude",
   rescale = TRUE,
   res = 10,
-  type = "selected"
+  type = "selected",
+  download.folder = "feature_extraction"
 )
 }
 \arguments{
@@ -29,10 +30,6 @@ the 19 bioclim variables from www.worldclim.org are used as default.}
 
 \item{lat}{a character string. The name of the column with the latitude.}
 
-\item{rescale}{logical. If TRUE, the geographic features are rescaled.
-This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
-feature values are returned.}
-
 \item{res}{numeric. The resolution of the default climate rasters.
 One of 2.5, 5, or 10. Only relevant if
 climate.input is NULL}
@@ -43,6 +40,10 @@ if "selected" only Annual Mean Temperature, Temperature Seasonality,
 Mean temperature of the Coldest Quarter,
 Annual Precipitation, Precipitation seasonality and
 Precipitation of the Driest Quarter are returned}
+
+\item{download.folder}{character string. The folder were to save the
+data used for feature extraction. RElative to the working directory.
+Set to NULL for the working directory}
 }
 \value{
 a data.frame of climatic features

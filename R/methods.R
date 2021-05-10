@@ -150,3 +150,24 @@ plot.iucnn_predictions <- function(x, ...){
 
 }
 
+#' @export
+#' @method plot iucnn_featureimportance
+#' @importFrom graphics barplot segments
+#' @importFrom grDevices cm.colors
+
+plot.iucnn_featureimportance <- function(x, ...){
+  bp <- barplot(height = x$feat_imp_mean,
+          names.arg = x$feature_block,
+          ylim = c(0, max(x$feat_imp_mean) + max(x$feat_imp_std)),
+          main = "Delta accuracy",
+          col = rev(cm.colors(nrow(x))))
+
+  segments(bp,
+           x$feat_imp_mean - x$feat_imp_std,
+           bp,
+           x$feat_imp_mean + x$feat_imp_std,
+           lwd = 1.5)
+}
+
+
+

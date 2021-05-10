@@ -9,7 +9,7 @@
 #'
 #'
 #' All climate variables are summarized  to the species median.
-#'
+#'@inheritParams prep_features
 #'@param climate.input a raster or rasterStack with climate data.
 #'Optional. If not provided,
 #'the 19 bioclim variables from www.worldclim.org are used as default.
@@ -22,7 +22,6 @@
 #'Mean temperature of the Coldest Quarter,
 #'Annual Precipitation, Precipitation seasonality and
 #' Precipitation of the Driest Quarter are returned
-#'@inheritParams ft_geo
 #'
 #'@return a data.frame of climatic features
 #'
@@ -53,7 +52,8 @@ ft_clim <- function(x,
                     lat = "decimallatitude",
                     rescale = TRUE,
                     res = 10,
-                    type = "selected"){
+                    type = "selected",
+                    download.folder = "feature_extraction"){
 
   # assertions
   assert_data_frame(x)
@@ -62,19 +62,34 @@ ft_clim <- function(x,
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_logical(rescale)
   assert_numeric(res)
+  assert_character(download.folder, null.ok = TRUE)
 
   # check arguments for the type
   match.arg(arg = type, choices = c("selected", "all"))
 
   # Get climate data if non is provided
   if(is.null(climate.input)){
-    climate.input <- raster::getData('worldclim', var='bio', res = res)
+    # set download path
+    if(!dir.exists(download.folder)){
+      dir.create(download.folder)
+    }
+    if(is.null(download.folder)){
+      download.folder <- getwd()
+    }else{
+      download.folder <- file.path(getwd(), download.folder)
+    }
+
+    climate.input <- raster::getData('worldclim',
+                                     var = 'bio',
+                                     res = res,
+                                     path = download.folder)
   }else{
     rescale <- FALSE
   }
 
   # Extract values
-  bio_ex <- raster::extract(x = climate.input, y = x[,c(lon, lat)])
+  bio_ex <- raster::extract(x = climate.input,
+                            y = x[,c(lon, lat)])
 
   # absolute climate variables
   bio <- x %>%
@@ -119,11 +134,19 @@ ft_clim <- function(x,
 
   if(type == "selected"){
     out <- bio %>%
-      select(.data$species, .data$bio1, .data$bio4, .data$bio11,
-             .data$bio12, .data$bio15, .data$bio17) %>%
-      bind_cols(range %>% select(.data$range_bio1, .data$range_bio4,
-                                 .data$range_bio11, .data$range_bio12,
-                                 .data$range_bio15, .data$range_bio17))
+      select(.data$species,
+             .data$bio1,
+             .data$bio4,
+             .data$bio11,
+             .data$bio12,
+             .data$bio15,
+             .data$bio17) %>%
+      bind_cols(range %>% select(.data$range_bio1,
+                                 .data$range_bio4,
+                                 .data$range_bio11,
+                                 .data$range_bio12,
+                                 .data$range_bio15,
+                                 .data$range_bio17))
   }else{
     out <- left_join(bio, range, by = "species")
   }

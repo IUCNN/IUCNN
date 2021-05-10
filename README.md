@@ -68,7 +68,7 @@ predict_iucnn(x = features_predict,
               model = m1)
 ```
 
-A more complex approach including model testing:
+WIth mode testing
 
 ```{r}
 library(tidyverse)
@@ -79,44 +79,43 @@ data("training_occ") #geographic occurrences of species with IUCN assessment
 data("training_labels")# the corresponding IUCN assessments
 data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
-# 1. Feature and label preparation
+# Feature and label preparation
 features <- prep_features(training_occ) # Training features
 labels_train <- prep_labels(training_labels) # Training labels
 features_predict <- prep_features(prediction_occ) # Prediction features
 
-# 2. model testing
-mt <- modeltest_iucnn(features,
-                      labels_train_detail,
-                      modeltest_logfile = "model_testing_example.txt",
-                      seed = 1234,
-                      dropout_rate = c(0.1, 0.3),
-                      n_layers = c('40_20','50_30_10'),
-                      cv_fold = 3,
-                      mode = 'nn-class',
-                      init_logfile = TRUE)
 
-# get best model based on chosen criterion
-bm <- best_model_iucnn(mt,
-                      criterion = 'val_acc',
-                      require_dropout = TRUE)
+# Model testing
+# For illustration models differing in dropout rate and number of layers
+mod_test <- modeltest_iucnn(train_feat,
+                            train_lab,
+                            logfile = "model_testing_results-2.txt",
+                            model_outpath = "iucnn_modeltest-2",
+                            mode = "nn-class",
+                            dropout_rate = c(0.0, 0.1, 0.3),
+                            n_layers = c("30", "40_20", "50_30_10"),
+                            cv_fold = 5,
+                            init_logfile = TRUE)
 
-# get overview of best model: prediction accuracy, confusion matrix, etc.
-summary(bm)
-plot(bm)
+# Select best model
+m_best <- best_model_iucnn(mod_test,
+                           criterion = "val_acc",
+                           require_dropout = TRUE)
 
-# 3. train the production model with all data, using the specs from the model testing
-pm <- train_iucnn(features,
-                  labels_train,
-                  production_model = bm,
-                  overwrite = TRUE)
+# Inspect model structure and performance
+summary(m_best)
+plot(m_best)
 
-# make predictions
-predictions <- predict_iucnn(features_predict,
-                             pm,
-                             target_acc = 0.6)
+# Train the best model on all training data for prediction
+m_prod <- train_iucnn(train_feat,
+                      train_lab,
+                      production_model = m_best,
+                      overwrite = TRUE)
 
-# plot the predicted status distribution
-plot_predictions(predictions$predictions)
+# Predict RL categories for target species
+pred <- predict_iucnn(pred_feat,
+                      m_prod)
+plot(pred)
 
 ```
 

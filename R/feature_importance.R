@@ -192,7 +192,7 @@ feature_importance <- function(x,
                                                    unlink_features_within_block = unlink_features_within_block)
     selected_cols <- feature_importance_out[,2:4]
   }else{
-    if (is.nan(x$input_data$test_data)){
+    if (is.nan(x$input_data$test_data[1])){
       use_these_features <- x$input_data$data
       use_these_labels <- x$input_data$labels
 
@@ -222,5 +222,8 @@ feature_importance <- function(x,
   names(selected_cols) <- c('feature_block',
                             'feat_imp_mean',
                             'feat_imp_std')
+
+  class(selected_cols) <- "iucnn_featureimportance"
+
   return(selected_cols)
 }

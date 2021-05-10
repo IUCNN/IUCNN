@@ -15,7 +15,7 @@ ft_foot(
   lat = "decimallatitude",
   rescale = TRUE,
   year = c(1993, 2009),
-  file_path = NULL,
+  download.folder = "feature_extraction",
   breaks = c(0, 0.81, 1.6, 2.3, 100)
 )
 }
@@ -41,8 +41,9 @@ remember to change the breaks argument.}
 The default is to the two layers available. Can be a either year, in case only
 one slice is desired. Other time slices are currently not supported,}
 
-\item{file_path}{a character string. The path where raster can be saved on disk.
-IF NULL the working directory. Default = NULL.}
+\item{download.folder}{character string. The folder were to save the
+data used for feature extraction. RElative to the working directory.
+Set to NULL for the working directory}
 
 \item{breaks}{numerical. The breaks to bin the human footprint index
 for the final features. The defaults are

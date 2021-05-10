@@ -11,7 +11,7 @@
 #'
 #' By default four categories of increasing human footprint index
 #'  ( 1 = lowest, 4 = highest) are selected and rescaled.
-#'
+#' @inheritParams prep_features
 #' @param footp_input an object of the class raster or RasterStack
 #' with values for the human footprint index.
 #' If a RasterStack, different layers are interpreted as different time-slices.
@@ -21,8 +21,6 @@
 #' @param year numeric. The years for which to obtain the human footprint index.
 #' The default is to the two layers available. Can be a either year, in case only
 #' one slice is desired. Other time slices are currently not supported,
-#' @param file_path a character string. The path where raster can be saved on disk.
-#'  IF NULL the working directory. Default = NULL.
 #' @param breaks numerical. The breaks to bin the human footprint index
 #'  for the final features. The defaults are
 #' empirical values for the global footprint and rescale=TRUE.
@@ -64,7 +62,7 @@ ft_foot <- function(x,
                    lat = "decimallatitude",
                    rescale = TRUE,
                    year = c(1993, 2009),
-                   file_path = NULL,
+                   download.folder = "feature_extraction",
                    breaks = c(0, 0.81, 1.6, 2.3, 100)){
 
   #assertions
@@ -74,7 +72,7 @@ ft_foot <- function(x,
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_logical(rescale)
   assert_numeric(year)
-  assert_character(file_path, null.ok = TRUE)
+  assert_character(download.folder, null.ok = TRUE)
   assert_numeric(breaks)
 
   # get human footprint
@@ -82,9 +80,16 @@ ft_foot <- function(x,
     message("Downloading Human Footprint data from https://wcshumanfootprint.org/")
 
     # file path
-    if(is.null(file_path)){
-      file_path <- getwd()
+    # set download path
+    if(!dir.exists(download.folder)){
+      dir.create(download.folder)
     }
+    if(is.null(download.folder)){
+      download.folder <- getwd()
+    }else{
+      download.folder <- file.path(getwd(), download.folder)
+    }
+
 
     # test for internet
     if(!curl::has_internet()){
@@ -95,13 +100,13 @@ ft_foot <- function(x,
     # download the human footprint raster from https://wcshumanfootprint.org/
     if(length(year) > 1){
       year <- as.list(year)
-      lapply(year, FUN = "get_footp", file_path = file_path)
+      lapply(year, FUN = "get_footp", file_path = download.folder)
     }else{
-      get_footp(x = year, file_path = file_path)
+      get_footp(x = year, file_path = download.folder)
     }
 
     # load raster
-    footp_inp <-  raster::stack(file.path(file_path,
+    footp_inp <-  raster::stack(file.path(download.folder,
                                           paste("HFP",
                                                 year, ".tif",
                                                 sep = "")))

@@ -11,7 +11,7 @@ ft_biom(
   lat = "decimallatitude",
   biome.input = NULL,
   biome.id = "BIOME",
-  download.path = NULL,
+  download.folder = "feature_extraction",
   remove_zeros = FALSE
 )
 }
@@ -34,8 +34,9 @@ https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world}
 with the biome names in biome.input.
 Default is "BIOME"}
 
-\item{download.path}{character string. The path were to save the WWF polygons
-if biome.input is NULL. Default is the working directory}
+\item{download.folder}{character string. The folder were to save the
+data used for feature extraction. RElative to the working directory.
+Set to NULL for the working directory}
 
 \item{remove_zeros}{logical. If TRUE biomes without occurrence of
 any species are removed from the features.
