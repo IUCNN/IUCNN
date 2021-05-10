@@ -1,4 +1,4 @@
-#' Model-testing IUCNN models using cross-validation (hyperparameter-tuning)
+#' Model-Testing IUCNN Models using Cross-Validation (Hyperparameter-Tuning)
 #'
 #' Takes as input features produced with \code{\link{prep_features}}
 #' and labels produced with \code{\link{prep_labels}}, as well as a path to a
@@ -12,7 +12,8 @@
 #'
 #'@inheritParams train_iucnn
 #'
-#'@param logfile a string with the filepath/name for the output log-file.
+#'@param logfile character string. Define the filepath/name for the output
+#'log-file.
 #'@param init_logfile logical (default=TRUE). If set to TRUE,
 #'\code{modeltest_iucnn} will attempt to initiate a new log-file under the
 #'provided path, possibly overwriting already existing model-testing results
@@ -25,8 +26,8 @@
 #'useful when e.g. wanting to test the same models for different sets of input
 #'data.
 #'
-#'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
-#'tutorial on how to run IUCNN.
+#'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
+#'for a tutorial on how to run IUCNN.
 #'
 #'@return outputs a data.frame object containing stats and settings of all
 #'tested models.
@@ -36,15 +37,15 @@
 #'# Model-testing
 #'logfile = paste0("model_testing_results.txt")
 #'model_testing_results = modeltest_iucnn(features,
-#'                                         labels,
-#'                                         logfile,
-#'                                         model_outpath = 'iucnn_modeltest',
-#'                                         mode = 'nn-class',
-#'                                         seed = 1234,
-#'                                         dropout_rate = c(0.0,0.1,0.3),
-#'                                         n_layers = c('30','40_20','50_30_10'),
-#'                                         cv_fold = 5,
-#'                                         init_logfile = TRUE)
+#'                                        labels,
+#'                                        logfile,
+#'                                        model_outpath = 'iucnn_modeltest',
+#'                                        mode = 'nn-class',
+#'                                        seed = 1234,
+#'                                        dropout_rate = c(0.0,0.1,0.3),
+#'                                        n_layers = c('30','40_20','50_30_10'),
+#'                                        cv_fold = 5,
+#'                                        init_logfile = TRUE)
 #'}
 #'
 #'
