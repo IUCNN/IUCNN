@@ -1,45 +1,41 @@
-#' Train a set of IUCNN models and log results to pick best model configuration
+#' Model-testing IUCNN models using cross-validation (hyperparameter-tuning)
 #'
-#' Uses a data-frame of model-testing results generated with
-#' \code{\link{modeltest_iucnn}} as input, and finds the best model
-#' based on the chosen criterion.
+#' Takes as input features produced with \code{\link{prep_features}}
+#' and labels produced with \code{\link{prep_labels}}, as well as a path to a
+#' log-file where results for each tested model will be stored. All available
+#' options are identical to the \code{\link{train_iucnn}} function and can be
+#' provided as vectors, e.g. \code{dropout_rate = c(0.0,0.1,0.3)} and
+#' \code{n_layers = c('30','40_20','50_30_10')}. \code{modeltest_iucnn} will
+#' then iterate through all possible permutations of the provided hyperparameter
+#' settings, train a separate model for each hyperparameter combination, and
+#' store the results in the provided log-file.
 #'
+#'@inheritParams train_iucnn
 #'
-#'@param x a data.frame of model-testing results as produced
-#'by \code{\link{modeltest_iucnn}}
-#'@param criterion name the criterion to rank models by (default="val_acc"). Valid options are
-#'"val_acc","val_loss","weighted_error", or "total_class_matches"
-#'(see details below):
-#'- val_acc: highest validation accuracy
-#'- val_loss: lowest validation loss
-#'- weighted_error: lowest weighted error, e.g. an LC species misclassified as
-#'                  CR has a weighted error of 4-0 = 4, while an LC species
-#'                  misclassified as NT has a weighted error of 1-0 = 1.
-#'                  These error scores are summed across all validation
-#'                  predictions
-#'- total_class_matches: picks the model that best reproduces the class
-#'                       distribution in the validation data. When picking
-#'                       this criterion it is not considered whether or not
-#'                       individual instances are predicted correctly, but
-#'                       instead it only looks at the overall class distribution
-#'                       in the predicted data
-#'
-#'@param require_dropout logical (default=FALSE). If set to TRUE, the best model
-#'that contains a dropout rate of > 0 will be picked, even if other non-dropout
-#'models scored higher given the chosen criterion. Dropout models are required
-#'for certain functionalities within IUCNN, such as e.g. choosing a target
-#'accuracy when using predict_iucnn.
+#'@param logfile a string with the filepath/name for the output log-file.
+#'@param init_logfile logical (default=TRUE). If set to TRUE,
+#'\code{modeltest_iucnn} will attempt to initiate a new log-file under the
+#'provided path, possibly overwriting already existing model-testing results
+#'stored in the same location. Set to FALSE if instead you want to append to
+#'an already existing log-file.
+#'@param recycle_settings logical (default=FALSE). If set to TRUE,
+#'\code{modeltest_iucnn} will read the log-file stored at the path specified
+#'under the "logfile" argument and run model-testing for the input features
+#'and labels using the same models stored in that file. This setting can be
+#'useful when e.g. wanting to test the same models for different sets of input
+#'data.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 #'tutorial on how to run IUCNN.
 #'
-#'@return outputs an \code{iucnn_model} object containing all information about the best model.
+#'@return outputs a data.frame object containing stats and settings of all
+#'tested models.
 #'
 #' @examples
 #'\dontrun{
 #'# Model-testing
 #'logfile = paste0("model_testing_results.txt")
-#'model_testing_results = modeltest_iucnn( features,
+#'model_testing_results = modeltest_iucnn(features,
 #'                                         labels,
 #'                                         logfile,
 #'                                         model_outpath = 'iucnn_modeltest',
@@ -49,11 +45,6 @@
 #'                                         n_layers = c('30','40_20','50_30_10'),
 #'                                         cv_fold = 5,
 #'                                         init_logfile = TRUE)
-#'
-#'# Selecting best model based on chosen criterion
-#'best_iucnn_model = bestmodel_iucnn(model_testing_results,
-#'                                    criterion = 'val_acc',
-#'                                    require_dropout = TRUE)
 #'}
 #'
 #'
