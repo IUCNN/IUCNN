@@ -128,6 +128,7 @@ plot.iucnn_predictions <- function(x, ...){
                 '#D81E05',
                 '#C1B5A5')
   }else{
+    cats <- c('Not Threatened', 'Threatened')
     colors <-  c('lightgreen', 'orange')
     names(colors) <- c('Not Threatened', 'Threatened')
   }

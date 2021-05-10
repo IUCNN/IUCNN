@@ -34,7 +34,7 @@ function will correspond to the order in this argument.
 For instance with default settings, LC -> 0, CR -> 4.}
 
 \item{level}{a character string. The level of output
-level detail. IF "detail"
+level detail. If "detail"
 full IUCN categories, if "broad" then
 0 = Not threatened, and 1 = Threatened.}
 
