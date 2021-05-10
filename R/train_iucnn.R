@@ -152,6 +152,11 @@ train_iucnn <- function(x,
   assert_logical(overwrite)
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
+  if (cv_fold == 1){
+    if (validation_fraction == 0){
+      patience <- 0
+    }
+  }
 
   provided_model <- production_model
 
@@ -161,7 +166,7 @@ train_iucnn <- function(x,
     cv_fold <- 1
     seed <- provided_model$seed
     max_epochs <- round(mean(provided_model$final_training_epoch))
-    patience <- NULL
+    patience <- 0
     n_layers <- paste(provided_model$n_layers,collapse='_')
     use_bias <- provided_model$use_bias
     balance_classes <- provided_model$balance_classes
@@ -316,7 +321,7 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
     min_max_label <- as.vector(c(min(labels$labels), max(labels$labels)))
 
     trained_model_path <- pklfile_path
-    patience <- NaN
+    patience <- 0
     validation_fraction <- validation_fraction
 
     # source python function

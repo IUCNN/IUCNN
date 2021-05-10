@@ -3,6 +3,7 @@
 S3method(plot,iucnn_model)
 S3method(plot,iucnn_predictions)
 S3method(summary,iucnn_model)
+export(bestmodel_iucnn)
 export(feature_importance)
 export(ft_biom)
 export(ft_clim)

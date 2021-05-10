@@ -511,23 +511,6 @@ rank_models <- function(model_testing_results, rank_by = "val_acc") {
   return(sorted_model_testing_results)
 }
 
-best_model_iucnn <- function(model_testing_results,
-                             criterion = "val_acc",
-                             require_dropout = FALSE) {
-  ranked_models <- rank_models(model_testing_results, rank_by = criterion)
-  if (require_dropout) {
-    best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]
-  } else {
-    best_model <- ranked_models[1, ]
-  }
-
-  cat("Best model:\n")
-  cat("", sprintf("%s: %s\n", names(best_model), best_model))
-  cat("\n")
-
-  iucnn_model <-  readRDS(best_model$model_outpath)
-  return(iucnn_model)
-}
 
 model_summary <- function(best_model,
                           write_file = FALSE,
