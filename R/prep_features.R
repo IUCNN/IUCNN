@@ -8,7 +8,6 @@
 #'\code{\link{ft_foot}} functions.
 #'
 #'Without internet access, only geographic features are calculated,
-#'if the sampbias package is not installed, the bias features are skipped.
 #'
 #'@param x a data.frame of species occurrence records including three columns with
 #'species name, longitudinal coordinates and latitudinal coordinates (both decimal).
@@ -19,7 +18,7 @@
 #'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate},
 #'\dQuote{human footprint}.
 #'@param download.folder character string. The folder were to save the
-#'data used for feature extraction. RElative to the working directory.
+#'data used for feature extraction. Relative to the working directory.
 #'Set to NULL for the working directory
 #'
 #'@return a data.frame of bias features

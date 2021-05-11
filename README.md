@@ -68,7 +68,7 @@ predict_iucnn(x = features_predict,
               model = m1)
 ```
 
-WIth mode testing
+With model testing
 
 ```{r}
 library(tidyverse)

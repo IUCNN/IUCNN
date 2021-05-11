@@ -35,7 +35,7 @@ with the biome names in biome.input.
 Default is "BIOME"}
 
 \item{download.folder}{character string. The folder were to save the
-data used for feature extraction. RElative to the working directory.
+data used for feature extraction. Relative to the working directory.
 Set to NULL for the working directory}
 
 \item{remove_zeros}{logical. If TRUE biomes without occurrence of

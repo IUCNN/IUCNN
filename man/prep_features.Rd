@@ -28,7 +28,7 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \dQuote{human footprint}.}
 
 \item{download.folder}{character string. The folder were to save the
-data used for feature extraction. RElative to the working directory.
+data used for feature extraction. Relative to the working directory.
 Set to NULL for the working directory}
 }
 \value{
@@ -44,7 +44,6 @@ For more control over feature preparation, you can use the
 }
 \details{
 Without internet access, only geographic features are calculated,
-if the sampbias package is not installed, the bias features are skipped.
 }
 \examples{
 \dontrun{

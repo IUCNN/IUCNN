@@ -86,7 +86,7 @@ the first hidden layer.}
 \code{iucnn_train} will perform supersampling of the training instances to
 account for uneven class distribution in the training data. If case of
 training an bnn-class model, choosing this option will add the estimation
-of class weights instead, to account for class inbalances.}
+of class weights instead, to account for class imbalances.}
 
 \item{act_f}{character string. Specifies the activation
 function should be used in the hidden layers.
@@ -118,7 +118,7 @@ predictions.}
 
 \item{mc_dropout}{logical. If set to TRUE, the predictions (including the
 validation accuracy) based on a model trained with a dropout fraction > 0
-will reflect the stocasticity introduced by the dropout method (MC dropout
+will reflect the stochasticity introduced by the dropout method (MC dropout
 predictions). This is e.g. required when wanting to predict with a specified
 accuracy threshold (see target_acc option in \code{\link{predict_iucnn}}).
 This option is activated by default when chosing a dropout_rate > 0, unless
@@ -139,6 +139,8 @@ between 1.8 and 2.2, based on a uniform probability distribution.}
 \item{rescale_features}{logical. Set to TRUE if all feature values shall
 be rescaled to values between 0 and 1 prior to training (default=FALSE).}
 
+\item{save_model}{logical. If TRUE the model is saved to disk.}
+
 \item{overwrite}{logical. If TRUE existing models are
 overwritten. Default is set to FALSE.}
 
@@ -147,7 +149,8 @@ info to the screen while training.}
 }
 \value{
 outputs an \code{iucnn_model} object which can be used in
-\code{\link{predict_iucnn}} for predicting the conservation status of unassessed species.
+\code{\link{predict_iucnn}} for predicting the conservation status
+of not evaluated species.
 }
 \description{
 Trains an IUCNN model based on a data.frame of features for a set of species,

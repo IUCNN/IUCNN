@@ -14,12 +14,6 @@
 #'@param target_acc numerical, 0-1. The target accuracy of the overall model.
 #' Species that cannot be classified with
 #'enough certainty to reach this accuracy are classified as DD (Data Deficient).
-#'@param return_raw logical. Should the probabilities for the labels be returned?
-#'Default is FALSE.
-#'Note that the probabilities are the direct output of the
-#'SoftMax function in the output layer
-#'of the neural network and might be an unreliable measure of statistical support for
-#'the result of the classification (e.g. https://arxiv.org/abs/2005.04987).
 #'@param return_IUCN logical. If TRUE the predicted labels are translated
 #' into the original labels.
 #'If FALSE numeric labels as used by the model are returned

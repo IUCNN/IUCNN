@@ -20,13 +20,6 @@ enough certainty to reach this accuracy are classified as DD (Data Deficient).}
 \item{return_IUCN}{logical. If TRUE the predicted labels are translated
 into the original labels.
 If FALSE numeric labels as used by the model are returned}
-
-\item{return_raw}{logical. Should the probabilities for the labels be returned?
-Default is FALSE.
-Note that the probabilities are the direct output of the
-SoftMax function in the output layer
-of the neural network and might be an unreliable measure of statistical support for
-the result of the classification (e.g. https://arxiv.org/abs/2005.04987).}
 }
 \value{
 outputs an \code{iucnn_predictions} object containing the predicted

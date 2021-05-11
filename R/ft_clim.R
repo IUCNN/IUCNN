@@ -22,6 +22,9 @@
 #'Mean temperature of the Coldest Quarter,
 #'Annual Precipitation, Precipitation seasonality and
 #' Precipitation of the Driest Quarter are returned
+#'@param rescale logical. If TRUE, the features are rescaled.
+#'This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
+#'feature values are returned.
 #'
 #'@return a data.frame of climatic features
 #'

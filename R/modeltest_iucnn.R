@@ -14,6 +14,7 @@
 #'
 #'@param logfile character string. Define the filepath/name for the output
 #'log-file.
+#'@param model_outpath the path where to save the results on disk
 #'@param init_logfile logical (default=TRUE). If set to TRUE,
 #'\code{modeltest_iucnn} will attempt to initiate a new log-file under the
 #'provided path, possibly overwriting already existing model-testing results

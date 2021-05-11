@@ -42,7 +42,7 @@ The default is to the two layers available. Can be a either year, in case only
 one slice is desired. Other time slices are currently not supported,}
 
 \item{download.folder}{character string. The folder were to save the
-data used for feature extraction. RElative to the working directory.
+data used for feature extraction. Relative to the working directory.
 Set to NULL for the working directory}
 
 \item{breaks}{numerical. The breaks to bin the human footprint index

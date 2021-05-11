@@ -42,6 +42,8 @@ subsequent columns with different features.}
 \item{logfile}{character string. Define the filepath/name for the output
 log-file.}
 
+\item{model_outpath}{the path where to save the results on disk}
+
 \item{mode}{character string. Choose between the IUCNN models
 "nn-class" (default, tensorflow neural network classifier),
 "nn-reg" (tensorflow neural network regression), or
@@ -76,7 +78,7 @@ the first hidden layer.}
 \code{iucnn_train} will perform supersampling of the training instances to
 account for uneven class distribution in the training data. If case of
 training an bnn-class model, choosing this option will add the estimation
-of class weights instead, to account for class inbalances.}
+of class weights instead, to account for class imbalances.}
 
 \item{seed}{integer. Set a starting seed for reproducibility.}
 
@@ -111,7 +113,7 @@ after which training will be stopped.}
 
 \item{mc_dropout}{logical. If set to TRUE, the predictions (including the
 validation accuracy) based on a model trained with a dropout fraction > 0
-will reflect the stocasticity introduced by the dropout method (MC dropout
+will reflect the stochasticity introduced by the dropout method (MC dropout
 predictions). This is e.g. required when wanting to predict with a specified
 accuracy threshold (see target_acc option in \code{\link{predict_iucnn}}).
 This option is activated by default when chosing a dropout_rate > 0, unless
