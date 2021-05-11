@@ -15,15 +15,18 @@ URL: https://github.com/azizka/IUCNN
 BugReports: https://github.com/azizka/IUCNN/issues
 Suggests: 
     covr,
-    testthat,
-    spelling,
     knitr,
-    rmarkdown
+    rmarkdown,
+    spelling,
+    testthat,
 Language: en-US
 Imports: 
-    magrittr,
+    checkmate,
     curl,
     dplyr,
+    graphics,
+    grDevices,
+    magrittr,
     rCAT,
     raster,
     readr,
@@ -31,8 +34,7 @@ Imports:
     sf,
     stats,
     tidyr,
-    tidyselect,
-    checkmate,
+    tidyselect
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)

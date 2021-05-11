@@ -193,7 +193,7 @@ Table 2. Description of the default features included in `prep_features`. All co
 |lon_range|Geographic|Longitudinal range|The longitudinal range (.95 quantile - .05 quantile).|
 |alt_hemisphere|Geographic|The hemisphere|0 = Southern hemisphere, 1 = Northern hemisphere|
 |eoo|Geographic|Extend of Occurrence|The extend of occurrence. Calculated by rCAT. For species with less than 3 records set to AOO|
-|aoo|Geographic|Area of Occupancy||
+|aoo|Geographic|Area of Occupancy|The area of occupancy, as the sum of area of 4sqkm grid cells, where the species occurs|
 |1|Biome|Tropical & Subtropical Moist Broadleaf Forests|Are at least 5% of the species records present in this biome?|
 |2|Biome|Tropical & Subtropical Dry Broadleaf Forests|Are at least 5% of the species records present in this biome?|
 |3|Biome|Tropical & Subtropical Coniferous Forests|Are at least 5% of the species records present in this biome?|
@@ -306,7 +306,7 @@ pred_3 <- predict_iucnn(x = features_predict,
 ```
 
 ## 4) The number of species per category
-
+TOBI can you briefly describe how to do that here?
 ### just get the numbers
 
 
