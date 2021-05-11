@@ -128,7 +128,7 @@ It is important to remember the following points when using IUCNN:
 
 1. The resulting IUCNN categories are predictions. While IUCNN has reached accuracies between 80 and 90% on the broad (threatened vs non-threatened) level and up to 80% on the detailed level, some species will be mis-classified.
 
-2. IUCNN is indifferent to the provided features. On the one hand this means that any species traits for which data is available can bes used, but on the other hand this means that thought is needed in the choice of the features. The default features of IUCNN are usually a safe choice. The number of features is not limited, but currently IUCNN does not support missing values in the feature table and removes species with missing values. 
+2. IUCNN is indifferent to the provided features. On the one hand this means that any species traits for which data is available can be used, but on the other hand this means that thought is needed in the choice of the features. The default features of IUCNN are usually a safe choice. The number of features is not limited, but currently IUCNN does not support missing values in the feature table and removes species with missing values. 
 
 3. IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guilt or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended.
 
@@ -138,11 +138,11 @@ It is important to remember the following points when using IUCNN:
 
 ## Evaluating feature importance
 # Customizing IUCNN analyses
-IUCNN contains multiple options to customize the steps of the analyses to adapt to particularities of taxonomic groups and regions and to accommodate differences in data availability. Below we describe the most important options to customize 1) feature and label preparation and 2) model training and 3) status prediction.
+IUCNN contains multiple options to customize the steps of the analyses to adapt to particularities of taxonomic groups and regions and to accommodate differences in data availability. Below we describe the most important options to customize 1) feature and label preparation, 2) model training, and 3) status prediction.
 
 ## 1) Features and Labels
 ### Add and remove feature blocks
-The default labels are selected based on empirical test on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. Table 1 below explains all default features. You can exclude feature blocks using the `type` argument of the `prep_features` function. For instance, to exclude the biome features:
+The default labels are selected based on empirical tests on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. Table 1 below explains all default features. You can exclude feature blocks using the `type` argument of the `prep_features` function. For instance, to exclude the biome features:
 
 ```{r, eval = FALSE}
 features_train2 <- prep_features(training_occ, type = c("geographic", "climate", "humanfootprint"))
@@ -281,34 +281,43 @@ res_4 <- train_iucnn(x = features_train,
 ```
 
 ### Feature importance
-You can use the `feature_importance` function to gauge the importance of different feature blocks for model performance. The function will randomize individual feature blocks and return the decrease in model performance caused by the randomization. If you have used other than the default features, you can define feature blocks using the `feature_blocks` option. 
+You can use the `feature_importance` function to gauge the importance of different feature blocks or individual features for model performance. The function implements the permutation feature importance technique, which will randomly shuffle the values within individual features or blocks of features and evaluate how this randomization affects the models prediction accuracy. If a given feature (or block of features) is important for the models ability to predict, randomizing this feature will lead to a large drop in prediction accuracy. If you have used other than the default features, you can define feature blocks using the `feature_blocks` option.
 ```{r, eval = FALSE}
 feature_importance(x = res_1)
 ```
 
 ### Model testing
+Before training your final model that you use for predicting the conservation status of unassessed species, it is highly recommended that you use the `modeltest_iucnn` function for finding the best settings for your model and dataset. This process, often referred to as hyperparameter tuning, is an essential step for building the most suitable model for the prediction task. The `modeltest_iucnn` function allows you to provide any settings for `train_iucnn` as vectors, which will lead the function to train a separate model for each provided setting. The function will explore all possible permutations of the provided settings, so that the following command results in 9 different models being trained:
 
-TOBI explain here
+```{r, eval = FALSE}
+modeltest_results = modeltest_iucnn(features,labels,dropout_rate = c(0.0,0.1,0.3),n_layers = c('30','40_20','50_30_10'))
+```
+
+The model specs and settings of each tested model are written to a log-file and can be inspected with the `bestmodel_iucnn` function, to decide which model settings to pick as your best model. You can choose different criteria for picking the best model, such as best prediction accuracy, best predicted over-all status distribution, lowest weighted mis-classification error, etc.
+
+```{r, eval = FALSE}
+bestmodel_iucnn(modeltest_results, criterion='val_acc')
+```
+
 
 ## 3) Status prediction
-The `predict_iucnn` function offer some function to customize predictions. The most important option in many cases is `target_acc`. With this option you can set a target overall accuracy that the model needs to achieve. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as DD (Data Deficient).
+The `predict_iucnn` function offers some options to customize the predictions. The most important option in many cases is `target_acc`. With this option you can set an overall target-accuracy threshold that the model needs to achieve. This option is only available for nn-class and nn-reg models that were trained using dropout (see help function of `train_iucnn` for more explanation), as well as for all bnn-class models. The set `target_acc` threshold will be achieved by the model being more selective with making a category call for a given instance. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as NA (Not Assessed).
 ```{r}
 pred_2 <- predict_iucnn(x = features_predict, 
                         target_acc = 0.7,
                         model = res_2)
 ```
 
-Furthermore, via the `return_raw` and `return_IUCN` options you can customize the output format. With `return_raw` option you can return the raw probabilities for the classification (see `?predict_iucnn`) and with `return_IUCN` you can chose to either return the IUCN category labels or the internal labels used by the neural network.
+Furthermore, you can turn off the `return_IUCN` option if you rather want to output the numerical labels, instead of the IUCNN status labels "LC", "NT", etc.
 ```{r}
 pred_3 <- predict_iucnn(x = features_predict, 
                         model = res_2,
-                        return_raw = TRUE)
+                        return_IUCN = FALSE)
 ```
 
+The output of the `predict_iucnn` function is an "iucnn_predictions" object, that contains several output objects. To see the predicted labels of the individual instances you can view `pred_2$class_predictions`. If instead you want to view the label probabilities estimated by the neural network, you can view `pred_2$mc_dropout_probs` for "nn-class" and "nn-reg" with dropout, or `pred_2$posterior_probs` for "bnn-class". Even one step more detailed you can see the `pred_2$raw_predictions` object, which contains the individual label probabilities resulting from the softmax output layer in case of "nn-class", or the regressed labels in case of "nn-reg".
+
+
 ## 4) The number of species per category
-TOBI can you briefly describe how to do that here?
-### just get the numbers
-
-
-### Account for uncertainty
+Another stat that can be extracted from the "iucnn_predictions" object is the overall category distribution predicted for the given prediction instances. This can be accessed with `pred_2$pred_cat_count`, which shows the distribution of the label predictions, including the count of species that could not be predicted given the chosen `target_acc`. Another stat are the `pred2$sampled_cat_freqs` (only available for dropout models and all "bnn-class" models, see above), which show the class distribution as sampled from the `pred_2$mc_dropout_probs` or the `pred_2$posterior_probs` for "bnn-class" models. The difference between `pred2$sampled_cat_freqs` and `pred_2$mc_dropout_probs`/`pred_2$posterior_probs` is that the former represents the counts of the best labels determined for each instance, whereas the latter represents labels sampled from the predicted label probabilities, which also proportionally samples the labels for a given instance that do receive the maximum label probability. The latter is done repeatedly to include the stocacitiy of the random sampling of classes from the given probability vectors. The `pred_2$mc_dropout_probs`/`pred_2$posterior_probs` can be used to plot histograms of the estimates for each class, and can be reported as uncertainty intervals around the number of species in each class for the set of species that were predicted.
 

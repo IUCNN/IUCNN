@@ -145,6 +145,11 @@ predict_iucnn <- function(x,
                    stretch_factor_rescaled_labels = model$label_stretch_factor)
   }
 
+  cat_count = get_cat_count(pred_out$class_predictions,
+                max_cat = length(model$input_data$lookup.lab.num.z)-1,
+                include_NA=TRUE)
+  pred_out$pred_cat_count = cat_count
+
   # Translate prediction to original labels
   if(return_IUCN){
     lu <- model$input_data$lookup.labels
