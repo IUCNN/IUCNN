@@ -595,13 +595,27 @@ get_weighted_errors <- function(model_testing_results,
 }
 
 get_cat_count <- function(target_vector,
-                          max_cat = 4) {
-  cat_counts <- c()
-  for (i in 0:max_cat) {
-    cat_counts <- c(cat_counts, length(target_vector[target_vector == i]))
+                          max_cat = 4, include_NA=FALSE) {
+  # count the different categories
+  counts <- table(target_vector) # this doens't count NaN
+  cats <- as.character(0:max_cat)
+  if (include_NA){
+    NA_count <- length(target_vector[is.na(target_vector)])
+    counts['NA'] <- NA_count
+    cats <- c(cats,'NA')
   }
-  return(cat_counts)
+  mis <- cats[!cats %in% names(counts)]
+  plo <- c(counts, rep(0, length(mis)))
+  names(plo) <- as.character(c(names(counts), mis))
+  # order categories
+  plo <- plo[cats]
+  return(plo)
 }
+
+
+
+
+
 
 get_confusion_matrix <- function(best_model) {
   if (typeof(best_model$confusion_LC) == "character") {
