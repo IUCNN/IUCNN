@@ -2,11 +2,7 @@
 % Please edit documentation in R/bestmodel_iucnn.R
 \name{bestmodel_iucnn}
 \alias{bestmodel_iucnn}
-<<<<<<< HEAD
 \title{Select the Best Model After Model-testing}
-=======
-\title{Select the best IUCNN Model after Model-Testing}
->>>>>>> a5957d28b6429c64e6278a3f2f53ebddcbcb6928
 \usage{
 bestmodel_iucnn(x, criterion = "val_acc", require_dropout = FALSE)
 }
@@ -41,13 +37,8 @@ for certain functionalities within IUCNN, such as e.g. choosing a target
 accuracy when using predict_iucnn.}
 }
 \value{
-<<<<<<< HEAD
 outputs an \code{iucnn_model} object containing all
 information about the best model.
-=======
-outputs an \code{iucnn_model} object containing all information
-about the best model.
->>>>>>> a5957d28b6429c64e6278a3f2f53ebddcbcb6928
 }
 \description{
 Uses a data-frame of model-testing results generated with

@@ -65,13 +65,13 @@ ft_biom <- function(x,
   # get biome data if necessary
   if(is.null(biome.input)){
     # set download path
-    if(!dir.exists(download.folder)){
-      dir.create(download.folder)
-    }
     if(is.null(download.folder)){
       download.folder <- getwd()
     }else{
       download.folder <- file.path(getwd(), download.folder)
+    }
+    if(!dir.exists(download.folder)){
+      dir.create(download.folder)
     }
 
     # Download biomes shape

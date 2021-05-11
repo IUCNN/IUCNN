@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 #' Select the Best Model After Model-testing
-=======
-#' Select the best IUCNN Model after Model-Testing
->>>>>>> a5957d28b6429c64e6278a3f2f53ebddcbcb6928
+
 #'
 #' Uses a data-frame of model-testing results generated with
 #' \code{\link{modeltest_iucnn}} as input, and finds the best model
@@ -10,11 +7,7 @@
 #'
 #'
 #'@param x a data.frame of model-testing results as produced
-<<<<<<< HEAD
-#'by \code{\link{modeltest_iucnn}}
-=======
 #'by \code{\link{modeltest_iucnn}}.
->>>>>>> a5957d28b6429c64e6278a3f2f53ebddcbcb6928
 #'@param criterion name the criterion to rank models by (default="val_acc").
 #'Valid options are
 #'"val_acc","val_loss","weighted_error", or "total_class_matches"
@@ -42,13 +35,8 @@
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 #'for a tutorial on how to run IUCNN.
 #'
-<<<<<<< HEAD
 #'@return outputs an \code{iucnn_model} object containing all
 #'information about the best model.
-=======
-#'@return outputs an \code{iucnn_model} object containing all information
-#'about the best model.
->>>>>>> a5957d28b6429c64e6278a3f2f53ebddcbcb6928
 #'
 #' @examples
 #'\dontrun{

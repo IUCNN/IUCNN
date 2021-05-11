@@ -70,13 +70,13 @@ ft_clim <- function(x,
   # Get climate data if non is provided
   if(is.null(climate.input)){
     # set download path
-    if(!dir.exists(download.folder)){
-      dir.create(download.folder)
-    }
     if(is.null(download.folder)){
       download.folder <- getwd()
     }else{
       download.folder <- file.path(getwd(), download.folder)
+    }
+    if(!dir.exists(download.folder)){
+      dir.create(download.folder)
     }
 
     climate.input <- raster::getData('worldclim',
