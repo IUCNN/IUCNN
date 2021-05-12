@@ -21,7 +21,7 @@
 #'this model and reproduce it, but use all available data for training, by
 #'automatically setting the validation set to 0 and cv_fold to 1. This is
 #'recommended before using the model for predicting the IUCN status of
-#'unassessed species, as it generally improves the prediction
+#'not evaluated species, as it generally improves the prediction
 #'accuracy of the model. Choosing this option will ignore all other provided
 #'settings (below).
 #'@param mode character string. Choose between the IUCNN models
