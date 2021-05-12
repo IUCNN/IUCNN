@@ -14,7 +14,7 @@ get_footp <- function(x, file_path){
     unzip(file.path(file_path, paste("HFP", x, ".zip", sep = "")),
           exdir = file_path)
 
-    file.remove(file.path(file.path(file_path, paste("HFP", x, ".zip", sep = ""))))
+    file.remove(file.path(file_path, paste("HFP", x, ".zip", sep = "")))
     }
 }
 

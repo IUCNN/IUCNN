@@ -83,7 +83,9 @@ ft_biom <- function(x,
       file.remove(file.path(download.folder, "wwf_ecoregions.zip"))
     }
     #load biomes
-    biome.input <- sf::st_read(dsn = file.path(download.folder, "WWF_ecoregions", "official"),
+    biome.input <- sf::st_read(dsn = file.path(download.folder,
+                                               "WWF_ecoregions",
+                                               "official"),
                                layer = "wwf_terr_ecos", quiet = TRUE)
   }
 
