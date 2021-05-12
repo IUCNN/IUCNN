@@ -58,14 +58,17 @@ prep_features <- function(x,
   assert_character(download.folder, null.ok = TRUE)
 
   # generate folder fore data
+  if(is.null(download.folder)){
+    download.folder <- getwd()
+  }
+
   if(!dir.exists(download.folder)){
     dir.create(download.folder)
   }
-  if(is.null(download.folder)){
-    download.folder <- getwd()
-  }else{
-    download.folder <- file.path(getwd(), download.folder)
-  }
+
+  # else{
+  #   download.folder <- file.path(getwd(), download.folder)
+  # }
 
   #prepare geographic features
   if("geographic" %in% type){

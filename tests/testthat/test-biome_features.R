@@ -1,4 +1,4 @@
-test_that("multiplication works", {
+test_that("biome features work", {
   skip_on_cran()
   skip_if_offline(host = "r-project.org")
 

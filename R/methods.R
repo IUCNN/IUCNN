@@ -160,7 +160,7 @@ plot.iucnn_featureimportance <- function(x, ...){
           names.arg = x$feature_block,
           ylim = c(0, max(x$feat_imp_mean) + max(x$feat_imp_std)),
           main = "Delta accuracy",
-          col = rev(cm.colors(nrow(x))))
+          col = rev(cm.colors(length(x$feature_block))))
 
   segments(bp,
            x$feat_imp_mean - x$feat_imp_std,

@@ -12,7 +12,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   warning=FALSE,
-  message=FALSE
+  message=FALSE,
+  fig.width = 8
 )
 ```
 
@@ -184,6 +185,7 @@ feat <- data.frame(species = c("Adansonia digitata", "Ceiba pentandra"),
 ```
 
 Table 2. Description of the default features included in `prep_features`. All continuous variables are rescaled to a similar range.
+
 | Feature | Block | Name | Description |
 |---|---|---|---|
 |tot_occ|Geographic|Number of occurrences|The total number of occurrences available for this species|
@@ -306,18 +308,18 @@ bestmodel_iucnn(modeltest_results, criterion='val_acc')
 
 ## 3) Status prediction
 The `predict_iucnn` function offers  options to customize the predictions. The most important option in many cases is `target_acc`, which allows to set an overall target-accuracy threshold that the model needs to achieve. This option is only available for nn-class and nn-reg models that were trained using dropout (see help function of `train_iucnn` for more explanation), as well as for all bnn-class models. The `target_acc` will be achieved by the model being more selective with making a category call for a given instance. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as NA (Not Assessed).
-```{r, eval = FALSE}
+```{r}
 pred_2 <- predict_iucnn(x = features_predict, 
                         target_acc = 0.7,
                         model = res_2)
+plot(pred_2)
 ```
 
 Furthermore, you can turn off the `return_IUCN` option if to return the numerical labels instead of the IUCNN RL category labels.
-```{r}
+```{r, eval = FALSE}
 pred_3 <- predict_iucnn(x = features_predict, 
                         model = res_2,
                         return_IUCN = FALSE)
-plot(pred_3)
 ```
 
 The output of the `predict_iucnn` function is an "iucnn_predictions" object, that contains several output objects. The predicted labels of the individual instances are accessible with `pred_2$class_predictions` and label probabilities estimated by the neural network via `pred_2$mc_dropout_probs` for "nn-class" and "nn-reg" with dropout, or `pred_2$posterior_probs` for "bnn-class". For more detail, the `pred_2$raw_predictions` object contains the individual label probabilities resulting from the softmax output layer in case of "nn-class", or the regressed labels in case of "nn-reg".

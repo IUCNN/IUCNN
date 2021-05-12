@@ -1,4 +1,6 @@
 data("prediction_occ")
+skip_on_cran()
+skip_if_offline(host = "r-project.org")
 orchid<- ft_clim(prediction_occ)
 
 test_that("is a data,frame", {

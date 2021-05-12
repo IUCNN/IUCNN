@@ -67,9 +67,10 @@ ft_biom <- function(x,
     # set download path
     if(is.null(download.folder)){
       download.folder <- getwd()
-    }else{
-      download.folder <- file.path(getwd(), download.folder)
     }
+    # }else{
+    #   download.folder <- file.path(getwd(), download.folder)
+    # }
     if(!dir.exists(download.folder)){
       dir.create(download.folder)
     }
