@@ -10,7 +10,7 @@ train_iucnn(
   path_to_output = "iuc_nn_model",
   production_model = NULL,
   mode = "nn-class",
-  validation_fraction = 0.2,
+  test_fraction = 0.2,
   cv_fold = 1,
   seed = 1234,
   max_epochs = 1000,
@@ -57,12 +57,12 @@ settings (below).}
 "nn-reg" (tensorflow neural network regression), or
 "bnn-class" (Bayesian neural network classifier)}
 
-\item{validation_fraction}{numeric. The fraction of the input data used as
+\item{test_fraction}{numeric. The fraction of the input data used as
 validation set.}
 
 \item{cv_fold}{integer (default=5). When setting cv_fold > 1,
 \code{iucnn_train} will perform k-fold cross-validation. In this case, the
-provided setting for validation_fraction will be ignored, as the validation
+provided setting for test_fraction will be ignored, as the validation
 size of each CV-fold is determined by the specified number provided here.}
 
 \item{seed}{integer. Set a starting seed for reproducibility.}
