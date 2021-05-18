@@ -11,7 +11,7 @@ cat(sprintf("Training accuracy: %s\n",
             round(object$training_accuracy, 3)))
 cat(sprintf("Validation accuracy: %s\n",
             round(object$validation_accuracy, 3)))
-cat(sprintf("Accuracy on unseen data (test set): %s\n",
+cat(sprintf("Accuracy on unseen data (test set): %s\n\n",
             round(object$test_accuracy, 3)))
 
 cat(sprintf("Label detail: %s Classes (%s)\n\n",

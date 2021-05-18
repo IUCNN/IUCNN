@@ -104,7 +104,7 @@ def iucnn_train(dataset,
     def get_classification_accuracy(model,features,true_labels,mc_dropout,dropout_reps,loss=False):
         if features.shape[0] == 0:
             return np.array([]), np.array([]), np.nan, np.nan
-        else:    
+        else:
             if mc_dropout:
                 predictions_raw = np.array([model.predict(features) for i in np.arange(dropout_reps)])
                 predictions_raw_mean = np.mean(predictions_raw,axis=0)
@@ -136,7 +136,7 @@ def iucnn_train(dataset,
                 prm_est_reps_unscaled = np.array([model.predict(features).flatten() for i in np.arange(dropout_reps)])
                 predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps_unscaled])
                 prm_est_mean = turn_reg_output_into_softmax(predictions_raw,label_cats)
-                label_predictions = np.argmax(prm_est_mean, axis=1) 
+                label_predictions = np.argmax(prm_est_mean, axis=1)
             else:
                 prm_est_mean_unscaled = model.predict(features).flatten()
                 prm_est_mean = rescale_labels(prm_est_mean_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
@@ -440,7 +440,7 @@ def iucnn_train(dataset,
             val_acc = np.nan
             if len(labels_for_testing)>0:
                 test_acc, test_predictions, test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
-                test_loss = np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
+                test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
             else:
                 test_acc = np.nan
                 test_predictions = np.nan
