@@ -15,7 +15,7 @@ train_iucnn(
   seed = 1234,
   max_epochs = 1000,
   patience = 200,
-  n_layers = "60_60_20",
+  n_layers = "50_30_10",
   use_bias = TRUE,
   balance_classes = FALSE,
   act_f = "auto",

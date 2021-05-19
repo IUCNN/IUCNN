@@ -142,7 +142,7 @@ train_iucnn <- function(x,
                         seed = 1234,
                         max_epochs = 1000,
                         patience = 200,
-                        n_layers = '60_60_20',
+                        n_layers = '50_30_10',
                         use_bias = TRUE,
                         balance_classes = FALSE,
                         act_f = "auto",
@@ -253,12 +253,16 @@ train_iucnn <- function(x,
     warning('
 The following settings are currently not supported for BNN models and are being ignored:
 cv_fold, patience, act_f_out.
-Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps, the BNN will instead provide posterior estimates of the class labels for each instance.\n')
-    if (max_epochs < 10000){
-      warning(paste0('\nNumber of MCMC generations is set to ',
-                     max_epochs,
-                     ' (max_epochs). Set a value of at least max_epochs=10000 for better MCMC convergence.\n'))
+Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps,
+the BNN will instead provide posterior estimates of the class labels for each instance.\n')
+    if (max_epochs < 1000000){
+      message('For proper convergence for bnn-class models it is recommended to set max_epochs=1000000 or more.')
+      overwrite_prompt <-  readline(prompt='Do you want to continue with current max_epochs settings (not recommended)? [Y/n]: ')
+      if (overwrite_prompt != 'Y'){
+        stop('Stopping training request. Increase max_epochs to >= 1000000 before relaunching.')
+      }
     }
+
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,
                              labels,
@@ -290,11 +294,20 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
     # set up the MCMC environment
     update_frequencies <- rep(0.05, length(n_layers) + 1)
     update_window_sizes <- rep(0.075, length(n_layers) + 1)
+    adapt_f <- 0.3
+    adapt_fM <- 0.6
+    sampling_f <- 10
+    n_post_samples <- 1000
+    print_f <- 100
     mcmc_object <- MCMC_setup(bnn_model,
                              update_frequencies,
                              update_window_sizes,
+                             adapt_f,
+                             adapt_fM,
                              n_iteration = as.integer(max_epochs),
-                             sampling_f = 10
+                             n_post_samples = n_post_samples,
+                             print_f = print_f,
+                             sampling_f = sampling_f
     )
 
     # run the MCMC and write output to file

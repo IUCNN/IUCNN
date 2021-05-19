@@ -525,6 +525,8 @@ def iucnn_train(dataset,
         train_instance_names = instance_names
         test_instance_names = instance_names
     elif test_fraction == 0 and cv_k > 1:
+        avg_validation_acc = avg_test_acc
+        avg_validation_loss = avg_test_loss
         data_train = orig_dataset
         labels_train = orig_labels
         data_test = orig_dataset

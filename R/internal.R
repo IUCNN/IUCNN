@@ -75,12 +75,14 @@ create_BNN_model <- function(feature_data,
 MCMC_setup <- function(bnn_model,
                        update_f,
                        update_ws,
+                       adapt_f,
+                       adapt_fM,
                        MCMC_temperature = 1,
                        likelihood_tempering = 1,
-                       n_iteration = 5000,
+                       n_iteration = 1000000,
                        sampling_f = 10, # how often to write to file (every n iterations)
-                       print_f = 1000, # how often to print to screen (every n iterations)
-                       n_post_samples = 100, # how many samples to keep in log file. If sampling exceeds this threshold it starts overwriting starting from line 1.
+                       print_f = 100, # how often to print to screen (every n iterations)
+                       n_post_samples = 1000, # how many samples to keep in log file
                        sample_from_prior = FALSE){
 
   # source python function
@@ -89,6 +91,8 @@ MCMC_setup <- function(bnn_model,
   mcmc <- bn$MCMC(bnn_model,
                  update_f = update_f,
                  update_ws = update_ws,
+                 adapt_f = adapt_f,
+                 adapt_fM = adapt_fM,
                  temperature = MCMC_temperature,
                  n_iteration = as.integer(n_iteration),
                  sampling_f = as.integer(sampling_f),
