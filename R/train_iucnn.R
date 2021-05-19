@@ -185,6 +185,11 @@ train_iucnn <- function(x,
     }
   }
 
+  if(mode == "bnn-class"){
+    cat("Please add the number of MCMC generations. Should be at least 1M:\n")
+    max_epochs <- as.integer(readline())
+  }
+
   provided_model <- production_model
 
   if (class(provided_model) == "iucnn_model"){
@@ -502,6 +507,10 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
   named_res$validation_accuracy <- validation_accuracy
 
   class(named_res) <- "iucnn_model"
+
+  if(mode == "bnn-class"){
+    warning("Remember to check MCMC convergence in the log file")
+  }
 
   return(named_res)
 }
