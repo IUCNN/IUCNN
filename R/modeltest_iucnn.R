@@ -60,7 +60,7 @@ modeltest_iucnn <- function(x,
                             model_outpath = "modeltest",
                             mode = "nn-class",
                             cv_fold = 5,
-                            validation_fraction = 0,
+                            test_fraction = 0,
                             n_layers = c("50_30_10", "30"),
                             dropout_rate = c(0, 0.1, 0.3),
                             use_bias = TRUE,
@@ -151,7 +151,7 @@ modeltest_iucnn <- function(x,
       act_f <- row$act_f
       act_f_out <- row$act_f_out
       cv_fold <- row$cv_fold
-      validation_fraction <- row$validation_fraction
+      test_fraction <- row$test_fraction
       label_stretch_factor <- row$label_stretch_factor
       label_noise_factor <- row$label_noise_factor
 
@@ -162,7 +162,7 @@ modeltest_iucnn <- function(x,
                          seed = seed,
                          max_epochs = max_epochs,
                          patience = patience,
-                         validation_fraction = validation_fraction,
+                         test_fraction = test_fraction,
                          n_layers = n_layers,
                          use_bias = use_bias,
                          balance_classes = balance_classes,
@@ -192,19 +192,20 @@ modeltest_iucnn <- function(x,
     if (cv_fold > 1) {
       message("Evaluating models using ",
               cv_fold,
-              "-fold cross-validation (validation_fraction setting is ignored).")
-      validation_fraction <- 0
+              "-fold cross-validation (test_fraction setting is ignored).")
+      test_fraction <- 0
     } else {
-      if (validation_fraction == 0) {
-        stop(paste0("No validation set defined: cv_fold is set to ",
+      if (test_fraction == 0) {
+        stop(paste0("No test set defined: cv_fold is set to ",
                     cv_fold,
-                    " and validation_fraction to ",
-                    validation_fraction,
-                    ". Change either one of these settings to define a validation set."))
+                    " and test_fraction to ",
+                    test_fraction,
+                    ". Change either one of these settings to evaluate model on
+                    unseen data."))
       } else {
         warning(paste0("Running single training round for each model with ",
-                       validation_fraction,
-                       " validation set."))
+                       test_fraction,
+                       " test set."))
       }
     }
     if (init_logfile == TRUE) {
@@ -230,7 +231,7 @@ modeltest_iucnn <- function(x,
                                               mc_dropout,
                                               mc_dropout_reps,
                                               mode,
-                                              validation_fraction,
+                                              test_fraction,
                                               balance_classes))
     n_permutations <- dim(permutations)[1]
 
@@ -257,7 +258,7 @@ modeltest_iucnn <- function(x,
       mc_dropout_i <- as.logical(settings[[14]])
       mc_dropout_reps_i <- as.integer(settings[[15]])
       mode_i <- as.character(settings[[16]])
-      validation_fraction_i <- as.numeric(settings[[17]])
+      test_fraction_i <- as.numeric(settings[[17]])
       balance_classes_i <- as.logical(settings[[18]])
 
       # set out act fun if chosen auto
@@ -280,7 +281,7 @@ modeltest_iucnn <- function(x,
                          seed = seed_i,
                          max_epochs = max_epochs_i,
                          patience = patience_i,
-                         validation_fraction = validation_fraction_i,
+                         test_fraction = test_fraction_i,
                          n_layers = n_layers_i,
                          use_bias = use_bias_i,
                          balance_classes = balance_classes_i,

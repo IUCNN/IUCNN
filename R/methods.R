@@ -9,9 +9,10 @@ cat(sprintf("A model of type %s, trained on %s species and %s features.\n\n",
 
 cat(sprintf("Training accuracy: %s\n",
             round(object$training_accuracy, 3)))
-
-cat(sprintf("Accuracy on unseen data: %s\n",
+cat(sprintf("Validation accuracy: %s\n",
             round(object$validation_accuracy, 3)))
+cat(sprintf("Accuracy on unseen data (test set): %s\n\n",
+            round(object$test_accuracy, 3)))
 
 cat(sprintf("Label detail: %s Classes (%s)\n\n",
             length(object$input_data$label_dict),
@@ -21,13 +22,13 @@ cat(sprintf("Label detail: %s Classes (%s)\n\n",
 
 cat("Label representation\n")
 
-maxlab <- max(object$validation_predictions)
+maxlab <- max(object$test_predictions)
 tel <- data.frame(0:maxlab,
-                  get_cat_count(object$validation_predictions,
+                  get_cat_count(object$test_predictions,
                                 max_cat = maxlab))
 names(tel) <- c("Var1","Freq")
 trl <- data.frame(0:maxlab,
-                  get_cat_count(object$validation_labels,
+                  get_cat_count(object$test_labels,
                                 max_cat = maxlab))
 names(trl) <- c("Var1","Freq")
 lab <- merge(trl,tel, by = "Var1")
@@ -74,32 +75,47 @@ plot.iucnn_model <- function(x, ...){
              pch = 1)
       title(paste0('CV-fold ', i))
     }else{
-      plot(x$training_loss_history[[i]],
-           type = "n",
-           ylab = "Loss",
-           xlab = "Epoch",
-           ylim = c(min(min(x$training_loss_history[[i]]),
-                        min(x$validation_loss_history[[i]])),
-                    max(max(x$training_loss_history[[i]]),
-                        max(x$validation_loss_history[[i]]))))
+      if (is.nan(x$validation_loss_history[[i]][1])){
+        plot(x$training_loss_history[[i]],
+             type = "n",
+             ylab = "Loss",
+             xlab = "Epoch",
+             ylim = c(min(x$training_loss_history[[i]]),
+                      max(x$training_loss_history[[i]])))
 
-      points(x$training_loss_history[[i]],
-             type = "b",
-             col = "darkblue",
-             pch = 1)
-      points(x$validation_loss_history[[i]],
-             type = "b",
-             col = "darkred",
-             pch = 2)
-      abline(v = x$final_training_epoch[[i]],
-             lty = 2)
-      title(paste0('CV-fold ', i))
-      legend(x = "topright",
-             legend = c("Training", "Validation", "Final epoch"),
-             col = c("darkblue", "darkred", "black"),
-             lty = c(1, 1, 2),
-             pch = c(1, 2, NA),
-             cex = 0.7)
+        points(x$training_loss_history[[i]],
+               type = "b",
+               col = "darkblue",
+               pch = 1)
+        title(paste0('CV-fold ', i))
+      }else{
+        plot(x$training_loss_history[[i]],
+             type = "n",
+             ylab = "Loss",
+             xlab = "Epoch",
+             ylim = c(min(min(x$training_loss_history[[i]]),
+                          min(x$validation_loss_history[[i]])),
+                      max(max(x$training_loss_history[[i]]),
+                          max(x$validation_loss_history[[i]]))))
+
+        points(x$training_loss_history[[i]],
+               type = "b",
+               col = "darkblue",
+               pch = 1)
+        points(x$validation_loss_history[[i]],
+               type = "b",
+               col = "darkred",
+               pch = 2)
+        abline(v = x$final_training_epoch[[i]],
+               lty = 2)
+        title(paste0('CV-fold ', i))
+        legend(x = "topright",
+               legend = c("Training", "Validation", "Final epoch"),
+               col = c("darkblue", "darkred", "black"),
+               lty = c(1, 1, 2),
+               pch = c(1, 2, NA),
+               cex = 0.7)
+      }
 
     }
     }

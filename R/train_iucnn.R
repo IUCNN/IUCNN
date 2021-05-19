@@ -28,11 +28,11 @@
 #'"nn-class" (default, tensorflow neural network classifier),
 #'"nn-reg" (tensorflow neural network regression), or
 #'"bnn-class" (Bayesian neural network classifier)
-#'@param validation_fraction numeric. The fraction of the input data used as
+#'@param test_fraction numeric. The fraction of the input data used as
 #'validation set.
 #'@param cv_fold integer (default=5). When setting cv_fold > 1,
 #'\code{iucnn_train} will perform k-fold cross-validation. In this case, the
-#'provided setting for validation_fraction will be ignored, as the validation
+#'provided setting for test_fraction will be ignored, as the validation
 #'size of each CV-fold is determined by the specified number provided here.
 #'@param seed integer. Set a starting seed for reproducibility.
 #'@param max_epochs integer. The maximum number of epochs.
@@ -137,12 +137,12 @@ train_iucnn <- function(x,
                         path_to_output = "iuc_nn_model",
                         production_model = NULL,
                         mode = 'nn-class',
-                        validation_fraction = 0.2,
+                        test_fraction = 0.2,
                         cv_fold = 1,
                         seed = 1234,
                         max_epochs = 1000,
                         patience = 200,
-                        n_layers = '60_60_20',
+                        n_layers = '50_30_10',
                         use_bias = TRUE,
                         balance_classes = FALSE,
                         act_f = "auto",
@@ -163,7 +163,7 @@ train_iucnn <- function(x,
   assert_data_frame(x)
   assert_class(lab, classes = "iucnn_labels")
   assert_character(path_to_output)
-  assert_numeric(validation_fraction, lower = 0, upper = 1)
+  assert_numeric(test_fraction, lower = 0, upper = 1)
   assert_numeric(seed)
   assert_numeric(max_epochs)
   assert_character(n_layers)
@@ -180,7 +180,7 @@ train_iucnn <- function(x,
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class"))
 
   if (cv_fold == 1){
-    if (validation_fraction == 0){
+    if (test_fraction == 0){
       patience <- 0
     }
   }
@@ -194,7 +194,7 @@ train_iucnn <- function(x,
 
   if (class(provided_model) == "iucnn_model"){
     mode <- provided_model$model
-    validation_fraction <- 0.
+    test_fraction <- 0.
     cv_fold <- 1
     seed <- provided_model$seed
     max_epochs <- round(mean(provided_model$final_training_epoch))
@@ -213,8 +213,10 @@ train_iucnn <- function(x,
     rescale_features <- provided_model$rescale_features
     # save accthres_tbl to output, since this will be needed to predict
     accthres_tbl_stored <- provided_model$accthres_tbl
+    no_validation <- TRUE
   }else{
     accthres_tbl_stored <- NaN
+    no_validation = FALSE
   }
 
   # check if the model directory already exists
@@ -256,17 +258,21 @@ train_iucnn <- function(x,
     warning('
 The following settings are currently not supported for BNN models and are being ignored:
 cv_fold, patience, act_f_out.
-Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps, the BNN will instead provide posterior estimates of the class labels for each instance.\n')
-    if (max_epochs < 10000){
-      warning(paste0('\nNumber of MCMC generations is set to ',
-                     max_epochs,
-                     ' (max_epochs). Set a value of at least max_epochs=10000 for better MCMC convergence.\n'))
+Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps,
+the BNN will instead provide posterior estimates of the class labels for each instance.\n')
+    if (max_epochs < 1000000){
+      message('For proper convergence for bnn-class models it is recommended to set max_epochs=1000000 or more.')
+      overwrite_prompt <-  readline(prompt='Do you want to continue with current max_epochs settings (not recommended)? [Y/n]: ')
+      if (overwrite_prompt != 'Y'){
+        stop('Stopping training request. Increase max_epochs to >= 1000000 before relaunching.')
+      }
     }
+
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,
                              labels,
                              seed = as.integer(seed),
-                             testsize = validation_fraction,
+                             testsize = test_fraction,
                              all_class_in_testset=FALSE,
                              randomize_order = randomize_instances,
                              header = TRUE, # input data has a header
@@ -293,11 +299,20 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
     # set up the MCMC environment
     update_frequencies <- rep(0.05, length(n_layers) + 1)
     update_window_sizes <- rep(0.075, length(n_layers) + 1)
+    adapt_f <- 0.3
+    adapt_fM <- 0.6
+    sampling_f <- 10
+    n_post_samples <- 1000
+    print_f <- 100
     mcmc_object <- MCMC_setup(bnn_model,
                              update_frequencies,
                              update_window_sizes,
+                             adapt_f,
+                             adapt_fM,
                              n_iteration = as.integer(max_epochs),
-                             sampling_f = 10
+                             n_post_samples = n_post_samples,
+                             print_f = print_f,
+                             sampling_f = sampling_f
     )
 
     # run the MCMC and write output to file
@@ -319,22 +334,24 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
     log_file_content <- read.table(logfile_path, sep = '\t', header = TRUE)
     pklfile_path <- as.character(py_get_attr(logger, '_pklfile'))
 
-    validation_labels <- bnn_data$test_labels
-    validation_predictions <- apply(post_pr_test$post_prob_predictions,
+    test_labels <- bnn_data$test_labels
+    test_predictions <- apply(post_pr_test$post_prob_predictions,
                                     1,
                                     which.max) - 1
-    validation_predictions_raw <- post_pr_test$post_prob_predictions
+    test_predictions_raw <- post_pr_test$post_prob_predictions
 
     confusion_matrix <- post_pr_test$confusion_matrix
     confusion_matrix <- confusion_matrix[1:dim(confusion_matrix)[1] - 1,
                                          1:dim(confusion_matrix)[2] - 1] #remove the sum row and column
 
     training_accuracy <- log_file_content$accuracy[length(log_file_content$accuracy)]
-    validation_accuracy <- post_pr_test$mean_accuracy
+    test_accuracy <- post_pr_test$mean_accuracy
+    validation_accuracy <- NaN
 
     training_loss <-
       (-log_file_content$likelihood[length(log_file_content$likelihood)]) /
       length(bnn_data$labels)
+    test_loss <- NaN
     validation_loss <- NaN
 
     training_loss_history <- list(
@@ -356,7 +373,7 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
 
     trained_model_path <- pklfile_path
     patience <- 0
-    validation_fraction <- validation_fraction
+    test_fraction <- test_fraction
 
     # source python function
     reticulate::source_python(system.file("python",
@@ -388,7 +405,7 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
                       labels = as.matrix(labels),
                       mode = mode,
                       path_to_output = path_to_output,
-                      validation_fraction = validation_fraction,
+                      test_fraction = test_fraction,
                       cv_k = as.integer(cv_fold),
                       seed = as.integer(seed),
                       instance_names = as.matrix(instance_names),
@@ -408,18 +425,21 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
                       dropout_reps = mc_dropout_reps,
                       mc_dropout = mc_dropout,
                       label_noise_factor = label_noise_factor,
+                      no_validation = no_validation,
                       save_model = save_model
     )
 
-    validation_labels <- as.vector(res$validation_labels)
-    validation_predictions <- as.vector(res$validation_predictions)
-    validation_predictions_raw <- res$validation_predictions_raw
+    test_labels <- as.vector(res$test_labels)
+    test_predictions <- as.vector(res$test_predictions)
+    test_predictions_raw <- res$test_predictions_raw
 
     training_accuracy <- res$training_accuracy
     validation_accuracy <- res$validation_accuracy
+    test_accuracy <- res$test_accuracy
 
     training_loss <- res$training_loss
     validation_loss <- res$validation_loss
+    test_loss <- res$test_loss
 
     training_loss_history <- res$training_loss_history
     validation_loss_history <- res$validation_loss_history
@@ -477,7 +497,7 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
   named_res$rescale_features <- rescale_features
   named_res$act_f <- act_f
   named_res$act_f_out <- act_f_out
-  named_res$validation_fraction <- validation_fraction
+  named_res$test_fraction <- test_fraction
   named_res$cv_fold <- cv_fold
   named_res$patience <- patience
   named_res$randomize_instances <- randomize_instances
@@ -496,15 +516,17 @@ Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout
 
   named_res$training_loss <- training_loss
   named_res$validation_loss <- validation_loss
+  named_res$test_loss <- test_loss
   #softmax probs, posterior probs, or regressed values
-  named_res$validation_predictions_raw <- validation_predictions_raw
-  named_res$validation_predictions <- validation_predictions
-  named_res$validation_labels <- validation_labels
+  named_res$test_predictions_raw <- test_predictions_raw
+  named_res$test_predictions <- test_predictions
+  named_res$test_labels <- test_labels
 
   named_res$confusion_matrix <- confusion_matrix
 
   named_res$training_accuracy <- training_accuracy
   named_res$validation_accuracy <- validation_accuracy
+  named_res$test_accuracy <- test_accuracy
 
   class(named_res) <- "iucnn_model"
 

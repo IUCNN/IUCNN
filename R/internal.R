@@ -75,12 +75,14 @@ create_BNN_model <- function(feature_data,
 MCMC_setup <- function(bnn_model,
                        update_f,
                        update_ws,
+                       adapt_f,
+                       adapt_fM,
                        MCMC_temperature = 1,
                        likelihood_tempering = 1,
-                       n_iteration = 5000,
+                       n_iteration = 1000000,
                        sampling_f = 10, # how often to write to file (every n iterations)
-                       print_f = 1000, # how often to print to screen (every n iterations)
-                       n_post_samples = 100, # how many samples to keep in log file. If sampling exceeds this threshold it starts overwriting starting from line 1.
+                       print_f = 100, # how often to print to screen (every n iterations)
+                       n_post_samples = 1000, # how many samples to keep in log file
                        sample_from_prior = FALSE){
 
   # source python function
@@ -89,6 +91,8 @@ MCMC_setup <- function(bnn_model,
   mcmc <- bn$MCMC(bnn_model,
                  update_f = update_f,
                  update_ws = update_ws,
+                 adapt_f = adapt_f,
+                 adapt_fM = adapt_fM,
                  temperature = MCMC_temperature,
                  n_iteration = as.integer(n_iteration),
                  sampling_f = as.integer(sampling_f),
@@ -204,15 +208,17 @@ log_results <- function(res,logfile,
                 "act_f",
                 "act_f_out",
                 "cv_fold",
-                "validation_fraction",
+                "test_fraction",
                 "label_stretch_factor",
                 "label_noise_factor",
                 "final_train_epoch_all",
                 "final_train_epoch_mean",
                 "train_acc",
                 "val_acc",
+                "test_acc",
                 "training_loss",
                 "validation_loss",
+                "test_loss",
                 "confusion_LC",
                 "confusion_NT",
                 "confusion_VU",
@@ -249,8 +255,8 @@ log_results <- function(res,logfile,
                                  NaN,
                                  NaN,
                                  NaN,
-                                 abs(get_cat_count(res$validation_labels,max_cat = 1) -
-                                       get_cat_count(res$validation_predictions,max_cat = 1)))
+                                 abs(get_cat_count(res$test_labels,max_cat = 1) -
+                                       get_cat_count(res$test_predictions,max_cat = 1)))
       confusion_matrix_lines <- c(NaN,
                                  NaN,
                                  NaN,
@@ -260,8 +266,8 @@ log_results <- function(res,logfile,
                                  paste(res$confusion_matrix[2,], collapse = '_'))
     }else{
       label_level <- 'detail'
-      ratio_prediction_lines <- c(abs(get_cat_count(res$validation_labels, max_cat = 4) -
-                                       get_cat_count(res$validation_predictions, max_cat = 4)),
+      ratio_prediction_lines <- c(abs(get_cat_count(res$test_labels, max_cat = 4) -
+                                       get_cat_count(res$test_predictions, max_cat = 4)),
                                  NaN,
                                  NaN)
       confusion_matrix_lines <- c(paste(res$confusion_matrix[1,], collapse = '_'),
@@ -288,15 +294,17 @@ log_results <- function(res,logfile,
           res$act_f,
           res$act_f_out,
           res$cv_fold,
-          res$validation_fraction,
+          res$test_fraction,
           res$label_stretch_factor,
           res$label_noise_factor,
           paste(res$final_training_epoch, collapse = '_'),
           round(mean(res$final_training_epoch),0),
           round(res$training_accuracy,6),
           round(res$validation_accuracy,6),
+          round(res$test_accuracy,6),
           round(res$training_loss,6),
           round(res$validation_loss,6),
+          round(res$test_loss,6),
           confusion_matrix_lines,
           ratio_prediction_lines,
           iucnn_model_out), sep="\t", file = logfile, append = TRUE)
@@ -510,63 +518,6 @@ rank_models <- function(model_testing_results, rank_by = "val_acc") {
   }
   return(sorted_model_testing_results)
 }
-
-
-model_summary <- function(best_model,
-                          write_file = FALSE,
-                          outfile_name = NULL) {
-  cat("Best model:\n")
-  cat("", sprintf("%s: %s\n", names(best_model), best_model))
-  cat("\n")
-
-  train_acc <- best_model$train_acc
-  val_acc <- best_model$val_acc
-  label_detail <- best_model$level
-  cm <- get_confusion_matrix(best_model)
-
-  if (label_detail == "broad") {
-    n_classes <- 2
-    maxlab <- 1
-  } else if (label_detail == "detail") {
-    n_classes <- 5
-    maxlab <- 4
-  } else {
-    stop(paste0("Unknown label level: '",
-                label_detail,
-                "'. Currently only supporting 'broad' (N=2) or 'detail' (N=5)"))
-  }
-
-  cat(sprintf("Training accuracy: %s\n", round(train_acc, 3)))
-
-  cat(sprintf("Accuracy on unseen data: %s\n", round(val_acc, 3)))
-
-  cat(sprintf("Label detail: %s Classes (%s)\n\n", n_classes, label_detail))
-
-  cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
-  print(cm)
-
-  if (write_file) {
-    if (is.null(outfile_name)) {
-      outfile_name <- "evaluation_best_model.txt"
-    }
-    sink(outfile_name)
-
-    cat("Best model:\n")
-    cat("", sprintf("%s: %s\n", names(best_model), c(best_model)))
-    cat("\n")
-    cat(sprintf("Training accuracy: %s\n", round(train_acc, 3)))
-
-    cat(sprintf("Accuracy on unseen data: %s\n", round(val_acc, 3)))
-
-    cat(sprintf("Label detail: %s Classes (%s)\n\n", n_classes, label_detail))
-
-    cat("Confusion matrix (Rows: true labels, Columns: predicted labels):\n")
-    print(cm)
-    sink()
-    print(paste0("Model evaluation results of best model written to ", outfile_name))
-  }
-}
-
 
 evaluate_iucnn <- function(res) {
   if (res$dropout_rate == 0) {

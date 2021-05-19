@@ -11,7 +11,7 @@ modeltest_iucnn(
   model_outpath = "modeltest",
   mode = "nn-class",
   cv_fold = 5,
-  validation_fraction = 0,
+  test_fraction = 0,
   n_layers = c("50_30_10", "30"),
   dropout_rate = c(0, 0.1, 0.3),
   use_bias = TRUE,
@@ -51,10 +51,10 @@ log-file.}
 
 \item{cv_fold}{integer (default=5). When setting cv_fold > 1,
 \code{iucnn_train} will perform k-fold cross-validation. In this case, the
-provided setting for validation_fraction will be ignored, as the validation
+provided setting for test_fraction will be ignored, as the validation
 size of each CV-fold is determined by the specified number provided here.}
 
-\item{validation_fraction}{numeric. The fraction of the input data used as
+\item{test_fraction}{numeric. The fraction of the input data used as
 validation set.}
 
 \item{n_layers}{character string. Define number node per layer by providing a
