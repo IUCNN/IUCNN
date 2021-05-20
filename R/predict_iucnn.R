@@ -17,6 +17,11 @@
 #'@param return_IUCN logical. If TRUE the predicted labels are translated
 #' into the original labels.
 #'If FALSE numeric labels as used by the model are returned
+#'@param return_raw logical. If TRUE, the raw predictions of the model will be
+#'returned, which in case of MC-dropout and bnn-class models includes the class
+#'predictions across all dropout prediction reps (or MCMC reps for bnn-class).
+#'Note that setting this to TRUE will result in large output objects that can
+#'fill up the memory allocated for R and cause the program to crash.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 #'tutorial on how to run IUCNN.
@@ -53,7 +58,8 @@
 predict_iucnn <- function(x,
                           model,
                           target_acc = 0.0,
-                          return_IUCN = TRUE){
+                          return_IUCN = TRUE,
+                          return_raw = FALSE){
 
   # assertions
   assert_class(x, classes = "data.frame")
@@ -153,7 +159,9 @@ predict_iucnn <- function(x,
     names(predictions) <- NULL
     pred_out$class_predictions <- predictions
   }
-
+  if (return_raw == FALSE){
+    pred_out$raw_predictions <- NaN
+  }
   pred_out$names <- instance_names
   class(pred_out) <- "iucnn_predictions"
 

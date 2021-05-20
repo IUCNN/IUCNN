@@ -41,7 +41,8 @@ def iucnn_train(dataset,
                 mc_dropout,
                 label_noise_factor,
                 no_validation,
-                save_model):    
+                save_model,
+                test_label_balance_factor = 1.0):
     
     
     class MCDropout(tf.keras.layers.Dropout):
@@ -240,6 +241,28 @@ def iucnn_train(dataset,
         np.random.shuffle(ids_class_balance)
         return(ids_class_balance)
 
+    def manipulate_instance_distribution(features, labels, factor=1., multi_col_labels = False):
+        if multi_col_labels:
+            tmp_labels = np.argmax(labels, axis=1)
+        else:
+            tmp_labels = labels
+        classes, counts = np.unique(tmp_labels, return_counts=True)
+        min_count = min(counts)
+        min_class = int(classes[counts == min_count])
+        final_ids = []
+        for i in classes:
+            label_ids = np.where(tmp_labels == i)[0]
+            delta_n = len(label_ids) - min_count
+            sample_n = int(np.round(delta_n * factor))
+            final_ids += sorted(np.random.choice(label_ids, min_count + sample_n, replace=False))
+        final_ids = sorted(final_ids)
+        out_features = features[final_ids, :]
+        if multi_col_labels:
+            out_labels = labels[final_ids,]
+        else:
+            out_labels = labels[final_ids]
+        return (out_features, out_labels)
+
     # randomize data
     if seed > 0:
         np.random.seed(seed)
@@ -321,6 +344,8 @@ def iucnn_train(dataset,
     orig_dataset = dataset
     orig_labels = labels
 
+    test_count_cv_folds = []
+
     for it, __ in enumerate(train_index_blocks):
         if cv:
             test_ids = train_index_blocks[it] # in case of cv, choose one of the k chunks as test set
@@ -343,7 +368,7 @@ def iucnn_train(dataset,
             train_ids = supersample_classes(train_ids,labels)
 
         # define train and test set
-        train_set = orig_train_set
+        train_set = dataset[train_ids,:]
         test_set = orig_test_set
 
         # fix labels depending on whether it's regression or classification model
@@ -416,6 +441,9 @@ def iucnn_train(dataset,
                 val_acc_history = np.array(history.history['val_accuracy'])
                 val_loss_history = np.array(history.history['val_loss'])
             if len(labels_for_testing)>0:
+                if test_label_balance_factor < 1:
+                    test_set, labels_for_testing = manipulate_instance_distribution(test_set, labels_for_testing, factor=test_label_balance_factor, multi_col_labels=True)
+                    test_count_cv_fold = np.unique(np.argmax(labels_for_testing, axis=1), return_counts=True)[1]
                 test_predictions, test_predictions_raw, test_loss, test_acc = get_classification_accuracy(model,test_set,labels_for_testing,mc_dropout,dropout_reps,loss=True)
             else:
                 test_loss = np.nan
@@ -439,6 +467,9 @@ def iucnn_train(dataset,
                 val_mae_history = np.array(history.history['val_mae'])
             val_acc = np.nan
             if len(labels_for_testing)>0:
+                if test_label_balance_factor < 1:
+                    test_set, labels_for_testing = manipulate_instance_distribution(test_set, labels_for_testing, factor=test_label_balance_factor, multi_col_labels=False)
+                    test_count_cv_fold = np.unique(np.argmax(labels_for_testing, axis=1), return_counts=True)[1]
                 test_acc, test_predictions, test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
                 test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
             else:
@@ -468,7 +499,10 @@ def iucnn_train(dataset,
         val_acc_histories.setdefault('train_rep_%i'%it,val_acc_history)
         train_mae_histories.setdefault('train_rep_%i'%it,train_mae_history)
         val_mae_histories.setdefault('train_rep_%i'%it,val_mae_history)
-        
+
+        if test_label_balance_factor < 1:
+            test_count_cv_folds.append(test_count_cv_fold)
+
         if save_model:
             if not os.path.exists(path_to_output):
                 os.makedirs(path_to_output)
@@ -507,6 +541,9 @@ def iucnn_train(dataset,
       
     if len(labels_for_testing) == 0:
         confusion_matrix = np.zeros([n_class,n_class])
+        accthres_tbl = np.nan
+    elif test_label_balance_factor < 1:
+        confusion_matrix = np.zeros([n_class, n_class])
         accthres_tbl = np.nan
     else:
         if mc_dropout:
@@ -558,6 +595,8 @@ def iucnn_train(dataset,
         true_class_count = np.nan
     else:
         true_class_count = [list(all_test_labels).count(i) for i in np.unique(orig_labels)]
+    if test_label_balance_factor < 1:
+        true_class_count = np.sum(np.array(test_count_cv_folds), axis=0)
 
 
 

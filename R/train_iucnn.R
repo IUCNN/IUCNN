@@ -85,7 +85,7 @@
 #'predicting validation accuracy and calculating the accuracy-threshold
 #'table required for making predictions with an accuracy threshold.
 #'The default of 100 is usually sufficient, larger values will lead to longer
-#'computation times.
+#'computation times, particularly during modeltesting with cross-validation.
 #'@param label_noise_factor numeric (only for mode nn-reg). Add specified amount
 #'of random noise to the input labels to give the categorical labels a more
 #'continuous spread before training the regression model. E.g. a value of 0.2

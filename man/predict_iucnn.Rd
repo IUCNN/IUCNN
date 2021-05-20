@@ -4,7 +4,7 @@
 \alias{predict_iucnn}
 \title{Predict IUCN Categories from Features}
 \usage{
-predict_iucnn(x, model, target_acc = 0, return_IUCN = TRUE)
+predict_iucnn(x, model, target_acc = 0, return_IUCN = TRUE, return_raw = FALSE)
 }
 \arguments{
 \item{x}{a data.set, containing a column "species" with the species names, and
@@ -20,6 +20,12 @@ enough certainty to reach this accuracy are classified as DD (Data Deficient).}
 \item{return_IUCN}{logical. If TRUE the predicted labels are translated
 into the original labels.
 If FALSE numeric labels as used by the model are returned}
+
+\item{return_raw}{logical. If TRUE, the raw predictions of the model will be
+returned, which in case of MC-dropout and bnn-class models includes the class
+predictions across all dropout prediction reps (or MCMC reps for bnn-class).
+Note that setting this to TRUE will result in large output objects that can
+fill up the memory allocated for R and cause the program to crash.}
 }
 \value{
 outputs an \code{iucnn_predictions} object containing the predicted
