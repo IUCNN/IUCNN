@@ -2,18 +2,18 @@
 title: Approximate IUCN Red List assessments with IUCNN
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Approximate_IUCN_Red_List_assessments_with_IUCNN}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+ %\VignetteIndexEntry{Approximate_IUCN_Red_List_assessments_with_IUCNN}
+ %\VignetteEngine{knitr::rmarkdown}
+ %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  warning=FALSE,
-  message=FALSE,
-  fig.width = 8
+ collapse = TRUE,
+ comment = "#>",
+ warning=FALSE,
+ message=FALSE,
+ fig.width = 8
 )
 ```
 
@@ -103,8 +103,8 @@ The following code trains a neural network model with 3 hidden layers of 60, 60,
 
 ```{r}
 res_1 <- train_iucnn(x = features_train,
-                     lab = labels_train, 
-                     path_to_output = "iucnn_model_1")
+ lab = labels_train, 
+ path_to_output = "iucnn_model_1")
 ```
 
 The `summary` and `plot` methods give an overview on the training process and model performance. 
@@ -119,7 +119,7 @@ The trained model can then predict the conservation status of *Not Evaluated* an
 
 ```{r}
 predictions <- predict_iucnn(x = features_predict, 
-                             model = res_1)
+ model = res_1)
 
 plot(predictions)
 ```
@@ -140,7 +140,24 @@ It is important to remember the following when using IUCNN:
 
 ## Evaluating feature importance
 # Customizing IUCNN analyses
-IUCNN contains multiple options to customize the steps of the analyses to adapt the neural networks to the peculiarities of IUCN RL and species distribution data. Below we describe the most important options to customize 1) feature and label preparation, 2) model training and testing, and 3) status prediction.
+IUCNN contains multiple options to customize the steps of the analyses to adapt the neural networks to the peculiarities of IUCN RL and species distribution data. Below we describe the most important options to customize 1) feature and label preparation, 2) model training and testing, and 3) status prediction. The most important steps and options to customize an IUCNN analysis are summarized in Table 1.
+
+Table 1. Critical steps to customize an IUCNN analysis and relevant considerations at each point.
+
+| Step | Function(s) | Argument | Description | User consideration |
+| ---------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------- |---------------- | ------------ |
+| Feature design | prep\_features, feature\_importance | \- | Defines the features to be extracted from the provided occurrence records. Available defaults are: biome presence, bioclim variables, human footprint and geographic features. Averaged per species and rescaled. | What determines extinction risk for target group? Which data are available? What do the results of feature importance suggest? |
+| Label detail | prep\_labels | level, threatened | Into how many different categories should the species be classified. Can be any number, defaults support full IUCN categories (LC, NT, VU, EN, CR) or binary (Possibly threatened v. Not threatened) | Which detail is needed? Is the accuracy of the detailed level sufficient for the target application? |
+| Model type | train\_iucnn | mode | Which model framework should be applied: a categorical classification, a classification taking the ordinal number of categories into account, or a classification based in a Bayesian framework | How many target categories are there? How important is a high accuracy for intermediate classes (e.g. VU, NT, EN)? How important is the uncertainty estimation for each species? |
+| Model structure | train\_iucnn | validation fraction | The fraction of the input training data used for validation (v. training). | Which fraction of the data should be used for validation (and hence not training)? How large is the training data? |
+| Model structure | train\_iucnn | cv\_fold | The number of folds used for cross-validation. For instance if = 5, the data is divided into 5 folds with 20% of the data used for validation in each run. | How large is the training data?| At a given number of folds, will the subsets still include all label classes? |
+| Model structure | train\_iucnn | n\_layers | The number of hidden layers and nodes in the neural network. | How complex should the model be? |
+| Model structure | train\_iucnn | balance\_classes | Should the frequence of the class labels in the training data be balanced using supersampling? How imbalanced are the class labels? Will the frequency of class labels differ between training data and prediction data set? |
+| Model structure | train\_iucnn | act\_f\_out/act\_f | The activation function of the neural network | Which relationship between features and labels is expected? |
+| Model structure | train\_iucnn | label\_stretch\_factor | The factor to stretch input class labels to | Am I using a nn-reg type model?  Does model testing suggest an effect on model accuracy? |
+| Model structure | train\_iucnn | drop\_out rate | The number of nodes to be removed in individual epochs. Necessary if a target threshold is to be used with a nn-class model (not bnn-class though) | Is a target accuracy to be sued for prediction? How many nodes are there in the model? |
+| Prediction | predict\_iucnn | target\_acc | Defines an overall target accuracy for the model Species which cannot be classified with enough certainty to reach this threshold are labels as data deficient. | Which error rate is acceptable? Which proportion of species needs to be included? |
+
 
 ## 1) Features and Labels
 ### Add and remove feature blocks
@@ -153,7 +170,7 @@ features_train2 <- prep_features(training_occ, type = c("geographic", "climate",
 ### Prepare features individually
 If more control over feature preparation is necessary, each feature block can be obtained by an individual function.
 
-Table 1. Functions to obtain default features and options to customize the features.
+Table 2. Functions to obtain default features and options to customize the features.
 |Feature block|Function name|Options to customize|
 |---|---|---|
 |Geographic|`ft_geo`|-|
@@ -165,10 +182,10 @@ For instance:
 
 ```{r, eval = FALSE}
 clim_features <- ft_clim(x = training_occ, 
-                         type = "selected")
+ type = "selected")
 
 clim_features2 <- ft_clim(x = training_occ, 
-                         type = "all")
+ type = "all")
 ```
 
 ### Use custom features
@@ -178,13 +195,13 @@ For instance:
 
 ```{r, eval = FALSE}
 feat <- data.frame(species = c("Adansonia digitata", "Ceiba pentandra"),
-                   max_plant_size_m = c(25, 50),
-                   africa = c(1,1),
-                   south_america = c(0,1),
-                   fraction_of_records_in_protected_area = c(25, 75))
+ max_plant_size_m = c(25, 50),
+ africa = c(1,1),
+ south_america = c(0,1),
+ fraction_of_records_in_protected_area = c(25, 75))
 ```
 
-Table 2. Description of the default features included in `prep_features`. All continuous variables are rescaled to a similar range.
+Table 3. Description of the default features included in `prep_features`. All continuous variables are rescaled to a similar range.
 
 | Feature | Block | Name | Description |
 |---|---|---|---|
@@ -241,7 +258,7 @@ For instance:
 
 ```{r, eval = FALSE}
 labels_train <- prep_labels(training_labels, 
-                            level = "broad")
+ level = "broad")
 ```
 
 ## 2) Model training - NN regression model
@@ -250,12 +267,12 @@ The `train_iucnn` function contains various options to customize the neural netw
 
 ```{r}
 res_2 <- train_iucnn(x = features_train,
-                   lab = labels_train, 
-                   dropout_rate = 0.3,
-                   path_to_output= "iucnn_model_2",
-                   n_layers = "60",
-                   use_bias = FALSE,
-                   act_f = "sigmoid")
+ lab = labels_train, 
+ dropout_rate = 0.3,
+ path_to_output= "iucnn_model_2",
+ n_layers = "60",
+ use_bias = FALSE,
+ act_f = "sigmoid")
 ```
 
 You can compare the validation loss of the models using `res_1$validation_loss` and `res_2$validation_loss`. Model 2 in this case yields a lower validation loss and is therefore preferred. Once you chose the preferred model configuration based on validation loss, we can check test accuracy of best model: `res_2$test_accuracy`. The `train_iucnn` function contains various options to adapt the model. See `?train_iucnn` for more detail. 
@@ -267,23 +284,23 @@ The Bayesian approach has the advantage that it returns true probabilities for t
 
 ```{r, eval = FALSE}
 res_3 <- train_iucnn(x = features_train,
-                    lab = labels_train, 
-                    path_to_output = "iucnn_model_3",
-                    mode = 'bnn-class')
+ lab = labels_train, 
+ path_to_output = "iucnn_model_3",
+ mode = 'bnn-class')
 ```
 
 IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of ordinal categories sorted by increasing threat level, we can model the task of estimating these categories as a regression problem. Such a model can be trained with the `train_iucnn()` function, specifying to train a regression model by setting `mode = 'nn-reg'`.
 
 ```{r}
 res_4 <- train_iucnn(x = features_train,
-                    lab = labels_train, 
-                    path_to_output = "iucnn_model_4",
-                    mode = 'nn-reg',
-                    rescale_features = TRUE)
+ lab = labels_train, 
+ path_to_output = "iucnn_model_4",
+ mode = 'nn-reg',
+ rescale_features = TRUE)
 ```
 
 ### Feature importance
-The `feature_importance` function can be used to gauge the importance of different feature blocks or individual features for model performance. The function implements the permutation feature importance technique, which randomly reshuffles the values within individual features or blocks of features and evaluate how this randomization affects the models prediction accuracy. If a given feature (or block of features) is important for the models ability to predict, randomizing this feature will lead to a large drop in prediction accuracy.  When using `feature_importance` with features other than the default, feature blocks can be defined using the `feature_blocks` option.
+The `feature_importance` function can be used to gauge the importance of different feature blocks or individual features for model performance. The function implements the permutation feature importance technique, which randomly reshuffles the values within individual features or blocks of features and evaluate how this randomization affects the models prediction accuracy. If a given feature (or block of features) is important for the models ability to predict, randomizing this feature will lead to a large drop in prediction accuracy. When using `feature_importance` with features other than the default, feature blocks can be defined using the `feature_blocks` option.
 ```{r, eval = TRUE}
 fi <- feature_importance(x = res_1)
 plot(fi)
@@ -294,9 +311,9 @@ Before training the final model used for predicting the conservation status of n
 
 ```{r, eval = FALSE}
 modeltest_results <- modeltest_iucnn(features,
-                                    labels,
-                                    dropout_rate = c(0.0,0.1,0.3),
-                                    n_layers = c('30','40_20','50_30_10'))
+ labels,
+ dropout_rate = c(0.0,0.1,0.3),
+ n_layers = c('30','40_20','50_30_10'))
 ```
 
 The model specifications and settings of each tested model are written to a log-file and can be inspected with the `bestmodel_iucnn` function, to decide which model settings to pick as best model. Different criteria for picking the best model can be selected, such as best prediction accuracy, best predicted over-all status distribution, lowest weighted mis-classification error, etc.
@@ -307,19 +324,19 @@ bestmodel_iucnn(modeltest_results, criterion='val_acc')
 
 
 ## 3) Status prediction
-The `predict_iucnn` function offers  options to customize the predictions. The most important option in many cases is `target_acc`, which allows to set an overall target-accuracy threshold that the model needs to achieve. This option is only available for nn-class and nn-reg models that were trained using dropout (see help function of `train_iucnn` for more explanation), as well as for all bnn-class models. The `target_acc` will be achieved by the model being more selective with making a category call for a given instance. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as NA (Not Assessed).
+The `predict_iucnn` function offers options to customize the predictions. The most important option in many cases is `target_acc`, which allows to set an overall target-accuracy threshold that the model needs to achieve. This option is only available for nn-class and nn-reg models that were trained using dropout (see help function of `train_iucnn` for more explanation), as well as for all bnn-class models. The `target_acc` will be achieved by the model being more selective with making a category call for a given instance. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as NA (Not Assessed).
 ```{r}
 pred_2 <- predict_iucnn(x = features_predict, 
-                        target_acc = 0.7,
-                        model = res_2)
+ target_acc = 0.7,
+ model = res_2)
 plot(pred_2)
 ```
 
 Furthermore, you can turn off the `return_IUCN` option if to return the numerical labels instead of the IUCNN RL category labels.
 ```{r, eval = FALSE}
 pred_3 <- predict_iucnn(x = features_predict, 
-                        model = res_2,
-                        return_IUCN = FALSE)
+ model = res_2,
+ return_IUCN = FALSE)
 ```
 
 The output of the `predict_iucnn` function is an "iucnn_predictions" object, that contains several output objects. The predicted labels of the individual instances are accessible with `pred_2$class_predictions` and label probabilities estimated by the neural network via `pred_2$mc_dropout_probs` for "nn-class" and "nn-reg" with dropout, or `pred_2$posterior_probs` for "bnn-class". For more detail, the `pred_2$raw_predictions` object contains the individual label probabilities resulting from the softmax output layer in case of "nn-class", or the regressed labels in case of "nn-reg".
