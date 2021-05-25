@@ -29,8 +29,8 @@
 #'"nn-reg" (tensorflow neural network regression), or
 #'"bnn-class" (Bayesian neural network classifier)
 #'@param test_fraction numeric. The fraction of the input data used as
-#'validation set.
-#'@param cv_fold integer (default=5). When setting cv_fold > 1,
+#'test set.
+#'@param cv_fold integer (default=1). When setting cv_fold > 1,
 #'\code{iucnn_train} will perform k-fold cross-validation. In this case, the
 #'provided setting for test_fraction will be ignored, as the validation
 #'size of each CV-fold is determined by the specified number provided here.
@@ -40,8 +40,8 @@
 #' after which training will be stopped.
 #'@param n_layers character string. Define number node per layer by providing a
 #'character string where the number of nodes for each layer are separated by
-#'underscores. E.g. '50_40_30' will train a model with 3 hidden layers with
-#'50, 40, and 30 nodes respectively. Note that the number of nodes in the output
+#'underscores. E.g. '50_30_10' (default) will train a model with 3 hidden layers with
+#'50, 30, and 10 nodes respectively. Note that the number of nodes in the output
 #' layer is automatically determined based on
 #'the number of unique labels in the training set.
 #'@param use_bias logical (default=TRUE). Specifies if a bias node is used in
@@ -100,7 +100,7 @@
 #'info to the screen while training.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
-#'for a tutorial on how to run IUCNN.o
+#'for a tutorial on how to run IUCNN.
 #'
 #'@return outputs an \code{iucnn_model} object which can be used in
 #'\code{\link{predict_iucnn}} for predicting the conservation status

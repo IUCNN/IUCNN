@@ -123,7 +123,7 @@ it is manually set to FALSE here.}
 predicting validation accuracy and calculating the accuracy-threshold
 table required for making predictions with an accuracy threshold.
 The default of 100 is usually sufficient, larger values will lead to longer
-computation times.}
+computation times, particularly during modeltesting with cross-validation.}
 
 \item{randomize_instances}{logical. When set to TRUE (default) the
 instances will be shuffled before training (recommended).}
