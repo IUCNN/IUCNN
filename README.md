@@ -87,6 +87,7 @@ features_predict <- prep_features(prediction_occ) # Prediction features
 
 # Model testing
 # For illustration models differing in dropout rate and number of layers
+
 mod_test <- modeltest_iucnn(x = features,
                             lab = labels_train,
                             logfile = "model_testing_results-2.txt",
@@ -98,6 +99,7 @@ mod_test <- modeltest_iucnn(x = features,
                             init_logfile = TRUE)
 
 # Select best model
+<<<<<<< HEAD
 m_best <- bestmodel_iucnn(x = mod_test,
                           criterion = "val_acc",
                           require_dropout = TRUE)
@@ -109,8 +111,7 @@ plot(m_best)
 # Train the best model on all training data for prediction
 m_prod <- train_iucnn(x = features,
                       lab = labels_train,
-                      production_model = m_best,
-                      overwrite = TRUE)
+                      production_model = m_best)
 
 # Predict RL categories for target species
 pred <- predict_iucnn(x = features_predict,
