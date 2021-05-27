@@ -99,7 +99,6 @@ mod_test <- modeltest_iucnn(x = features,
                             init_logfile = TRUE)
 
 # Select best model
-<<<<<<< HEAD
 m_best <- bestmodel_iucnn(x = mod_test,
                           criterion = "val_acc",
                           require_dropout = TRUE)
