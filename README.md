@@ -41,7 +41,7 @@ reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.
 # Usage
 There are multiple models and features available in IUCNN. A vignette with a detailed tutorial on how to use those is available as part of the package: `vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")`. Running IUCNN will write files to your working directory.
 
-A simple run:
+A simple example run for terrestrial orchids (This will take about 5 minutes and download ~500MB of data for feature preparation into the working directory):
 
 ```r
 library(tidyverse)
