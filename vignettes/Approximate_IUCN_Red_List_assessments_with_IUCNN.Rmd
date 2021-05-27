@@ -152,7 +152,7 @@ Table 1. Critical steps to customize an IUCNN analysis and relevant consideratio
 | Model structure | train\_iucnn | validation fraction | The fraction of the input training data used for validation (v. training). | Which fraction of the data should be used for validation (and hence not training)? How large is the training data? |
 | Model structure | train\_iucnn | cv\_fold | The number of folds used for cross-validation. For instance if = 5, the data is divided into 5 folds with 20% of the data used for validation in each run. | How large is the training data?| At a given number of folds, will the subsets still include all label classes? |
 | Model structure | train\_iucnn | n\_layers | The number of hidden layers and nodes in the neural network. | How complex should the model be? |
-| Model structure | train\_iucnn | balance\_classes | Should the frequency of the class labels in the training data be balanced using supersampling? How imbalanced are the class labels? Will the frequency of class labels differ between training data and prediction data set? |
+| Model structure | train\_iucnn | balance\_classes | Should the frequency of the class labels in the training data be balanced using supersampling? | How imbalanced are the class labels? Will the frequency of class labels differ between training data and prediction data set? |
 | Model structure | train\_iucnn | act\_f\_out/act\_f | The activation function of the neural network | Which relationship between features and labels is expected? |
 | Model structure | train\_iucnn | label\_stretch\_factor | The factor to stretch input class labels to | Am I using a nn-reg type model?  Does model testing suggest an effect on model accuracy? |
 | Model structure | train\_iucnn | drop\_out rate | The number of nodes to be removed in individual epochs. Necessary if a target threshold is to be used with a nn-class model (not bnn-class though) | Is a target accuracy to be sued for prediction? How many nodes are there in the model? |
@@ -171,6 +171,7 @@ features_train2 <- prep_features(training_occ, type = c("geographic", "climate",
 If more control over feature preparation is necessary, each feature block can be obtained by an individual function.
 
 Table 2. Functions to obtain default features and options to customize the features.
+
 |Feature block|Function name|Options to customize|
 |---|---|---|
 |Geographic|`ft_geo`|-|
@@ -242,7 +243,7 @@ Table 3. Description of the default features included in `prep_features`. All co
 |range_bio12|Climate|Range of annual Precipitation|The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.|
 |range_bio15|Climate|Range of precipitation Seasonality|The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.|
 |range_bio17|Climate|Range of precipitation of Driest Quarter|The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.|
-|humanfootprint_1993_1|Human footprint year 1993 lowest impact|The fraction of records in areas of the lowest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.|
+|humanfootprint_1993_1|Human footprint | Human footprint year 1993 lowest impact|The fraction of records in areas of the lowest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.|
 |humanfootprint_1993_2|Human footprint|Human footprint year 1993 intermediate impact 1|The fraction of records in areas of the second lowest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.|
 |humanfootprint_1993_3|Human footprint|Human footprint year 1993 intermediate impact 2|The fraction of records in areas of the second highest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.|
 |humanfootprint_1993_4|Human footprint|Human footprint year 1993 highest impact|The fraction of records in areas of the highest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.|
