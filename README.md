@@ -1,4 +1,5 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![DOI](https://zenodo.org/badge/293626039.svg)](https://zenodo.org/badge/latestdoi/293626039)
 
 # IUCNN
 Batch estimation of species' IUCN Red List threat status using neural networks.
