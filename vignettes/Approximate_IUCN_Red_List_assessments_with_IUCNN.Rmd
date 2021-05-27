@@ -333,7 +333,7 @@ m_prod <- train_iucnn(train_feat,
                       overwrite = TRUE)
 ```
 
-THis production model can then be used for the final predictions.
+The production model can then be used for the final predictions.
 
 ```{r, eval = FALSE}
 # Predict RL categories for target species
