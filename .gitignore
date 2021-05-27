@@ -1,7 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
-inst/doc
 feature_extraction
 pre_submission_tests.R
 iuc_nn_model
