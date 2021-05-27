@@ -1,6 +1,6 @@
 Package: IUCNN
 Title: Neural Networks to Approximate IUCN Red List Conservation Assessments
-Version: 0.9.9
+Version: 1.0.0
 Authors@R: c(person(given = "Alexander", family = "Zizka", email = "alexander.zizka@idiv.de",
                     role = c("aut", "cre")),
              person(given = "Tobias", family = "Andermann", role = "ctb"),
