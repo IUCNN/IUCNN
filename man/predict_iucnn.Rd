@@ -15,7 +15,7 @@ in the same order as used for \code{\link{train_iucnn}}}
 
 \item{target_acc}{numerical, 0-1. The target accuracy of the overall model.
 Species that cannot be classified with
-enough certainty to reach this accuracy are classified as NA (Not Assessed/Not Available).}
+enough certainty to reach this accuracy are classified as NA (Not Available/Not Assessed).}
 
 \item{return_IUCN}{logical. If TRUE the predicted labels are translated
 into the original labels.
