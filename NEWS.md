@@ -1,3 +1,8 @@
+# IUCNN 1.0.0(27.05.2021)
+=========================
+* final version for first release
+* some minor fixes of typos in the vignette and readme
+
 # IUCNN 0.9.9 (26.05.2021)
 =========================
 * final version for last release tests
