@@ -58,9 +58,9 @@ settings (below).}
 "bnn-class" (Bayesian neural network classifier)}
 
 \item{test_fraction}{numeric. The fraction of the input data used as
-validation set.}
+test set.}
 
-\item{cv_fold}{integer (default=5). When setting cv_fold > 1,
+\item{cv_fold}{integer (default=1). When setting cv_fold > 1,
 \code{iucnn_train} will perform k-fold cross-validation. In this case, the
 provided setting for test_fraction will be ignored, as the validation
 size of each CV-fold is determined by the specified number provided here.}
@@ -74,8 +74,8 @@ after which training will be stopped.}
 
 \item{n_layers}{character string. Define number node per layer by providing a
 character string where the number of nodes for each layer are separated by
-underscores. E.g. '50_40_30' will train a model with 3 hidden layers with
-50, 40, and 30 nodes respectively. Note that the number of nodes in the output
+underscores. E.g. '50_30_10' (default) will train a model with 3 hidden layers with
+50, 30, and 10 nodes respectively. Note that the number of nodes in the output
 layer is automatically determined based on
 the number of unique labels in the training set.}
 
@@ -128,7 +128,7 @@ it is manually set to FALSE here.}
 predicting validation accuracy and calculating the accuracy-threshold
 table required for making predictions with an accuracy threshold.
 The default of 100 is usually sufficient, larger values will lead to longer
-computation times, particularly during modeltesting with cross-validation.}
+computation times, particularly during model testing with cross-validation.}
 
 \item{label_noise_factor}{numeric (only for mode nn-reg). Add specified amount
 of random noise to the input labels to give the categorical labels a more
@@ -163,7 +163,7 @@ of the two input objects will be removed as well.
 }
 \note{
 See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
-for a tutorial on how to run IUCNN.o
+for a tutorial on how to run IUCNN.
 }
 \examples{
 \dontrun{

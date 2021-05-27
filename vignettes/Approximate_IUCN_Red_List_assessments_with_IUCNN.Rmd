@@ -62,7 +62,7 @@ IUCNN predicts the IUCN RL categories of Not Evaluated and Data Deficient specie
 Three types of input are necessary, which are easily available for many species: 
 
 ## 1. Geographic occurrence records of training species (training occurrences)
-Occurrence records might be obtained from a variety of databases, For example, from field collections or public databases such BIEN (https://bien.nceas.ucsb.edu/bien/) or GBIF (www.gbif.org). GBIF data can be obtained from within R via the rgbif package, See [here](https://ropensci.org/tutorials/rgbif_tutorial/) for a tutorial on how to do so. IUCNN needs a dataset with (at least) three columns, containing the species name, decimal longitude coordinates and decimal latitude coordinates. If you are interested in cleaning records from GBIF, you may want to have a look at this [blog post](https://data-blog.gbif.org/post/gbif-filtering-guide/) and check out the [CoordinateCleaner](https://github.com/ropensci/CoordinateCleaner) and [bRacatus](https://github.com/EduardoArle/bRacatus) packages. 
+Occurrence records might be obtained from a variety of databases, For example, from field collections or public databases such BIEN (https://bien.nceas.ucsb.edu/bien/) or GBIF (www.gbif.org). GBIF data can be obtained from within R via the rgbif package, See [here](https://docs.ropensci.org/rgbif/articles/index.html) for a tutorial on how to do so. IUCNN needs a dataset with (at least) three columns, containing the species name, decimal longitude coordinates and decimal latitude coordinates. If you are interested in cleaning records from GBIF, you may want to have a look at this [blog post](https://data-blog.gbif.org/post/gbif-filtering-guide/) and check out the [CoordinateCleaner](https://github.com/ropensci/CoordinateCleaner) and [bRacatus](https://github.com/EduardoArle/bRacatus) packages. 
 
 ## 2. IUCN Global Red List assessment of the training species (training labels)
 IUCN RL assessments for the training species can be obtained from IUCN, either via www.iucnredlist.org or via the rredlist package via R (preferred for many species). See [here](https://ropensci.org/tutorials/rredlist_tutorial/) for a tutorial on how to use rredlist. It is important, that all target label classes are well represented in the training data, which is rarely the case for IUCN data, since for instance "VU" and "NT" is rare. If the classes are to imbalanced, consider using possibly threatened (IUCN categories "CR", "EN", and "VU") v. not threatened species ("NT" and "LC"), or the supersampling option of the `train_iucnn` function.
@@ -130,7 +130,7 @@ It is important to remember the following when using IUCNN:
 
 2. IUCNN is indifferent to the provided features. On the one hand this means that any species traits for which data is available can be used, but on the other hand this means that thought is needed in the choice of the features. The default features of IUCNN are usually a safe choice. The number of features is not limited, but currently IUCNN does not support missing values in the feature table and removes species with missing values. 
 
-3. IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guilt or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended.
+3. IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guild or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended.
 
 4. The amount of training data is important. The more the better. Minimum several hundred training species with a more or less equal distribution on the label classes should be included. If training data is limited, the broader Threatened/Not threatened level is recommended. 
 
@@ -152,7 +152,7 @@ Table 1. Critical steps to customize an IUCNN analysis and relevant consideratio
 | Model structure | train\_iucnn | validation fraction | The fraction of the input training data used for validation (v. training). | Which fraction of the data should be used for validation (and hence not training)? How large is the training data? |
 | Model structure | train\_iucnn | cv\_fold | The number of folds used for cross-validation. For instance if = 5, the data is divided into 5 folds with 20% of the data used for validation in each run. | How large is the training data?| At a given number of folds, will the subsets still include all label classes? |
 | Model structure | train\_iucnn | n\_layers | The number of hidden layers and nodes in the neural network. | How complex should the model be? |
-| Model structure | train\_iucnn | balance\_classes | Should the frequence of the class labels in the training data be balanced using supersampling? How imbalanced are the class labels? Will the frequency of class labels differ between training data and prediction data set? |
+| Model structure | train\_iucnn | balance\_classes | Should the frequency of the class labels in the training data be balanced using supersampling? How imbalanced are the class labels? Will the frequency of class labels differ between training data and prediction data set? |
 | Model structure | train\_iucnn | act\_f\_out/act\_f | The activation function of the neural network | Which relationship between features and labels is expected? |
 | Model structure | train\_iucnn | label\_stretch\_factor | The factor to stretch input class labels to | Am I using a nn-reg type model?  Does model testing suggest an effect on model accuracy? |
 | Model structure | train\_iucnn | drop\_out rate | The number of nodes to be removed in individual epochs. Necessary if a target threshold is to be used with a nn-class model (not bnn-class though) | Is a target accuracy to be sued for prediction? How many nodes are there in the model? |
@@ -161,7 +161,7 @@ Table 1. Critical steps to customize an IUCNN analysis and relevant consideratio
 
 ## 1) Features and Labels
 ### Add and remove feature blocks
-The default labels are selected based on empirical tests on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. You can exclude feature blocks using the `type` argument of the `prep_features` function. For instance, to exclude the biome features:
+The default features are selected based on empirical tests on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. You can exclude feature blocks using the `type` argument of the `prep_features` function. For instance, to exclude the biome features:
 
 ```{r, eval = FALSE}
 features_train2 <- prep_features(training_occ, type = c("geographic", "climate", "humanfootprint"))
@@ -263,7 +263,7 @@ labels_train <- prep_labels(training_labels,
 
 ## 2) Model training - NN regression model
 ### Customizing model parameters
-The `train_iucnn` function contains various options to customize the neural network, including among other the fraction of validation and test data, the maximum number of epochs, the number of layers and nodes, the activation function , dropout and randomization of the input data. See `?train_iucnn` for a comprehensive list of options and their description. By default, `train_iucnn` trains a neural network with 3 hidden layers with 60, 60 and 20 nodes and a sigmoid as activation function. Depending on your dataset different networks may improve performance. For instance, you can set up a different model with 1 hidden layer of 60 nodes, a sigmoid activation function and without using a bias node in the first hidden layer.
+The `train_iucnn` function contains various options to customize the neural network, including among other the fraction of validation and test data, the maximum number of epochs, the number of layers and nodes, the activation function , dropout and randomization of the input data. See `?train_iucnn` for a comprehensive list of options and their description. By default, `train_iucnn` trains a neural network with three hidden layers with 50, 30 and 10 nodes and a sigmoid as activation function. Depending on your dataset different networks may improve performance. For instance, you can set up a different model with 1 hidden layer of 60 nodes, a sigmoid activation function and without using a bias node in the first hidden layer.
 
 ```{r}
 res_2 <- train_iucnn(x = features_train,
@@ -319,7 +319,26 @@ modeltest_results <- modeltest_iucnn(features,
 The model specifications and settings of each tested model are written to a log-file and can be inspected with the `bestmodel_iucnn` function, to decide which model settings to pick as best model. Different criteria for picking the best model can be selected, such as best prediction accuracy, best predicted over-all status distribution, lowest weighted mis-classification error, etc.
 
 ```{r, eval = FALSE}
-bestmodel_iucnn(modeltest_results, criterion='val_acc')
+best_m <- bestmodel_iucnn(modeltest_results, criterion='val_acc')
+```
+
+After model testing, it is necessary to retrain using the model specifications identified by `bestmodel_iucnn`. It is possible to take the respective settings directly from the output of the `bestmodel_iucnn` function, via the `production-model` argument of `train_iucnn`.
+
+```{r, eval = FALSE}
+# Train the best model on all training data for prediction
+m_prod <- train_iucnn(train_feat,
+                      train_lab,
+                      production_model = m_best,
+                      overwrite = TRUE)
+```
+
+THis production model can then be used for the final predictions.
+
+```{r, eval = FALSE}
+# Predict RL categories for target species
+pred <- predict_iucnn(pred_feat,
+                      m_prod)
+plot(pred)
 ```
 
 

@@ -13,7 +13,7 @@
 #'@param model the information on the NN model returned by \code{\link{train_iucnn}}
 #'@param target_acc numerical, 0-1. The target accuracy of the overall model.
 #' Species that cannot be classified with
-#'enough certainty to reach this accuracy are classified as DD (Data Deficient).
+#'enough certainty to reach this accuracy are classified as NA (Not Available/Not Assessed).
 #'@param return_IUCN logical. If TRUE the predicted labels are translated
 #' into the original labels.
 #'If FALSE numeric labels as used by the model are returned

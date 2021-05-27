@@ -5,7 +5,7 @@ Batch estimation of species' IUCN Red List threat status using neural networks.
 
 # Installation
 1. Install IUCNN directly from Github using devtools. 
-```{r}
+```r
 install.packages("devtools")
 library(devtools)
 
@@ -14,7 +14,7 @@ install_github("azizka/IUCNN")
 
 2. Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the `install_miniconda()` function of the package `reticulate` (this will need c. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
-```{r}
+```r
 install.packages("reticulate")
 library(reticulate)
 install_miniconda()
@@ -22,19 +22,19 @@ install_miniconda()
 
 
 3. Install the tensorflow python library. If you are using **MacOS** or **Linux** it is recommended to install tensorflow using conda:
-```{r}
+```r
 reticulate::conda_install("r-reticulate","tensorflow=2.4")
 ```
 
 If you are using **Windows**, you can install tensorflow using pip:
 
-```{r}
+```r
 reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
 ```
 
 4. Finally install the npBNN python library from Github:
 
-```{r}
+```r
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
 ```
 
@@ -43,7 +43,7 @@ There are multiple models and features available in IUCNN. A vignette with a det
 
 A simple run:
 
-```{r}
+```r
 library(tidyverse)
 library(IUCNN)
 
@@ -70,14 +70,14 @@ predict_iucnn(x = features_predict,
 
 With model testing
 
-```{r}
+```r
 library(tidyverse)
 library(IUCNN)
 
 #load example data 
 data("training_occ") #geographic occurrences of species with IUCN assessment
 data("training_labels")# the corresponding IUCN assessments
-data("prediction_occ") #occurrences from Not Evaluated species to prdict
+data("prediction_occ") #occurrences from Not Evaluated species to predict
 
 # Feature and label preparation
 features <- prep_features(training_occ) # Training features
@@ -87,8 +87,8 @@ features_predict <- prep_features(prediction_occ) # Prediction features
 
 # Model testing
 # For illustration models differing in dropout rate and number of layers
-mod_test <- modeltest_iucnn(train_feat,
-                            train_lab,
+mod_test <- modeltest_iucnn(x = features,
+                            lab = labels_train,
                             logfile = "model_testing_results-2.txt",
                             model_outpath = "iucnn_modeltest-2",
                             mode = "nn-class",
@@ -98,30 +98,30 @@ mod_test <- modeltest_iucnn(train_feat,
                             init_logfile = TRUE)
 
 # Select best model
-m_best <- best_model_iucnn(mod_test,
-                           criterion = "val_acc",
-                           require_dropout = TRUE)
+m_best <- bestmodel_iucnn(x = mod_test,
+                          criterion = "val_acc",
+                          require_dropout = TRUE)
 
 # Inspect model structure and performance
 summary(m_best)
 plot(m_best)
 
 # Train the best model on all training data for prediction
-m_prod <- train_iucnn(train_feat,
-                      train_lab,
+m_prod <- train_iucnn(x = features,
+                      lab = labels_train,
                       production_model = m_best,
                       overwrite = TRUE)
 
 # Predict RL categories for target species
-pred <- predict_iucnn(pred_feat,
-                      m_prod)
+pred <- predict_iucnn(x = features_predict,
+                      model = m_prod)
 plot(pred)
 
 ```
 
 
 # Citation
-```{r}
+```r
 library(IUCNN)
 citation("IUCNN")
 ```

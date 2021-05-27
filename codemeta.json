@@ -1,5 +1,8 @@
 {
-  "@context": ["https://doi.org/10.5063/schema/codemeta-2.0", "http://schema.org"],
+  "@context": [
+    "https://doi.org/10.5063/schema/codemeta-2.0",
+    "http://schema.org"
+  ],
   "@type": "SoftwareSourceCode",
   "identifier": "IUCNN",
   "description": "Train neural networks based on geographic species occurrences, environmental data and existing IUCN Red List assessments to predict the conservation status of \"Not Evaluated\" or \"Data Deficient\" species, for any taxon or geographic region of interest.",
@@ -7,7 +10,7 @@
   "codeRepository": "https://github.com/azizka/IUCNN",
   "issueTracker": "https://github.com/azizka/IUCNN/issues",
   "license": "https://spdx.org/licenses/LGPL-2.1",
-  "version": "0.9.4",
+  "version": "0.9.9",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -23,6 +26,11 @@
     }
   ],
   "contributor": [
+    {
+      "@type": "Person",
+      "givenName": "Tobias",
+      "familyName": "Andermann"
+    },
     {
       "@type": "Person",
       "givenName": "Daniele",
@@ -54,30 +62,6 @@
     },
     {
       "@type": "SoftwareApplication",
-      "identifier": "testthat",
-      "name": "testthat",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=testthat"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "identifier": "spelling",
-      "name": "spelling",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=spelling"
-    },
-    {
-      "@type": "SoftwareApplication",
       "identifier": "knitr",
       "name": "knitr",
       "provider": {
@@ -99,20 +83,44 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=rmarkdown"
-    }
-  ],
-  "softwareRequirements": [
+    },
     {
       "@type": "SoftwareApplication",
-      "identifier": "magrittr",
-      "name": "magrittr",
+      "identifier": "spelling",
+      "name": "spelling",
       "provider": {
         "@id": "https://cran.r-project.org",
         "@type": "Organization",
         "name": "Comprehensive R Archive Network (CRAN)",
         "url": "https://cran.r-project.org"
       },
-      "sameAs": "https://CRAN.R-project.org/package=magrittr"
+      "sameAs": "https://CRAN.R-project.org/package=spelling"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "testthat",
+      "name": "testthat",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=testthat"
+    }
+  ],
+  "softwareRequirements": [
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "checkmate",
+      "name": "checkmate",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=checkmate"
     },
     {
       "@type": "SoftwareApplication",
@@ -137,6 +145,28 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=dplyr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "graphics",
+      "name": "graphics"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "grDevices",
+      "name": "grDevices"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "magrittr",
+      "name": "magrittr",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=magrittr"
     },
     {
       "@type": "SoftwareApplication",
@@ -229,24 +259,6 @@
     },
     {
       "@type": "SoftwareApplication",
-      "identifier": "checkmate",
-      "name": "checkmate",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=checkmate"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "identifier": "sampbias",
-      "name": "sampbias",
-      "sameAs": "https://github.com/azizka/sampbias"
-    },
-    {
-      "@type": "SoftwareApplication",
       "identifier": "R",
       "name": "R",
       "version": ">= 2.10"
@@ -254,7 +266,7 @@
   ],
   "releaseNotes": "https://github.com/azizka/IUCNN/blob/master/NEWS.md",
   "readme": "https://github.com/azizka/IUCNN/blob/master/README.md",
-  "fileSize": "326156.959KB",
+  "fileSize": "484327.273KB",
   "developmentStatus": "https://www.repostatus.org/#active",
   "citation": [
     {
