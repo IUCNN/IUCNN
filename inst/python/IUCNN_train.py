@@ -473,7 +473,9 @@ def iucnn_train(dataset,
                 test_acc, test_predictions, test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
                 if cv:
                     val_acc = test_acc
-                test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
+                #test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
+                test_loss = np.mean([model.evaluate(test_set, labels_for_testing, verbose=0,return_dict=True)['loss'] for i in np.arange(dropout_reps)])
+
             else:
                 test_acc = np.nan
                 test_predictions = np.nan
