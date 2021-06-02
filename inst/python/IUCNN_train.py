@@ -471,6 +471,8 @@ def iucnn_train(dataset,
                     test_set, labels_for_testing = manipulate_instance_distribution(test_set, labels_for_testing, factor=test_label_balance_factor, multi_col_labels=False)
                     test_count_cv_fold = np.unique(np.argmax(labels_for_testing, axis=1), return_counts=True)[1]
                 test_acc, test_predictions, test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
+                if cv:
+                    val_acc = test_acc
                 test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
             else:
                 test_acc = np.nan
