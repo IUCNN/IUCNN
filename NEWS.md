@@ -1,3 +1,7 @@
+# IUCNN 1.0.1(01.06.2021)
+=========================
+* minor fix for outputting val-loss and test-loss for nn-reg mode
+
 # IUCNN 1.0.0(27.05.2021)
 =========================
 * final version for first release
