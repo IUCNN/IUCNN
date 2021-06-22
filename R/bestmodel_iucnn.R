@@ -65,6 +65,13 @@
 bestmodel_iucnn <- function(x,
                             criterion = "val_acc",
                             require_dropout = FALSE) {
+
+  if(criterion == "val_loss" & length(unique(x$mode))>1){
+stop("The chosen criterion val_loss can't be used to compare across
+  different model types (e.g. nn-class and nn-reg). Choose different criterion or
+  provide modeltesting results that are restricted to only one mode.")
+  }
+
   ranked_models <- rank_models(x, rank_by = criterion)
   if (require_dropout) {
     best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]
