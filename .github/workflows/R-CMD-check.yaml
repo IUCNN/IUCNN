@@ -86,14 +86,27 @@ jobs:
           "reticulate::install_miniconda()"
         shell: Rscript {0}
 
-      - name: Install python dependencies
+      - name: Install python dependencies Linux
+        if: startsWith(matrix.os, 'ubuntu')
         run: |
           reticulate::conda_install("r-reticulate","tensorflow=2.4")
         shell: Rscript {0}
 
+      - name: Install python dependencies Linux
+        if: startsWith(matrix.os, 'mac')
+        run: |
+          reticulate::conda_install("r-reticulate","tensorflow=2.4")
+        shell: Rscript {0}
+
+      - name: Install python dependencies windows
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
+        shell: Rscript {0}
+
       - name: Install npBNN
         run: |
-          reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
+          reticulate::py_install(envname = "r-reticulate", "https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
         shell: Rscript {0}
 
       - name: Session info
