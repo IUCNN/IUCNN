@@ -15,3 +15,7 @@ iuc_nn_model_feature_importance.txt
 orchid_data
 .DS_Store
 iucnn_model*
+docs/vignettes/feature_extraction
+docs/vignettes/iuc_nn_model*
+docs/feature_extraction
+docs/data-raw
