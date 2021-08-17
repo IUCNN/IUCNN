@@ -65,11 +65,6 @@
 iucnn_best_model<- function(x,
                             criterion = "val_acc",
                             require_dropout = FALSE) {
-<<<<<<< HEAD:R/iucnn_best_model.R
-  ranked_models <- rank_models(x,
-                               rank_by = criterion)
-
-=======
 
   if(criterion == "val_loss" & length(unique(x$mode))>1){
 stop("The chosen criterion val_loss can't be used to compare across
@@ -78,7 +73,7 @@ stop("The chosen criterion val_loss can't be used to compare across
   }
 
   ranked_models <- rank_models(x, rank_by = criterion)
->>>>>>> 0dc3a45afd1a000a6277834d895a180dac8ea6b5:R/bestmodel_iucnn.R
+
   if (require_dropout) {
     best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]
   } else {
