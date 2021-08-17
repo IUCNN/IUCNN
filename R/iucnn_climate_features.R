@@ -9,13 +9,13 @@
 #'
 #'
 #' All climate variables are summarized  to the species median.
-#'@inheritParams prep_features
-#'@param climate.input a raster or rasterStack with climate data.
+#'@inheritParams iucnn_prepare_features
+#'@param climate_input a raster or rasterStack with climate data.
 #'Optional. If not provided,
 #'the 19 bioclim variables from www.worldclim.org are used as default.
 #'@param res numeric. The resolution of the default climate rasters.
 #'One of 2.5, 5, or 10. Only relevant if
-#'climate.input is NULL
+#'climate_input is NULL
 #'@param type character string. A selection of which variables to return.
 #'If "all" all 19 bioclim variables
 #'if "selected" only Annual Mean Temperature, Temperature Seasonality,
@@ -32,13 +32,12 @@
 #' @family Feature preparation
 #'
 #' @examples
-#'\dontrun{
 #' dat <- data.frame(species = c("A","B"),
 #'                   decimallongitude = runif (200,10,15),
 #'                   decimallatitude = runif (200,-5,5))
 #'
-#'ft_clim(dat)
-#'}
+#'iucnn_climate_features(dat)
+
 #'
 #'
 #' @export
@@ -48,15 +47,15 @@
 #' @importFrom stats median
 #' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
 
-ft_clim <- function(x,
-                    climate.input = NULL,
-                    species = "species",
-                    lon = "decimallongitude",
-                    lat = "decimallatitude",
-                    rescale = TRUE,
-                    res = 10,
-                    type = "selected",
-                    download.folder = "feature_extraction"){
+iucnn_climate_features <- function(x,
+                                   climate_input = NULL,
+                                   species = "species",
+                                   lon = "decimallongitude",
+                                   lat = "decimallatitude",
+                                   rescale = TRUE,
+                                   res = 10,
+                                   type = "selected",
+                                   download_folder = "feature_extraction"){
 
   # assertions
   assert_data_frame(x)
@@ -65,34 +64,34 @@ ft_clim <- function(x,
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_logical(rescale)
   assert_numeric(res)
-  assert_character(download.folder, null.ok = TRUE)
+  assert_character(download_folder, null.ok = TRUE)
 
   # check arguments for the type
   match.arg(arg = type, choices = c("selected", "all"))
 
   # Get climate data if non is provided
-  if(is.null(climate.input)){
+  if(is.null(climate_input)){
     # set download path
-    if(is.null(download.folder)){
-      download.folder <- getwd()
+    if(is.null(download_folder)){
+      download_folder <- getwd()
     }
     # else{
-    #   download.folder <- file.path(getwd(), download.folder)
+    #   download_folder <- file.path(getwd(), download_folder)
     # }
-    if(!dir.exists(download.folder)){
-      dir.create(download.folder)
+    if(!dir.exists(download_folder)){
+      dir.create(download_folder)
     }
 
-    climate.input <- raster::getData('worldclim',
+    climate_input <- raster::getData('worldclim',
                                      var = 'bio',
                                      res = res,
-                                     path = download.folder)
+                                     path = download_folder)
   }else{
     rescale <- FALSE
   }
 
   # Extract values
-  bio_ex <- raster::extract(x = climate.input,
+  bio_ex <- raster::extract(x = climate_input,
                             y = x[,c(lon, lat)])
 
   # absolute climate variables

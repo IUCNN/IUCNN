@@ -1,6 +1,6 @@
 #' Evaluate relative importance of training features
 #'
-#' Uses a model generated with \code{\link{train_iucnn}}
+#' Uses a model generated with \code{\link{iucnn_train_model}}
 #' to evaluate how much each feature or
 #' group of features contributes to the accuracy of
 #'  the test set predictions. The function
@@ -23,7 +23,7 @@
 #' feature blocks can be manually defined using the feature_blocks argument.
 #'
 #'@param x iucnn_model object, as produced as output
-#'when running \code{\link{train_iucnn}}
+#'when running \code{\link{iucnn_train_model}}
 #'@param feature_blocks a list. Default behavior is to
 #' group the features into geographic, climatic,
 #'biome, and human footprint features. Provide custom
@@ -53,17 +53,17 @@
 #'data("training_occ")
 #'data("training_labels")
 #'
-#'train_feat <- prep_features(training_occ)
-#'labels_train <- prep_labels(training_labels,
+#'train_feat <- iucnn_prepare_features(training_occ)
+#'labels_train <- iucnn_prepare_labels(training_labels,
 #'                            level = 'detail')
 #'
-#'train_output <- train_iucnn(x = train_feat,
+#'train_output <- iucnn_train_model(x = train_feat,
 #'                           lab = labels_train,
 #'                           patience = 10)
 #'
 #'
-#'imp_def <- feature_importance(x = train_output)
-#'imp_cust <- feature_importance(x = train_output,
+#'imp_def <- iucnn_feature_importance(x = train_output)
+#'imp_cust <- iucnn_feature_importance(x = train_output,
 #'                               feature_blocks = list(block1 = c(1,2,3,4),
 #'                                                     block2 = c(5,6,7,8)),
 #'                               provide_indices = TRUE)

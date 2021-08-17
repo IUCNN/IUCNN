@@ -1,16 +1,16 @@
 #' Predict IUCN Categories from Features
 #'
-#' Uses a model generated with \code{\link{train_iucnn}}
+#' Uses a model generated with \code{\link{iucnn_train_model}}
 #' to predict the IUCN status of
 #' Not Evaluated or Data Deficient species based on features, generated
-#' from species occurrence records with \code{\link{prep_features}}.
+#' from species occurrence records with \code{\link{iucnn_prepare_features}}.
 #' These features should be of the same type as those used for training the
 #' model.
 #'
 #'@param x a data.set, containing a column "species" with the species names, and
 #'subsequent columns with different features,
-#'in the same order as used for \code{\link{train_iucnn}}
-#'@param model the information on the NN model returned by \code{\link{train_iucnn}}
+#'in the same order as used for \code{\link{iucnn_train_model}}
+#'@param model the information on the NN model returned by \code{\link{iucnn_train_model}}
 #'@param target_acc numerical, 0-1. The target accuracy of the overall model.
 #' Species that cannot be classified with
 #'enough certainty to reach this accuracy are classified as NA (Not Available/Not Assessed).
@@ -36,15 +36,15 @@
 #'data("prediction_occ") #occurrences from Not Evaluated species to prdict
 #'
 #'# 1. Feature and label preparation
-#'features <- prep_features(training_occ) # Training features
-#'labels_train <- prep_labels(training_labels) # Training labels
-#'features_predict <- prep_features(prediction_occ) # Prediction features
+#'features <- iucnn_prepare_labels(training_occ) # Training features
+#'labels_train <- iucnn_prepare_labels(training_labels) # Training labels
+#'features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 #'
 #'# 2. Model training
-#'m1 <- train_iucnn(x = features, lab = labels_train)
+#'m1 <- iucnn_train_model(x = features, lab = labels_train)
 #'
 #'# 3. Prediction
-#'predict_iucnn(x = features_predict,
+#'iucnn_predict_status (x = features_predict,
 #'              model = m1)
 #'}
 #'
@@ -55,7 +55,7 @@
 #' @importFrom dplyr select
 #' @importFrom stats complete.cases
 
-predict_iucnn <- function(x,
+iucnn_predict_status <- function(x,
                           model,
                           target_acc = 0.0,
                           return_IUCN = TRUE,
@@ -70,7 +70,7 @@ predict_iucnn <- function(x,
     stop("Provided model consists of multiple cross-validation (CV) folds.\n
           CV models are only used for model evaluation in IUCNN.
           Retrain your chosen model without using CV.
-          To do this you can use the train_iucnn function and simply
+          To do this you can use the iucnn_train_model function and simply
           provide your CV model under the \'production_model\' flag.")
   }
 

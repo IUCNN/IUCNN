@@ -8,7 +8,7 @@
 #' Coordinate ranges are 90% quantiles, for species with
 #' less than three occurrences EOO is set to AOO.
 #'
-#'@inheritParams prep_features
+#'@inheritParams iucnn_prepare_features
 #'@param rescale logical. If TRUE, the geographic features are rescaled.
 #'This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 #'feature values are returned.
@@ -23,7 +23,7 @@
 #'                   decimallongitude = runif (200,10,15),
 #'                   decimallatitude = runif (200,-5,5))
 #'
-#'ft_geo(dat)
+#'iucnn_geography_features(dat)
 
 #'
 #' @export
@@ -34,11 +34,11 @@
 #' @importFrom stats quantile
 #' @importFrom checkmate assert_character assert_data_frame assert_logical
 
-ft_geo <- function(x,
-                   species = "species",
-                   lon = "decimallongitude",
-                   lat = "decimallatitude",
-                   rescale = TRUE){
+iucnn_geography_features <- function(x,
+                                     species = "species",
+                                     lon = "decimallongitude",
+                                     lat = "decimallatitude",
+                                     rescale = TRUE){
 
   # assertions
   assert_data_frame(x)

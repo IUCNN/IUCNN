@@ -33,6 +33,7 @@ Imports:
     reticulate,
     sf,
     stats,
+    terra,
     tidyr,
     tidyselect
 VignetteBuilder: knitr

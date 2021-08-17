@@ -54,18 +54,18 @@ data("training_labels")# the corresponding IUCN assessments
 data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # 1. Feature and label preparation
-features <- prep_features(training_occ) # Training features
-labels_train <- prep_labels(training_labels) # Training labels
-features_predict <- prep_features(prediction_occ) # Prediction features
+features <- iucnn_prepare_features(training_occ) # Training features
+labels_train <- iucnn_prepare_labels(training_labels) # Training labels
+features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 
 # 2. Model training
-m1 <- train_iucnn(x = features, lab = labels_train)
+m1 <- iucnn_train_model(x = features, lab = labels_train)
 
 summary(m1)
 plot(m1)
 
 # 3. Prediction
-predict_iucnn(x = features_predict,
+iucnn_predict(x = features_predict,
               model = m1)
 ```
 
@@ -81,15 +81,15 @@ data("training_labels")# the corresponding IUCN assessments
 data("prediction_occ") #occurrences from Not Evaluated species to predict
 
 # Feature and label preparation
-features <- prep_features(training_occ) # Training features
-labels_train <- prep_labels(training_labels) # Training labels
-features_predict <- prep_features(prediction_occ) # Prediction features
+features <- iucnn_prepare_features(training_occ) # Training features
+labels_train <- iucnn_prepare_labels(training_labels) # Training labels
+features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 
 
 # Model testing
 # For illustration models differing in dropout rate and number of layers
 
-mod_test <- modeltest_iucnn(x = features,
+mod_test <- iucnn_modeltest(x = features,
                             lab = labels_train,
                             logfile = "model_testing_results-2.txt",
                             model_outpath = "iucnn_modeltest-2",
@@ -100,7 +100,7 @@ mod_test <- modeltest_iucnn(x = features,
                             init_logfile = TRUE)
 
 # Select best model
-m_best <- bestmodel_iucnn(x = mod_test,
+m_best <- iucnn_best_model(x = mod_test,
                           criterion = "val_acc",
                           require_dropout = TRUE)
 
@@ -109,16 +109,23 @@ summary(m_best)
 plot(m_best)
 
 # Train the best model on all training data for prediction
-m_prod <- train_iucnn(x = features,
-                      lab = labels_train,
-                      production_model = m_best)
+m_prod <- iucnn_train_model(x = features,
+                            lab = labels_train,
+                            production_model = m_best)
 
 # Predict RL categories for target species
-pred <- predict_iucnn(x = features_predict,
+pred <- iucnn_predict(x = features_predict,
                       model = m_prod)
 plot(pred)
 
 ```
+
+Using a convolutional neural network
+
+```r
+
+```
+
 
 
 # Citation

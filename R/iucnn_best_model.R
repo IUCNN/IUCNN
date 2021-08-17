@@ -2,12 +2,12 @@
 
 #'
 #' Uses a data-frame of model-testing results generated with
-#' \code{\link{modeltest_iucnn}} as input, and finds the best model
+#' \code{\link{iucnn_modeltest}} as input, and finds the best model
 #' based on the chosen criterion.
 #'
 #'
 #'@param x a data.frame of model-testing results as produced
-#'by \code{\link{modeltest_iucnn}}.
+#'by \code{\link{iucnn_modeltest}}.
 #'@param criterion name the criterion to rank models by (default="val_acc").
 #'Valid options are
 #'"val_acc","val_loss","weighted_error", or "total_class_matches"
@@ -62,10 +62,12 @@
 #'
 #' @export
 
-bestmodel_iucnn <- function(x,
+iucnn_best_model<- function(x,
                             criterion = "val_acc",
                             require_dropout = FALSE) {
-  ranked_models <- rank_models(x, rank_by = criterion)
+  ranked_models <- rank_models(x,
+                               rank_by = criterion)
+
   if (require_dropout) {
     best_model <- ranked_models[ranked_models$dropout_rate > 0, ][1, ]
   } else {

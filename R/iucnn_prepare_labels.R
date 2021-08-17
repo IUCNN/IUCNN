@@ -1,6 +1,6 @@
 #'Format IUCN Red List categories for IUCNN
 #'
-#'Converting IUCN category labels into numeric categories required by \code{\link{train_iucnn}}.
+#'Converting IUCN category labels into numeric categories required by \code{\link{iucnn_train_model}}.
 #'
 #'
 #'@param x a data.frame or a list. If a data.frame,
@@ -8,10 +8,12 @@
 #'respectively. The column names are defined by the
 #'species and labels arguments. If a list, expecting
 #'the format as returned by \link[rredlist]{rl_search}.
+#'@param y object of class \code{iucnn-features} or \code{iucnn_cnn_features}.
+#' Ensures that the species in the retun value are in the same order as in y.
 #'@param species a character string. The name of the
-#' column with the species names.
+#' column with the species names in x.
 #'@param labels a character string. The name of the
-#'column with the labels (assessment categories).
+#'column with the labels (assessment categories) in x.
 #'@param accepted_labels a character string. The labels
 #'to be converted in to numeric values.
 #'Entries with labels not mentioned (e.g. "DD") will be removed.
@@ -32,20 +34,21 @@
 #'
 #' @examples
 #'data("training_labels")
-#'prep_labels(training_labels)
+#'iucnn_prepare_labels(training_labels)
 #'
 #' @export
 #' @importFrom magrittr %>%
-#' @importFrom dplyr bind_rows distinct filter left_join mutate select
+#' @importFrom dplyr arrange bind_rows distinct filter left_join mutate select
 #' @importFrom checkmate assert_character
 
 
-prep_labels <- function(x,
-                       species = "species",
-                       labels = "labels",
-                       accepted_labels = c('LC','NT','VU','EN','CR'),
-                       level = "detail",
-                       threatened = c("CR", "EN", "VU")){
+iucnn_prepare_labels <- function(x,
+                                 y,
+                                 species = "species",
+                                 labels = "labels",
+                                 accepted_labels = c('LC','NT','VU','EN','CR'),
+                                 level = "detail",
+                                 threatened = c("CR", "EN", "VU")){
 
  # assertions
   assert_character(species)
@@ -101,6 +104,44 @@ prep_labels <- function(x,
   out <- out %>%
     dplyr::select(species = .data[[species]], labels = .data$lab.num.z)
 
+  # match labels to y if supplied
+  if(!is.null(y)){
+    # if y are cnn features
+    if("cnn_features" %in% class(y)){
+      # if not all species are there, crop
+      if(!all(names(y) %in% out$species)|
+         !all(out$species %in% names(y))){
+
+        out_in <- out
+        out <- out %>%
+          filter(species %in% names(y))
+
+        y <- y[names(y) %in% out_in$species]
+        warning("species mismatch between x and y. Species removed from output.")
+      }
+      # sort output
+      out <- out %>%
+        arrange(ordered(species, names(y)))
+      #if y are iucnn features
+    }else if("iucnn_features" %in% class(y)){
+      # if not all species are there, crop
+      if(!all(y$species %in% out$species)|
+         !all(out$species %in% y$species)){
+
+        out_in <- out
+        out <- out %>%
+          filter(species %in% y$species)
+
+        y <- y[y$species %in% out_in$species, ]
+        warning("species mismatch between x and y. Species removed from output.")
+      }
+      # sort output
+      out <- out %>%
+        arrange(ordered(species, y$species))
+    }
+  }
+
+  # create output object
   out <- list(
     labels = out,
     lookup = lookup

@@ -4,8 +4,8 @@
 #'geographic, biomes, climate, human footprint.
 #'If desired, bias features need to be calculated separately with ft_bias.
 #'For more control over feature preparation, you can use the
-#'\code{\link{ft_geo}}, \code{\link{ft_biom}}, \code{\link{ft_clim}},
-#'\code{\link{ft_foot}} functions.
+#'\code{\link{iucnn_geography_features}}, \code{\link{iucnn_biome_features}}, \code{\link{iucnn_climate_features}},
+#'\code{\link{iucnn_footprint_features}} functions.
 #'
 #'Without internet access, only geographic features are calculated,
 #'
@@ -17,11 +17,11 @@
 #'@param type character. The type of features to calculate. Possible options are
 #'\dQuote{geographic}, \dQuote{biome}, \dQuote{climate},
 #'\dQuote{human footprint}.
-#'@param download.folder character string. The folder were to save the
+#'@param download_folder character string. The folder were to save the
 #'data used for feature extraction. Relative to the working directory.
 #'Set to NULL for the working directory
 #'
-#'@return a data.frame of bias features
+#'@return a data.frame of features
 #'
 #' @keywords Feature preparation
 #' @family Feature preparation
@@ -32,22 +32,22 @@
 #'                   decimallongitude = runif (200,10,15),
 #'                   decimallatitude = runif (200,-5,5))
 #'
-#'prep_features(dat)
+#'iucnn_prepare_features(dat)
 #'}
 #'
 #'@export
 #' @importFrom checkmate assert_character assert_data_frame assert_logical
 #' @importFrom dplyr left_join
 
-prep_features <- function(x,
-                          species = "species",
-                          lon = "decimallongitude",
-                          lat = "decimallatitude",
-                          type = c("geographic",
-                                   "biomes",
-                                   "climate",
-                                   "humanfootprint"),
-                          download.folder = "feature_extraction"){
+iucnn_prepare_features <- function(x,
+                                   species = "species",
+                                   lon = "decimallongitude",
+                                   lat = "decimallatitude",
+                                   type = c("geographic",
+                                            "biomes",
+                                            "climate",
+                                            "humanfootprint"),
+                                   download_folder= "feature_extraction"){
 
   # assertions
   assert_data_frame(x)
@@ -55,28 +55,28 @@ prep_features <- function(x,
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_character(type)
-  assert_character(download.folder, null.ok = TRUE)
+  assert_character(download_folder, null.ok = TRUE)
 
   # generate folder fore data
-  if(is.null(download.folder)){
-    download.folder <- getwd()
+  if(is.null(download_folder)){
+    download_folder<- getwd()
   }
 
-  if(!dir.exists(download.folder)){
-    dir.create(download.folder)
+  if(!dir.exists(download_folder)){
+    dir.create(download_folder)
   }
 
   # else{
-  #   download.folder <- file.path(getwd(), download.folder)
+  #   download_folder<- file.path(getwd(), download_folder)
   # }
 
   #prepare geographic features
   if("geographic" %in% type){
     message("Calculating geographic features.")
-    out <- ft_geo(x,
-                  species = species,
-                  lon = lon,
-                  lat = lat)
+    out <- iucnn_geography_features(x,
+                                    species = species,
+                                    lon = lon,
+                                    lat = lat)
   }
 
 
@@ -86,11 +86,11 @@ prep_features <- function(x,
     #biomes
     if("biomes" %in% type){
       message("Calculating biome features.")
-      bio <- ft_biom(x,
-                     species = species,
-                     lon = lon,
-                     lat = lat,
-                     download.folder = download.folder)
+      bio <- iucnn_biome_features(x,
+                                  species = species,
+                                  lon = lon,
+                                  lat = lat,
+                                  download_folder= download_folder)
 
       if(exists("out")){
         out <- out %>%
@@ -103,12 +103,11 @@ prep_features <- function(x,
     #climate
     if("climate" %in% type){
       message("Calculating climate features.")
-      clim <- ft_clim(x,
-                      species = species,
-                      lon = lon,
-                      lat = lat,
-                      download.folder = download.folder
-                      )
+      clim <- iucnn_climate_features(x,
+                                     species = species,
+                                     lon = lon,
+                                     lat = lat,
+                                     download_folder= download_folder)
 
       if(exists("out")){
         out <- out %>%
@@ -121,11 +120,11 @@ prep_features <- function(x,
     # human footprint
     if("humanfootprint" %in% type){
       message("Calculating human footprint features.")
-      foot <- ft_foot(x,
-                      species = species,
-                      lon = lon,
-                      lat = lat,
-                      download.folder = download.folder)
+      foot <- iucnn_footprint_features(x,
+                                       species = species,
+                                       lon = lon,
+                                       lat = lat,
+                                       download_folder= download_folder)
 
       if(exists("out")){
         out <- out %>%
@@ -137,5 +136,7 @@ prep_features <- function(x,
   }else{
     warning("No internet connection, only geographic features created")
   }
+  class(out) <- c("iucnn_features", class(out))
+
   return(out)
 }
