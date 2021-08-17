@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 # IUCNN 1.0.1(16.08.2021)
 =========================
 * added iucnn_cnn_features function
 * standardized function naming scheme
 * added test for polygon validity to iucnn_biome_features
 
+=======
+# IUCNN 1.0.1(01.06.2021)
+=========================
+* minor fix for outputting val-loss and test-loss for nn-reg mode
+>>>>>>> 0dc3a45afd1a000a6277834d895a180dac8ea6b5
 
 # IUCNN 1.0.0(27.05.2021)
 =========================

@@ -471,7 +471,11 @@ def iucnn_train(dataset,
                     test_set, labels_for_testing = manipulate_instance_distribution(test_set, labels_for_testing, factor=test_label_balance_factor, multi_col_labels=False)
                     test_count_cv_fold = np.unique(np.argmax(labels_for_testing, axis=1), return_counts=True)[1]
                 test_acc, test_predictions, test_predictions_raw = get_regression_accuracy(model,test_set,labels_for_testing,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
-                test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
+                if cv:
+                    val_acc = test_acc
+                #test_loss = np.nan#np.mean(tf.keras.losses.sparse_categorical_crossentropy(orig_test_labels, test_predictions_raw))
+                test_loss = np.mean([model.evaluate(test_set, labels_for_testing, verbose=0,return_dict=True)['loss'] for i in np.arange(dropout_reps)])
+
             else:
                 test_acc = np.nan
                 test_predictions = np.nan
@@ -524,7 +528,7 @@ def iucnn_train(dataset,
     avg_train_loss = np.mean(train_loss_per_fold)
     avg_validation_loss = np.mean(validation_loss_per_fold)
     avg_test_loss = np.mean(test_loss_per_fold)
-    
+
     if verbose:
         print('Average scores for all folds:')
         print('> Test accuracy: %.5f (+- %.5f (std))'%(avg_test_acc,np.std(test_acc_per_fold)))
@@ -562,8 +566,8 @@ def iucnn_train(dataset,
         train_instance_names = instance_names
         test_instance_names = instance_names
     elif test_fraction == 0 and cv_k > 1:
-        avg_validation_acc = avg_test_acc
-        avg_validation_loss = avg_test_loss
+        avg_test_loss = avg_validation_loss
+        avg_test_acc = avg_validation_acc
         data_train = orig_dataset
         labels_train = orig_labels
         data_test = orig_dataset
