@@ -80,13 +80,16 @@ jobs:
         shell: Rscript {0}
 
       - name: Install Miniconda
-        run: reticulate::install_miniconda()
+        run: |
+          reticulate::install_miniconda()
 
       - name: Install r-reticulate
-        run: reticulate::conda_install("r-reticulate","tensorflow=2.4")
+        run: |
+          reticulate::conda_install("r-reticulate","tensorflow=2.4")
 
       - name: Install npBNN
-        run: reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
+        run: |
+          reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
 
       - name: Session info
         run: |
