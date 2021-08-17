@@ -121,9 +121,10 @@ iucnn_biome_features <- function(x,
     tidyr::pivot_wider(id_cols = .data$species,
                        names_from = .data$biome,
                        values_from = .data$presence) %>%
-    dplyr::select(-.data$`NA`) %>%
-    #replace NAs
-    replace(is.na(.), 0)
+    dplyr::select(-.data$`NA`)
+
+  # replace NAs
+  biom[is.na(biom)] <- 0
 
   # If desired by the user add biomes without anu occurrences
   if(!remove_zeros){

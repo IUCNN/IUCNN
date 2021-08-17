@@ -8,19 +8,20 @@ test_that("nn-class detailed works", {
   data("prediction_occ")
   # Training
   ## Generate features
-  features <- prep_features(training_occ)
-  features_predict <- prep_features(prediction_occ)
+  features <- iucnn_prepare_features(training_occ)
+  features_predict <- iucnn_prepare_features(prediction_occ)
 
   ## Prepare training labels
-  labels_train <- prep_labels(training_labels)
+  labels_train <- iucnn_prepare_labels(x = training_labels,
+                                       y = features)
 
   ## train the model
-  m <- train_iucnn(x = features,
+  m <- iucnn_train_model(x = features,
                    lab = labels_train,
                    mode = "nn-class",
                    overwrite = TRUE)
 
-  p <- predict_iucnn(x = features_predict,
+  p <- iucnn_predict_model(x = features_predict,
                      model = m)
 
   expect_equal(length(m), 43)
@@ -35,20 +36,21 @@ test_that("nn-class broad works", {
   data("prediction_occ")
   # Training
   ## Generate features
-  features <- prep_features(training_occ)
-  features_predict <- prep_features(prediction_occ)
+  features <- iucnn_prepare_features(training_occ)
+  features_predict <- iucnn_prepare_features(prediction_occ)
 
   ## Prepare training labels
-  labels_train <- prep_labels(training_labels,
-                              level = "broad")
+  labels_train <- iucnn_prepare_labels(x = training_labels,
+                                       y = features,
+                                       level = "broad")
 
   ## train the model
-  m <- train_iucnn(x = features,
+  m <- iucnn_train_model(x = features,
                    lab = labels_train,
                    mode = "nn-class",
                    overwrite = TRUE)
 
-  p <- predict_iucnn(x = features_predict,
+  p <- iucnn_predict_model(x = features_predict,
                      model = m)
 
   expect_equal(length(m), 43)

@@ -1,5 +1,9 @@
+<!-- badges: start -->
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![DOI](https://zenodo.org/badge/293626039.svg)](https://zenodo.org/badge/latestdoi/293626039)
+[![R-CMD-check](https://github.com/azizka/IUCNN/workflows/R-CMD-check/badge.svg)](https://github.com/azizka/IUCNN/actions)
+<!-- badges: end -->
+
 
 # IUCNN
 Batch estimation of species' IUCN Red List threat status using neural networks.
@@ -55,7 +59,8 @@ data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # 1. Feature and label preparation
 features <- iucnn_prepare_features(training_occ) # Training features
-labels_train <- iucnn_prepare_labels(training_labels) # Training labels
+labels_train <- iucnn_prepare_labels(x = training_labels,
+                                     y = features) # Training labels
 features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 
 # 2. Model training
@@ -82,7 +87,8 @@ data("prediction_occ") #occurrences from Not Evaluated species to predict
 
 # Feature and label preparation
 features <- iucnn_prepare_features(training_occ) # Training features
-labels_train <- iucnn_prepare_labels(training_labels) # Training labels
+labels_train <- iucnn_prepare_labels(x = training_labels,
+                                     y = features) # Training labels
 features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 
 
@@ -123,10 +129,12 @@ plot(pred)
 Using a convolutional neural network
 
 ```r
+features <- iucnn_cnn_features(training_occ) # Training features
+labels_train <- iucnn_prepare_labels(x = training_labels,
+                                     y = features) # Training labels
+features_predict <- iucnn_cnn_features(prediction_occ) # Prediction features
 
 ```
-
-
 
 # Citation
 ```r

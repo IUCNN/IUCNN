@@ -9,7 +9,7 @@
 #'species and labels arguments. If a list, expecting
 #'the format as returned by \link[rredlist]{rl_search}.
 #'@param y object of class \code{iucnn-features} or \code{iucnn_cnn_features}.
-#' Ensures that the species in the retun value are in the same order as in y.
+#' Ensures that the species in the return value are in the same order as in y.
 #'@param species a character string. The name of the
 #' column with the species names in x.
 #'@param labels a character string. The name of the
@@ -33,8 +33,18 @@
 #'@return a data.frame with species names and numeric labels
 #'
 #' @examples
-#'data("training_labels")
-#'iucnn_prepare_labels(training_labels)
+#' dat <- data.frame(species = c("A","B"),
+#'                   decimallongitude = runif (200,10,15),
+#'                   decimallatitude = runif (200,-5,5))
+#'
+#' labs <- data.frame(species = c("A","B"),
+#'                    labels = c("CR", "LC"))
+#'
+#' features <- iucnn_prepare_features(dat,
+#'                                    type = "geographic")
+#'
+#' iucnn_prepare_labels(x = labs,
+#'                      y = features)
 #'
 #' @export
 #' @importFrom magrittr %>%

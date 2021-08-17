@@ -10,7 +10,7 @@
 #' Can be of any resolution and CRS but the coordinates in x need to be in the same CRS.
 #'@param crs_x a proj4string specifying the Coordinate Reference system of the coordinates in x.
 #'Default is to lat/lon WGS84.
-#'@param res_y numeric. The resolution for rasterization in decimal degrees.
+#'@param res_y numeric. The resolution for the raster in decimal degrees.
 #'Only relevant if y is not provided.
 #'@inheritParams iucnn_prepare_features
 
@@ -25,7 +25,7 @@
 #'                   decimallongitude = runif (200,10,15),
 #'                   decimallatitude = runif (200,-5,5))
 #'
-#'cnn_features(dat)
+#'iucnn_cnn_features(dat)
 #'
 #'
 #'@export

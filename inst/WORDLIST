@@ -6,7 +6,9 @@ Biome
 Biomes
 Boreal
 Broadleaf
+CRS
 CoordinateCleaner
+DOI
 EOO
 GBIF
 Github
@@ -24,6 +26,7 @@ Rescaling
 Shrublands
 VU
 Vitt
+WGS
 WWF
 Xeric
 acc
@@ -39,8 +42,10 @@ biomes
 bnn
 chosing
 clim
+cnn
 cobi
 conda
+convolutional
 cv
 devtools
 doi
@@ -64,9 +69,11 @@ misclassified
 nn
 npBNN
 occ
+proj
 rCAT
 rasterStack
 rasters
+readme
 relu
 reproducibility
 rescale
