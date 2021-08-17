@@ -77,20 +77,24 @@ jobs:
         run: |
           pak::local_install_dev_deps(upgrade = TRUE)
           pak::pkg_install("rcmdcheck")
+          pak::pkg_install("remotes")
+          remotes::install_github('rstudio/reticulate')
         shell: Rscript {0}
 
       - name: Install Miniconda
         run: |
-          Rscript -e "remotes::install_github('rstudio/reticulate')"
-          Rscript -e "reticulate::install_miniconda()"
+          "reticulate::install_miniconda()"
+        shell: Rscript {0}
 
-      - name: Install r-reticulate
+      - name: Install python dependencies
         run: |
           reticulate::conda_install("r-reticulate","tensorflow=2.4")
+        shell: Rscript {0}
 
       - name: Install npBNN
         run: |
           reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", pip = TRUE)
+        shell: Rscript {0}
 
       - name: Session info
         run: |

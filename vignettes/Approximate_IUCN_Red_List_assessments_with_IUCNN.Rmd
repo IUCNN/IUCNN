@@ -80,7 +80,7 @@ You can prepare the default features with a single call to `iucnn_prepare_featur
 data("training_occ") #geographic occurrences of species with IUCN assessment
 data("prediction_occ")
 
-features <- iucnn_prepare_features(training_occ) # Training features
+features_train <- iucnn_prepare_features(training_occ) # Training features
 features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 
 ```
@@ -92,7 +92,7 @@ IUCNN expects the labels for training as numerical categories. So, to use IUCN R
 data("training_labels")
 
 labels_train <- iucnn_prepare_labels(x = training_labels,
-                                     y = features) # Training labels
+                                     y = features_train) # Training labels
 ```
 
 # Running IUCNN
