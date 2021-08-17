@@ -1,7 +1,7 @@
 data("prediction_occ")
 skip_on_cran()
 skip_if_offline(host = "r-project.org")
-orchid<- iucnn_biome_features(prediction_occ)
+orchid<- iucnn_climate_features(prediction_occ)
 
 test_that("is a data,frame", {
   expect_true(is.data.frame(orchid))

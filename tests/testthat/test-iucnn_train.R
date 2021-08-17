@@ -21,7 +21,7 @@ test_that("nn-class detailed works", {
                    mode = "nn-class",
                    overwrite = TRUE)
 
-  p <- iucnn_predict_model(x = features_predict,
+  p <- iucnn_predict_status(x = features_predict,
                      model = m)
 
   expect_equal(length(m), 43)
@@ -50,7 +50,7 @@ test_that("nn-class broad works", {
                    mode = "nn-class",
                    overwrite = TRUE)
 
-  p <- iucnn_predict_model(x = features_predict,
+  p <- iucnn_predict_status(x = features_predict,
                      model = m)
 
   expect_equal(length(m), 43)
