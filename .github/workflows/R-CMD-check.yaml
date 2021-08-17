@@ -81,7 +81,8 @@ jobs:
 
       - name: Install Miniconda
         run: |
-          reticulate::install_miniconda()
+          Rscript -e "remotes::install_github('rstudio/reticulate')"
+          Rscript -e "reticulate::install_miniconda()"
 
       - name: Install r-reticulate
         run: |
