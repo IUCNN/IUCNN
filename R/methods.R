@@ -50,7 +50,7 @@ print(cm)
 
 #' @export
 #' @method plot iucnn_model
-#' @importFrom graphics abline legend par points text title
+#' @importFrom graphics abline legend par points plot text title
 plot.iucnn_model <- function(x, ...){
 
   par_prev <- par()

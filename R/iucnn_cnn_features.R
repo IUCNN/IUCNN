@@ -43,7 +43,6 @@ iucnn_cnn_features <- function(x,
 
   # check if x is a data.frame with the relevant columns
   assert_data_frame(x)
-  assert_character(x[[species]])
   assert_numeric(x[[lon]])
   assert_numeric(x[[lat]])
   assert_number(res_y)

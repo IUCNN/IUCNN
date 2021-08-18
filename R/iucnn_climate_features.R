@@ -59,7 +59,6 @@ iucnn_climate_features <- function(x,
 
   # assertions
   assert_data_frame(x)
-  assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
   assert_numeric(x[[lat]], any.missing = FALSE, lower = -90, upper = 90)
   assert_logical(rescale)
