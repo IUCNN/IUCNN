@@ -6,8 +6,8 @@ pre_submission_tests.R
 iuc_nn_model
 vignettes/wc10
 vignettes/WWF_ecoregions
-vignettes/iuc_nn_model*
-vignettes/iuc_nn_model_1
+vignettes/iucnn_model*
+vignettes/feature_extraction
 manual_tests
 training_stats.pdf
 HFP*
@@ -15,6 +15,7 @@ iuc_nn_model_feature_importance.txt
 orchid_data
 .DS_Store
 docs/vignettes/feature_extraction
-docs/vignettes/iuc_nn_model*
+docs/vignettes/iucnn_model*
 docs/feature_extraction
 docs/data-raw
+docs/reference/feature_extraction
