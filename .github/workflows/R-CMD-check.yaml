@@ -93,7 +93,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Install python dependencies Mac-OS
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS-latest'
         run: |
           reticulate::conda_install("r-reticulate","tensorflow=2.4")
         shell: Rscript {0}
