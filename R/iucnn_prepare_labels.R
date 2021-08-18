@@ -51,7 +51,6 @@
 #' @importFrom dplyr arrange bind_rows distinct filter left_join mutate select
 #' @importFrom checkmate assert_character
 
-
 iucnn_prepare_labels <- function(x,
                                  y,
                                  species = "species",
@@ -132,7 +131,7 @@ iucnn_prepare_labels <- function(x,
       # sort output
       out <- out %>%
         arrange(ordered(species, names(y)))
-      #if y are iucnn features
+      # if y are iucnn features
     }else if("iucnn_features" %in% class(y)){
       # if not all species are there, crop
       if(!all(y$species %in% out$species)|

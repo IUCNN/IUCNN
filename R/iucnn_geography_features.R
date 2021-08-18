@@ -13,7 +13,7 @@
 #'This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 #'feature values are returned.
 #'
-#'@return a data.frame of geographic features
+#' @return a data.frame of geographic features
 #'
 #' @keywords Feature preparation
 #' @family Feature preparation
@@ -23,8 +23,7 @@
 #'                   decimallongitude = runif (200,10,15),
 #'                   decimallatitude = runif (200,-5,5))
 #'
-#'iucnn_geography_features(dat)
-
+#' iucnn_geography_features(dat)
 #'
 #' @export
 #' @importFrom tidyselect all_of
@@ -77,7 +76,7 @@ iucnn_geography_features <- function(x,
       lon_range = (.data[[lon]] %>% quantile(probs = 0.95) + 180)-
         (.data[[lon]] %>% quantile(probs = 0.05) + 180) ) %>%
 
-    #hemisphere
+    # hemisphere
     mutate(lat_hemisphere = ifelse(.data$mean_lat < 0, 0, 1)) %>%
     mutate(mean_lat = abs(.data$mean_lat))
 

@@ -86,10 +86,10 @@ iucnn_cnn_features <- function(x,
   out <- lapply(pts, function(k){
     # convert to terra object
     sub <- vect(k)
-    #rasterize/count the number of records per grid cell
+    # rasterize/count the number of records per grid cell
     sub_out <- terra::rasterize(sub, y = y, fun = length)
 
-    #convert into amtrix
+    # convert into matrix
     sub_out <- matrix(sub_out, ncol = ncol(y), byrow = TRUE)
 
     # replace NAs with zeros

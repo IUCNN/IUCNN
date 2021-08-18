@@ -52,7 +52,7 @@
 #' @importFrom readr parse_number
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
-#'
+
 iucnn_footprint_features <- function(x,
                    footp_input = NULL,
                    species = "species",
@@ -63,7 +63,7 @@ iucnn_footprint_features <- function(x,
                    download_folder = "feature_extraction",
                    breaks = c(0, 0.81, 1.6, 2.3, 100)){
 
-  #assertions
+  # assertions
   assert_data_frame(x)
   assert_character(x[[species]], any.missing = FALSE, min.chars = 1)
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
@@ -155,7 +155,7 @@ iucnn_footprint_features <- function(x,
     warning(sprintf("Ignoring %s records without data in the input raster", nas))
   }
 
-  #summarize features
+  # summarize features
   out <- out %>%
     filter(!is.na(.data$HFP)) %>%
     group_by(.data$species, .data$year, .data$HFP) %>%

@@ -166,7 +166,7 @@ feature_importance <- function(x,
       all_selected_feature_names <- c(all_selected_feature_names, fname)
       findex <- which(x$input_data$feature_names == fname)
       feature_indices <- c(feature_indices, as.integer(findex - 1))
-      #-1 is necessary because of indexing discrepancy between python and r
+      # -1 is necessary because of indexing discrepancy between python and r
     }
     feature_block_indices[i] <- list(feature_indices)
   }

@@ -102,7 +102,7 @@ jobs:
       - name: Install python dependencies windows
         if: runner.os == 'Windows'
         run: |
-          reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE, envname = "r-reticulate")
+          reticulate::py_install("tensorflow>=2.4", pip = TRUE, envname = "r-reticulate")
         shell: Rscript {0}
 
       - name: Install npBNN
