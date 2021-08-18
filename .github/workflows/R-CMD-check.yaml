@@ -84,7 +84,7 @@ jobs:
       - name: Install Miniconda
         run: |
           reticulate::install_miniconda()
-          reticualte::conda_create("r-reticulate")
+          reticulate::conda_create("r-reticulate")
         shell: Rscript {0}
 
       - name: Install python dependencies Linux
