@@ -1,12 +1,24 @@
 bibentry(bibtype = "article",
+         title = "IUCNN - deep learning approaches to approximate species’ extinction risk",
+         author = c(person("Alexander", "Zizka"),
+                    person("Tobias", "Andermann"),
+                    person("Daniele", "Silvestro")),
+         journal = "bioRxiv",
+         number = 0,
+         pages = 00-00,
+         year = 2021,
+         doi = "doi.org/10.1101/2021.06.17.448832 ",
+         url = "https://www.biorxiv.org/content/10.1101/2021.06.17.448832v1")
+
+bibentry(bibtype = "article",
          title = "Automated conservation assessment of the orchid family with deep learning",
          author = c(person("Alexander", "Zizka"),
                     person("Daniele", "Silvestro"),
                     person("Pati", "Vitt"),
                     person("Tiffany", "Knight")),
          journal = "Conservation Biology",
-         number = 0,
-         pages = 00-00,
+         number = 35,
+         pages = 897-908,
          year = 2020,
          doi = "doi.org/10.1111/cobi.13616",
-         url = "https://github.com/azizka/IUCNN")
+         url = "https://conbio.onlinelibrary.wiley.com/doi/full/10.1111/cobi.13616")
