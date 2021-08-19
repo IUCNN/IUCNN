@@ -54,6 +54,7 @@ iucnn_cnn_features(dat)
 }
 \seealso{
 Other Feature preparation: 
+\code{\link{iucnn_bias_features}()},
 \code{\link{iucnn_biome_features}()},
 \code{\link{iucnn_climate_features}()},
 \code{\link{iucnn_footprint_features}()},
