@@ -9,7 +9,7 @@
 #'@param ras a raster object. Alternative to res, a sample raster to calculate sampling bias. Needs to use the same CRS as
 #'the coordinates in x.
 #'@param plot logical. Should the results of the sampbias analysis be plotted for diagnostics?
-#'@inheritParams iucnn_geographic_features
+#'@inheritParams iucnn_geography_features
 #'
 #'@return a data.frame of bias features
 #'
@@ -49,7 +49,7 @@ iucnn_bias_features <- function(x,
   assert_logical(plot)
 
   #check if sampbias is installed
-  if (!require("sampbias", character.only = TRUE)) {
+  if (!requireNamespace("sampbias", character.only = TRUE)) {
     stop("Bias features require the 'sampbias' package. Install from https://github.com/azizka/sampbias")
   }
 

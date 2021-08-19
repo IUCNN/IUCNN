@@ -15,6 +15,15 @@ iucnn_bias_features(
 )
 }
 \arguments{
+\item{x}{a data.frame of species occurrence records including three columns with
+species name, longitudinal coordinates and latitudinal coordinates (both decimal).}
+
+\item{species}{a character string. The name of the column with the species names.}
+
+\item{lon}{a character string. The name of the column with the longitude.}
+
+\item{lat}{a character string. The name of the column with the latitude.}
+
 \item{res}{numeric. The resolution of the default resolution to calculate sampling bias. In decimal degrees.}
 
 \item{ras}{a raster object. Alternative to res, a sample raster to calculate sampling bias. Needs to use the same CRS as

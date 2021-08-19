@@ -3,6 +3,7 @@
 * added iucnn_cnn_features function
 * standardized function naming scheme
 * added test for polygon validity to iucnn_biome_features
+* add iucnn_bias_features function and sampbias as suggested package
 
 # IUCNN 1.0.1(01.06.2021)
 =========================
