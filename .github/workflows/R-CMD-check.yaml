@@ -78,6 +78,7 @@ jobs:
           pak::pkg_install("rcmdcheck")
           pak::pkg_install("remotes")
           remotes::install_github('rstudio/reticulate')
+          remotes::install_github('azizka/sampbias')
         shell: Rscript {0}
 
       - name: Install Miniconda
