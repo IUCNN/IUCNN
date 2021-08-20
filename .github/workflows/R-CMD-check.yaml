@@ -75,10 +75,10 @@ jobs:
       - name: Install dependencies
         run: |
           pak::pkg_install("azizka/sampbias")
-          pak::local_install_dev_deps(upgrade = TRUE)
           pak::pkg_install("rcmdcheck")
           pak::pkg_install("remotes")
           pak::pkg_install("rstudio/reticulate")
+          pak::local_install_dev_deps(upgrade = TRUE)
         shell: Rscript {0}
 
       - name: Install Miniconda
