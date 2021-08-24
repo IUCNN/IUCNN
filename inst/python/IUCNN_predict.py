@@ -61,9 +61,6 @@ def iucnn_predict(input_raw,
         else:
             feature_set = input_raw
 
-        print(iucnn_mode)
-        print(feature_set.shape)
-
         model = tf.keras.models.load_model(model_dir)
         if dropout:
             predictions_raw = np.array([model.predict(feature_set) for i in np.arange(dropout_reps)])
