@@ -39,6 +39,9 @@
 #'table required for making predictions with an accuracy threshold.
 #'The default of 100 is usually sufficient, larger values will lead to longer
 #'computation times, particularly during model testing with cross-validation.
+#'@param optimize_for string. Default is "accuracy", which will train the model
+#'until optimal validation set accuracy is reached. Set to "loss" if you want
+#'to optimize for minimum validation loss instead.
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.
@@ -73,6 +76,7 @@ iucnn_cnn_train <- function(  x,
                               randomize_instances = TRUE,
                               dropout_rate = 0.0,
                               mc_dropout_reps = 100,
+                              optimize_for = 'accuracy',
                               save_model = TRUE,
                               overwrite = FALSE
                            ){
@@ -132,12 +136,10 @@ iucnn_cnn_train <- function(  x,
                           dropout = mc_dropout,
                           dropout_rate = dropout_rate,
                           mc_dropout_reps = mc_dropout_reps,
+                          optimize_for = optimize_for,
                           randomize_instances = as.integer(randomize_instances),
                           verbose = verbose
                         )
-
-
-
 
   test_labels <- as.vector(res$test_labels)
   test_predictions <- as.vector(res$test_predictions)

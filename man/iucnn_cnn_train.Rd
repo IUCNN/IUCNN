@@ -15,6 +15,7 @@ iucnn_cnn_train(
   randomize_instances = TRUE,
   dropout_rate = 0,
   mc_dropout_reps = 100,
+  optimize_for = "accuracy",
   save_model = TRUE,
   overwrite = FALSE
 )
@@ -59,6 +60,10 @@ predicting validation accuracy and calculating the accuracy-threshold
 table required for making predictions with an accuracy threshold.
 The default of 100 is usually sufficient, larger values will lead to longer
 computation times, particularly during model testing with cross-validation.}
+
+\item{optimize_for}{string. Default is "accuracy", which will train the model
+until optimal validation set accuracy is reached. Set to "loss" if you want
+to optimize for minimum validation loss instead.}
 
 \item{save_model}{logical. If TRUE the model is saved to disk.}
 

@@ -72,6 +72,38 @@ def build_cnn_model(input_shape, n_filters, kernels_conv, pool_size, act_f, act_
 
     return model
 
+def store_input_files_as_pkl(input_raw,
+                             labels):
+    import pickle as pkl
+    filehandler = open('orchid_data/cnn_test/data/input_raw.pkl', "wb")
+    pkl.dump(input_raw, filehandler)
+    filehandler.close()
+    filehandler = open('orchid_data/cnn_test/data/labels.pkl', "wb")
+    pkl.dump(labels, filehandler)
+    filehandler.close()
+
+def load_input_data_manually():
+    import pickle as pkl
+    file = open("orchid_data/cnn_test/data/input_raw.pkl",'rb')
+    input_raw = pkl.load(file)
+    file.close()
+    file = open("orchid_data/cnn_test/data/labels.pkl",'rb')
+    labels = pkl.load(file)
+    file.close()
+    max_epochs = 100
+    patience = 20
+    test_fraction = 0.2
+    model_name = 'orchid_data/cnn_test/cnn_model'
+    act_f = 'relu'
+    act_f_out = 'softmax'
+    seed = 1234
+    dropout = False
+    dropout_rate = 0.0
+    mc_dropout_reps = 100
+    randomize_instances = True
+    optimize_for = 'accuracy'
+    verbose = 1
+
 
 # function to run from R in order to save data objects as numpy arrays
 def train_cnn_model(input_raw,
@@ -87,11 +119,21 @@ def train_cnn_model(input_raw,
                     dropout_rate,
                     mc_dropout_reps,
                     randomize_instances,
+                    optimize_for,
                     verbose
                     ):
 
+    #load_input_data_manually()
+
     instance_names = np.array(list(input_raw.keys()))
-    data_matrix = np.array([input_raw[i] for i in instance_names])
+    data_matrix = np.array([input_raw[i] for i in instance_names]).astype(int)
+
+    labels = np.array(labels).astype(int)
+
+    if optimize_for == 'accuracy':
+        criterion = 'val_accuracy'
+    else:
+        criterion = 'val_loss'
 
     validation_fraction = 0.2
     dropout_reps = mc_dropout_reps
@@ -120,7 +162,7 @@ def train_cnn_model(input_raw,
 
 
     #data_matrix = data_matrix.reshape(list(data_matrix.shape[:-1]))
-    labels = np.array(labels)
+
 
     training_data = data_matrix[train_indices, :]
     training_labels = labels[train_indices]
@@ -148,7 +190,7 @@ def train_cnn_model(input_raw,
                             dropout_rate)
 
     model.summary()
-    early_stop = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+    early_stop = keras.callbacks.EarlyStopping(monitor=criterion,
                                                patience=patience)
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
@@ -165,7 +207,10 @@ def train_cnn_model(input_raw,
     model_out_path = os.path.join(model_name,'saved_model_seed_%i'%(seed))
     model.save(model_out_path)
 
-    stopping_point = np.argmax(history.history['val_accuracy'])
+    if criterion == 'val_accuracy':
+        stopping_point = np.argmax(history.history['val_accuracy'])
+    else:
+        stopping_point = np.argmin(history.history['val_loss'])
     traininig_acc = history.history['accuracy'][stopping_point]
     validation_acc = history.history['val_accuracy'][stopping_point]
     traininig_loss = history.history['loss'][stopping_point]
@@ -187,7 +232,10 @@ def train_cnn_model(input_raw,
         else:
             predictions_raw_mean = model.predict(x_test)
         test_label_predictions = np.argmax(predictions_raw_mean, axis=1)
-        test_acc = np.sum(test_label_predictions == test_labels) / len(test_labels)
+        test_label_predictions = np.array(test_label_predictions).reshape(test_label_predictions.shape[0])
+        test_labels = np.array(test_labels).reshape(test_labels.shape[0])
+
+        test_acc = np.sum(test_label_predictions.astype(int) == test_labels) / len(test_labels)
 
         if dropout:
             accthres_tbl = get_confidence_threshold(predictions_raw_mean,test_labels,target_acc=None)
@@ -246,7 +294,7 @@ def train_cnn_model(input_raw,
         'accthres_tbl': accthres_tbl,
         'true_class_count': true_class_count,
         'predicted_class_count': predicted_class_count,
-        'stopping_point': np.array([stopping_point]),
+        'stopping_point': np.array([stopping_point+1]),
 
         'input_data': {"data": training_data,
                        "labels": training_labels,
@@ -259,7 +307,6 @@ def train_cnn_model(input_raw,
                        "feature_names": np.nan
                        }
     }
-
     return output
 
 

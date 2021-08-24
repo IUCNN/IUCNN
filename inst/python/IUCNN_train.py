@@ -423,9 +423,9 @@ def iucnn_train(dataset,
                                     verbose=verbose,
                                     callbacks=[early_stop])
             if 'accuracy' in optimize_for_this:
-                stopping_point = np.argmax(history.history[optimize_for_this])+1
+                stopping_point = np.argmax(history.history[optimize_for_this])
             else:
-                stopping_point = np.argmin(history.history[optimize_for_this])+1
+                stopping_point = np.argmin(history.history[optimize_for_this])
             print('Best training epoch: ',stopping_point,flush=True)
     
         if mode == 'nn-class':
@@ -436,8 +436,8 @@ def iucnn_train(dataset,
                 val_acc_history = np.nan
                 val_loss_history = np.nan
             else:
-                val_acc = history.history['val_accuracy'][stopping_point-1]
-                val_loss = history.history['val_loss'][stopping_point-1]
+                val_acc = history.history['val_accuracy'][stopping_point]
+                val_loss = history.history['val_loss'][stopping_point]
                 val_acc_history = np.array(history.history['val_accuracy'])
                 val_loss_history = np.array(history.history['val_loss'])
             if len(labels_for_testing)>0:
@@ -455,14 +455,14 @@ def iucnn_train(dataset,
             val_mae_history = np.nan
     
         elif mode == 'nn-reg':
-            train_loss = history.history['loss'][stopping_point-1]
+            train_loss = history.history['loss'][stopping_point]
             train_acc, train_predictions, train_predictions_raw = get_regression_accuracy(model,train_set,labels_for_training,rescale_factor,min_max_label,stretch_factor_rescaled_labels,mc_dropout,dropout_reps)
             if no_validation:
                 val_loss = np.nan
                 val_loss_history = np.nan
                 val_mae_history = np.nan
             else:
-                val_loss = history.history['val_loss'][stopping_point-1]
+                val_loss = history.history['val_loss'][stopping_point]
                 val_loss_history = np.array(history.history['val_loss'])
                 val_mae_history = np.array(history.history['val_mae'])
             val_acc = np.nan
@@ -495,7 +495,7 @@ def iucnn_train(dataset,
         all_test_predictions.append(test_predictions)
         all_test_predictions_raw.append(test_predictions_raw)
         
-        stopping_points.append(stopping_point)
+        stopping_points.append(stopping_point+1) # add +1 because R does different indexing than python
 
         training_histories.setdefault('train_rep_%i'%it,np.array(history.history['loss']))
         validation_histories.setdefault('train_rep_%i'%it,val_loss_history)
