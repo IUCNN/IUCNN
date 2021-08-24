@@ -87,9 +87,6 @@ def iucnn_predict(input_raw,
             predictions = np.round(predictions_raw, 0).astype(int).flatten()
 
 
-
-
-
     if confidence_threshold:
         if not dropout:
             sys.exit('target_acc can only be used for models trained with dropout. Retrain your model and specify a dropout rate > 0 to use this option.')
