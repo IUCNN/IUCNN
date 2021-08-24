@@ -62,9 +62,9 @@ iucnn_predict_status <- function(x,
                           return_raw = FALSE){
 
   # assertions
-  assert_class(x, classes = "data.frame")
-  assert_class(model, classes = "iucnn_model")
 
+
+  assert_class(model, classes = "iucnn_model")
 
   if (model$cv_fold > 1){
     stop("Provided model consists of multiple cross-validation (CV) folds.\n
@@ -74,23 +74,34 @@ iucnn_predict_status <- function(x,
           provide your CV model under the \'production_model\' flag.")
   }
 
+  # only run tests for models other than cnn
+  if (!model$model == 'cnn'){
+    assert_class(x, classes = "data.frame")
+    # check that the same features are in training and prediction
+    test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
+    if(!test1){
+      mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
+      stop("Feature mismatch, missing in training features: \n",
+           paste0(mis, collapse = ", "))
+    }
 
+    test2 <- all(model$input_data$feature_names %in% names(x))
+    if(!test2){
+      mis <- model$input_data$feature_names[!model$input_data$feature_names %in% names(x)]
+      stop("Feature mismatch, missing in prediction features: \n",
+           paste0(mis, collapse = ", "))
+    }
+    data_out <- process_iucnn_input(x,mode = mode, outpath = '.',
+                                    write_data_files = FALSE)
 
+    dataset <- as.matrix(data_out[[1]])
+    instance_names <- data_out[[3]]
 
-  # check that the same features are in training and prediction
-  test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
-  if(!test1){
-    mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
-    stop("Feature mismatch, missing in training features: \n",
-         paste0(mis, collapse = ", "))
+  }else{
+    dataset = x
+    instance_names = names(x)
   }
 
-  test2 <- all(model$input_data$feature_names %in% names(x))
-  if(!test2){
-    mis <- model$input_data$feature_names[!model$input_data$feature_names %in% names(x)]
-    stop("Feature mismatch, missing in prediction features: \n",
-         paste0(mis, collapse = ", "))
-  }
 
   if (target_acc == 0){
     confidence_threshold <- NULL
@@ -106,11 +117,7 @@ iucnn_predict_status <- function(x,
    }
   }
 
-  data_out <- process_iucnn_input(x,mode = mode, outpath = '.',
-                                  write_data_files = FALSE)
 
-  dataset <- data_out[[1]]
-  instance_names <- data_out[[3]]
 
   message("Predicting conservation status")
 
@@ -126,7 +133,6 @@ iucnn_predict_status <- function(x,
                           )
 
 
-
   }else{
     # source python function
     reticulate::source_python(system.file("python", "IUCNN_predict.py",
@@ -134,7 +140,7 @@ iucnn_predict_status <- function(x,
 
     # run predict function
     pred_out <- iucnn_predict(
-                   feature_set = as.matrix(dataset),
+                   input_raw = dataset,
                    model_dir = model$trained_model_path,
                    iucnn_mode = model$model,
                    dropout = model$mc_dropout,

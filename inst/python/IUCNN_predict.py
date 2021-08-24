@@ -42,7 +42,7 @@ def turn_reg_output_into_softmax(reg_out_rescaled,label_cats):
         return softmax_probs_mean
     
 
-def iucnn_predict(feature_set,
+def iucnn_predict(input_raw,
                   model_dir,
                   iucnn_mode,
                   dropout,
@@ -53,7 +53,17 @@ def iucnn_predict(feature_set,
                   stretch_factor_rescaled_labels
                   ):
     #print("Loading model...")
-    if iucnn_mode == 'nn-class':
+    if iucnn_mode == 'nn-class' or iucnn_mode == 'cnn':
+        if iucnn_mode == 'cnn':
+            instance_names = np.array(list(input_raw.keys()))
+            data_matrix = np.array([input_raw[i] for i in instance_names]).astype(int)
+            feature_set = np.array(data_matrix.copy()).reshape(list(data_matrix.shape) + [1])
+        else:
+            feature_set = input_raw
+
+        print(iucnn_mode)
+        print(feature_set.shape)
+
         model = tf.keras.models.load_model(model_dir)
         if dropout:
             predictions_raw = np.array([model.predict(feature_set) for i in np.arange(dropout_reps)])
@@ -64,9 +74,8 @@ def iucnn_predict(feature_set,
             mc_dropout_probs = np.nan
             predictions = np.argmax(predictions_raw, axis=1)
 
-        
-
     elif iucnn_mode == 'nn-reg':
+        feature_set = input_raw
         model = tf.keras.models.load_model(model_dir)
         if dropout:
             label_cats = np.arange(rescale_factor+1)
@@ -78,9 +87,12 @@ def iucnn_predict(feature_set,
             predictions_raw_unscaled = model.predict(feature_set).flatten()
             predictions_raw = rescale_labels(predictions_raw_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) 
             mc_dropout_probs = np.nan  
-            predictions = np.round(predictions_raw, 0).astype(int).flatten() 
-    
-        
+            predictions = np.round(predictions_raw, 0).astype(int).flatten()
+
+
+
+
+
     if confidence_threshold:
         if not dropout:
             sys.exit('target_acc can only be used for models trained with dropout. Retrain your model and specify a dropout rate > 0 to use this option.')

@@ -195,7 +195,7 @@ iucnn_cnn_train <- function(  x,
   named_res$sampled_cat_freqs <- sampled_cat_freqs
   named_res$true_cat_freqs <- true_cat_freqs
 
-  named_res$model <- 'CNN'
+  named_res$model <- 'cnn'
   named_res$seed <- seed
   named_res$dropout_rate <- dropout_rate
   named_res$max_epochs <- max_epochs
