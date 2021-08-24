@@ -406,21 +406,22 @@ res(ras) <- 1 # the resolution in CRS units, in this case degrees lat/lon
 
 
  # Training features
-features <- iucnn_cnn_features(training_occ)
+cnn_features <- iucnn_cnn_features(x = training_occ, 
+                                   y = ras)
 
 # Prediction features
-features_predict <- iucnn_cnn_features(prediction_occ) 
-
+cnn_features_predict <- iucnn_cnn_features(x = prediction_occ,
+                                           y = ras)
  # Training labels
-labels_train <- iucnn_prepare_labels(x = training_labels,
-                                     y = features)
+cnn_labels <- iucnn_prepare_labels(x = training_labels,
+                                   y = cnn_features)
 
 ```
 
 
 ## 2. Model training
 ```{r}
-trained_model = iucnn_cnn_train(cnn_training_features,
+trained_model = iucnn_cnn_train(cnn_features,
                                 cnn_labels,
                                 overwrite = TRUE,
                                 dropout_rate = 0.1,
@@ -432,10 +433,7 @@ summary(trained_model)
 
 ## 3. Status prediction
 ```{r}
-pred_data = 'orchid_data/cnn_test/data/cnn_predict_features.rda'
-load(pred_data)
-
-pred = iucnn_predict_status(cnn_predict_features,
+pred = iucnn_predict_status(cnn_features_predict,
                              trained_model,
                              target_acc = 0.0
                              )
