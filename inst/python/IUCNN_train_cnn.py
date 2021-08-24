@@ -171,13 +171,6 @@ def train_cnn_model(input_raw,
     traininig_loss = history.history['loss'][stopping_point]
     validation_loss = history.history['val_loss'][stopping_point]
 
-    if dropout:
-        predictions_raw = np.array([model.predict(x_test) for i in np.arange(dropout_reps)])
-        predictions_raw_mean = np.mean(predictions_raw, axis=0)
-    else:
-        predictions_raw_mean = model.predict(x_test)
-    test_label_predictions = np.argmax(predictions_raw_mean, axis=1)
-    test_acc = np.sum(test_label_predictions == test_labels) / len(test_label_predictions)
 
 
     if test_size == 0:
@@ -185,7 +178,17 @@ def train_cnn_model(input_raw,
         accthres_tbl = np.nan
         true_class_count = np.nan
         predicted_class_count = np.nan
+        test_label_predictions = np.nan
+        test_acc = np.nan
     else:
+        if dropout:
+            predictions_raw = np.array([model.predict(x_test) for i in np.arange(dropout_reps)])
+            predictions_raw_mean = np.mean(predictions_raw, axis=0)
+        else:
+            predictions_raw_mean = model.predict(x_test)
+        test_label_predictions = np.argmax(predictions_raw_mean, axis=1)
+        test_acc = np.sum(test_label_predictions == test_labels) / len(test_labels)
+
         if dropout:
             accthres_tbl = get_confidence_threshold(predictions_raw_mean,test_labels,target_acc=None)
         else:
@@ -221,11 +224,11 @@ def train_cnn_model(input_raw,
         'validation_loss': validation_loss,
         'test_loss': np.nan,
 
-        'training_loss_history': history.history['loss'],
-        'validation_loss_history': history.history['val_loss'],
+        'training_loss_history': [history.history['loss']],
+        'validation_loss_history': [history.history['val_loss']],
 
-        'training_accuracy_history': history.history['accuracy'],
-        'validation_accuracy_history': history.history['val_accuracy'],
+        'training_accuracy_history': [history.history['accuracy']],
+        'validation_accuracy_history': [history.history['val_accuracy']],
 
         'training_mae_history': np.nan,
         'validation_mae_history': np.nan,

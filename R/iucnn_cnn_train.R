@@ -197,17 +197,17 @@ iucnn_cnn_train <- function(  x,
   named_res$seed <- seed
   named_res$dropout_rate <- dropout_rate
   named_res$max_epochs <- max_epochs
-  named_res$n_layers <- n_layers
-  named_res$use_bias <- use_bias
-  named_res$balance_classes <- balance_classes
-  named_res$rescale_features <- rescale_features
+  named_res$n_layers <- 1
+  named_res$use_bias <- FALSE
+  named_res$balance_classes <- FALSE
+  named_res$rescale_features <- FALSE
   named_res$act_f <- act_f
   named_res$act_f_out <- act_f_out
   named_res$test_fraction <- test_fraction
-  named_res$cv_fold <- cv_fold
+  named_res$cv_fold <- 1
   named_res$patience <- patience
   named_res$randomize_instances <- randomize_instances
-  named_res$label_noise_factor <- label_noise_factor
+  named_res$label_noise_factor <- NaN
   named_res$mc_dropout <- mc_dropout
   named_res$mc_dropout_reps <- mc_dropout_reps
 
