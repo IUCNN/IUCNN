@@ -141,7 +141,7 @@ It is important to remember the following when using IUCNN:
 6. IUCNN predictions are not equivalent to full IUCN Red List assessments. We see the main purpose of IUCNN in 1) identifying species that will likely need conservation action to trigger a full IUCN assessment, and 2) provide large-scale overviews on the extinction risk in a given taxonomic group, for instance in a macro-ecological and macro-evolutionary context.
 
 # Customizing IUCNN analyses
-IUCNN contains multiple options to customize the steps of the analyses to adapt the neural networks to the peculiarities of IUCN RL and species distribution data. Below we describe the most important options to customize 1) feature and label preparation, 2) model training and testing, and 3) status prediction. The most important steps and options to customize an IUCNN analysis are summarized in Table 1.
+IUCNN contains multiple options to customize the steps of the analyses to adapt the fully connected neural networks to the peculiarities of IUCN RL and species distribution data. Below we describe the most important options to customize 1) feature and label preparation, 2) model training and testing, and 3) status prediction. The most important steps and options to customize an IUCNN analysis are summarized in Table 1.
 
 Table 1. Critical steps to customize an IUCNN analysis and relevant considerations at each point.
 
@@ -371,4 +371,73 @@ The output of the `iucnn_predict_status` function is an "iucnn_predictions" obje
 Another statistic that can be extracted from the "iucnn_predictions" object is the overall category distribution predicted for the given prediction instances. This can be accessed with `pred_2$pred_cat_count`, which shows the distribution of the label predictions, including the count of species that could not be predicted given the chosen `target_acc`.
 
 Another statistic are the `pred2$sampled_cat_freqs` (only available for dropout models and all "bnn-class" models, see above), which show the class distribution as sampled from the `pred_2$mc_dropout_probs` or the `pred_2$posterior_probs` (for "bnn-class" models). The difference between `pred2$sampled_cat_freqs` and `pred_2$mc_dropout_probs`/`pred_2$posterior_probs` is that the former represents the counts of the best labels determined for each instance, whereas the latter represents labels sampled from the predicted label probabilities, which also proportionally samples the labels for a given instance that do receive the maximum label probability. The latter is done repeatedly to include the stochasticity of the random sampling of classes from the given probability vectors. The `pred_2$mc_dropout_probs`/`pred_2$posterior_probs` can be used to plot histograms of the estimates for each class, and can be reported as uncertainty intervals around the number of species in each class for the set of species that were predicted.
+
+
+# Training and prediction using a convolutional neural network
+Instead of the fully connected neural networks presented above, IUCNN also implements a prediction algorithm using convolutional neural networks (CNNs). The input data for prediction are then rasterized per-species grids of occurrence numbers. Since the input features and network structure is different CNNs are implemented in IUCNN with a seperate workflow.
+
+## 1. Feature preparation
+Features are prepared using the `iucnn_cnn_features` function which will count the number of occurrence records in a custom raster with the extent of th specie occurrences. The function can be simply run on a dataframe of training and prediction occurrences separately. Yet, since the extent of these two datasets is likely different, it is recommendable to create a custom raster beforehand. Here, we will use a simple lat/lon raster, but users may provide coordinates and a raster in any suitable coordinate reference system, as long as they agree between occurrenc coordinates and raster.
+
+```{r}
+# preapre custom raster, you can split this step if training and test occurrences have the same extent
+library(terra)
+data("training_occ")
+data("prediction_occ")
+
+# find the minimum latitude and longitude values for the extent of the raster
+min_lon <- min(c(min(training_occ$decimallongitude), 
+                 min(prediction_occ$decimallongitude)))
+max_lon <- max(c(max(training_occ$decimallongitude), 
+                 max(prediction_occ$decimallongitude)))
+min_lat <- min(c(min(training_occ$decimallatitude), 
+                 min(prediction_occ$decimallatitude)))
+max_lat <- max(c(max(training_occ$decimallatitude), 
+                 max(prediction_occ$decimallatitude)))
+## set the coordinate reference system
+ras <- rast(crs = "+proj=longlat +datum=WGS84")
+## set raster extent
+ext(ras) <- c(min_lon,
+              max_lon, 
+              min_lat, 
+              max_lat)
+## set raster resolution
+res(ras) <- 1 # the resolution in CRS units, in this case degrees lat/lon
+
+
+ # Training features
+features <- iucnn_cnn_features(training_occ)
+
+# Prediction features
+features_predict <- iucnn_cnn_features(prediction_occ) 
+
+ # Training labels
+labels_train <- iucnn_prepare_labels(x = training_labels,
+                                     y = features)
+
+```
+
+
+## 2. Model training
+```{r}
+trained_model = iucnn_cnn_train(cnn_training_features,
+                                cnn_labels,
+                                overwrite = TRUE,
+                                dropout_rate = 0.1,
+                                optimize_for = 'accuracy')
+
+plot(trained_model)
+summary(trained_model)
+```
+
+## 3. Status prediction
+```{r}
+pred_data = 'orchid_data/cnn_test/data/cnn_predict_features.rda'
+load(pred_data)
+
+pred = iucnn_predict_status(cnn_predict_features,
+                             trained_model,
+                             target_acc = 0.0
+                             )
+```
 

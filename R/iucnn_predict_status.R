@@ -91,7 +91,9 @@ iucnn_predict_status <- function(x,
       stop("Feature mismatch, missing in prediction features: \n",
            paste0(mis, collapse = ", "))
     }
-    data_out <- process_iucnn_input(x,mode = mode, outpath = '.',
+    data_out <- process_iucnn_input(x,
+                                    mode = mode,
+                                    outpath = '.',
                                     write_data_files = FALSE)
 
     dataset <- as.matrix(data_out[[1]])
