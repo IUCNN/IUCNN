@@ -16,6 +16,7 @@ iucnn_cnn_train(
   dropout_rate = 0,
   mc_dropout_reps = 100,
   optimize_for = "accuracy",
+  pooling_strategy = "average",
   save_model = TRUE,
   overwrite = FALSE
 )
@@ -64,6 +65,9 @@ computation times, particularly during model testing with cross-validation.}
 \item{optimize_for}{string. Default is "accuracy", which will train the model
 until optimal validation set accuracy is reached. Set to "loss" if you want
 to optimize for minimum validation loss instead.}
+
+\item{pooling_strategy}{string. Pooling strategy after first convolutional
+layer. Choose between  "average" (default) and "max".}
 
 \item{save_model}{logical. If TRUE the model is saved to disk.}
 

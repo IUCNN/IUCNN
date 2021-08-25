@@ -42,6 +42,8 @@
 #'@param optimize_for string. Default is "accuracy", which will train the model
 #'until optimal validation set accuracy is reached. Set to "loss" if you want
 #'to optimize for minimum validation loss instead.
+#'@param pooling_strategy string. Pooling strategy after first convolutional
+#'layer. Choose between  "average" (default) and "max".
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.
@@ -77,6 +79,7 @@ iucnn_cnn_train <- function(  x,
                               dropout_rate = 0.0,
                               mc_dropout_reps = 100,
                               optimize_for = 'accuracy',
+                              pooling_strategy = 'average',
                               save_model = TRUE,
                               overwrite = FALSE
                            ){
@@ -136,8 +139,9 @@ iucnn_cnn_train <- function(  x,
                           dropout = mc_dropout,
                           dropout_rate = dropout_rate,
                           mc_dropout_reps = mc_dropout_reps,
-                          optimize_for = optimize_for,
                           randomize_instances = as.integer(randomize_instances),
+                          optimize_for = optimize_for,
+                          pooling_strategy = pooling_strategy,
                           verbose = verbose
                         )
 

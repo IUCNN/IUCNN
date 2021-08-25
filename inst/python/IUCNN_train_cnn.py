@@ -44,14 +44,17 @@ def get_confidence_threshold(predicted_labels,true_labels,target_acc=0.9):
         selected_row = tbl_results[indx,:]
         return selected_row[0]
 
-def build_cnn_model(input_shape, n_filters, kernels_conv, pool_size, act_f, act_f_out, n_class, dropout, dropout_rate):
+def build_cnn_model(input_shape, n_filters, kernels_conv, pool_size, act_f, act_f_out, n_class, dropout, dropout_rate, pooling_strategy):
     # preprocessing
     architecture = [tf.keras.layers.Conv2D(filters=n_filters,
                                            kernel_size=kernels_conv,
                                            activation=act_f,
                                            input_shape=input_shape[1:])]
-    architecture.append(tf.keras.layers.AveragePooling2D(pool_size=pool_size, # or MaxPooling2D
-                                                         strides=(1, 1)))
+    if pooling_strategy == 'max':
+        architecture.append(tf.keras.layers.MaxPooling2D(pool_size=pool_size, strides=(1, 1))) # or MaxPooling2D
+    else:
+        architecture.append(tf.keras.layers.AveragePooling2D(pool_size=pool_size, strides=(1, 1))) # or MaxPooling2D
+
 
     # fully connected
     architecture.append(tf.keras.layers.Flatten())
@@ -120,6 +123,7 @@ def train_cnn_model(input_raw,
                     mc_dropout_reps,
                     randomize_instances,
                     optimize_for,
+                    pooling_strategy,
                     verbose
                     ):
 
@@ -136,13 +140,13 @@ def train_cnn_model(input_raw,
         criterion = 'val_loss'
 
     validation_fraction = 0.2
-    dropout_reps = mc_dropout_reps
     # model hyper-parameters
     n_filters = 32
     kernels_conv = (3,3)
     pool_size = (3, 3)
     # training settings
     batch_size = 100 # can be set to a smaller number
+    dropout_reps = mc_dropout_reps
 
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -178,7 +182,7 @@ def train_cnn_model(input_raw,
     input_shape = x_train.shape
 
     log_dir= os.path.join(model_name, "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-
+    print('Building model ...',flush=True)
     model = build_cnn_model(input_shape,
                             n_filters,
                             kernels_conv,
@@ -187,14 +191,16 @@ def train_cnn_model(input_raw,
                             act_f_out,
                             n_class,
                             dropout,
-                            dropout_rate)
+                            dropout_rate,
+                            pooling_strategy)
 
-    model.summary()
+    model.summary(print_fn=print(flush=True))
+    print('Done.', flush=True)
     early_stop = keras.callbacks.EarlyStopping(monitor=criterion,
                                                patience=patience)
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-
+    print('Training model ...', flush=True)
     history = model.fit(x_train,
                         l,
                         epochs=max_epochs,
@@ -202,7 +208,7 @@ def train_cnn_model(input_raw,
                         verbose=verbose,
                         callbacks=[early_stop, tensorboard_callback],
                         batch_size=batch_size)
-
+    print('Done.', flush=True)
     # save the trained model
     model_out_path = os.path.join(model_name,'saved_model_seed_%i'%(seed))
     model.save(model_out_path)
@@ -226,6 +232,7 @@ def train_cnn_model(input_raw,
         test_label_predictions = np.nan
         test_acc = np.nan
     else:
+        print('Predicting labels for test set ...', flush=True)
         if dropout:
             predictions_raw = np.array([model.predict(x_test) for i in np.arange(dropout_reps)])
             predictions_raw_mean = np.mean(predictions_raw, axis=0)
@@ -244,6 +251,7 @@ def train_cnn_model(input_raw,
         confusion_matrix = np.array(tf.math.confusion_matrix(test_labels, test_label_predictions))
         true_class_count = [list(test_labels).count(i) for i in np.arange(max(labels)+1)]
         predicted_class_count = [list(test_label_predictions).count(i) for i in np.arange(max(labels)+1)]
+        print('Done.', flush=True)
 
     # import matplotlib.pyplot as plt
     # fig = plt.figure(figsize=(5,5))
