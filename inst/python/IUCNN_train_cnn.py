@@ -195,7 +195,7 @@ def train_cnn_model(input_raw,
                             pooling_strategy)
 
     model.summary(print_fn=print(flush=True))
-    print('Done.', flush=True)
+    print('\nDone.\n\n', flush=True)
     early_stop = keras.callbacks.EarlyStopping(monitor=criterion,
                                                patience=patience)
 
@@ -208,7 +208,7 @@ def train_cnn_model(input_raw,
                         verbose=verbose,
                         callbacks=[early_stop, tensorboard_callback],
                         batch_size=batch_size)
-    print('Done.', flush=True)
+    print('Done.\n\n', flush=True)
     # save the trained model
     model_out_path = os.path.join(model_name,'saved_model_seed_%i'%(seed))
     model.save(model_out_path)
@@ -251,7 +251,7 @@ def train_cnn_model(input_raw,
         confusion_matrix = np.array(tf.math.confusion_matrix(test_labels, test_label_predictions))
         true_class_count = [list(test_labels).count(i) for i in np.arange(max(labels)+1)]
         predicted_class_count = [list(test_label_predictions).count(i) for i in np.arange(max(labels)+1)]
-        print('Done.', flush=True)
+        print('Done.\n', flush=True)
 
     # import matplotlib.pyplot as plt
     # fig = plt.figure(figsize=(5,5))
