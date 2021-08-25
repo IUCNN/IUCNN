@@ -68,21 +68,20 @@
 #' @importFrom stats complete.cases
 #' @importFrom checkmate assert_data_frame assert_character assert_logical assert_numeric
 
-iucnn_cnn_train <- function(  x,
-                              lab,
-                              path_to_output = "iuc_nn_model",
-                              test_fraction = 0.2,
-                              seed = 1234,
-                              max_epochs = 100,
-                              patience = 20,
-                              randomize_instances = TRUE,
-                              dropout_rate = 0.0,
-                              mc_dropout_reps = 100,
-                              optimize_for = 'accuracy',
-                              pooling_strategy = 'average',
-                              save_model = TRUE,
-                              overwrite = FALSE
-                           ){
+iucnn_cnn_train <- function(x,
+                            lab,
+                            path_to_output = "iuc_nn_model",
+                            test_fraction = 0.2,
+                            seed = 1234,
+                            max_epochs = 100,
+                            patience = 20,
+                            randomize_instances = TRUE,
+                            dropout_rate = 0.0,
+                            mc_dropout_reps = 100,
+                            optimize_for = 'accuracy',
+                            pooling_strategy = 'average',
+                            save_model = TRUE,
+                            overwrite = FALSE){
 
   # Check input
   ## assertion

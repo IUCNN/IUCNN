@@ -75,7 +75,7 @@ iucnn_cnn_features <- function(x,
     }
 
     #check that projections between x and y are similar
-    t <- st_crs(pts)
+    t <- st_crs(pts[[1]])
     if(terra::crs(y) != t$wkt){
       stop("x and y have different CRS.")
     }
