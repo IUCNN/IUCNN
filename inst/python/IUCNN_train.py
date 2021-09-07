@@ -398,7 +398,7 @@ def iucnn_train(dataset,
                                 labels_for_training, 
                                 epochs=max_epochs,
                                 verbose=verbose)
-            stopping_point = max_epochs
+            stopping_point = max_epochs-1
         else:
             tf.random.set_seed(seed)
             # train model

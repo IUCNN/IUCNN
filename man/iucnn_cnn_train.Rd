@@ -20,6 +20,7 @@ iucnn_cnn_train(
   mc_dropout_reps = 100,
   optimize_for = "accuracy",
   pooling_strategy = "average",
+  label_res = "detail",
   save_model = TRUE,
   overwrite = FALSE,
   verbose = 0

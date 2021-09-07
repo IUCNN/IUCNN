@@ -95,6 +95,7 @@ iucnn_cnn_train <- function(x,
                             mc_dropout_reps = 100,
                             optimize_for = 'accuracy',
                             pooling_strategy = 'average',
+                            label_res = 'detail',
                             save_model = TRUE,
                             overwrite = FALSE,
                             verbose=0){
@@ -161,6 +162,7 @@ iucnn_cnn_train <- function(x,
                           cv_k = cv_fold,
                           balance_classes = balance_classes,
                           no_validation = no_validation,
+                          label_res = label_res,
                           save_model = save_model
                         )
 
