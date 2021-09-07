@@ -8,17 +8,21 @@ iucnn_cnn_train(
   x,
   lab,
   path_to_output = "iuc_nn_model",
+  cv_fold = 1,
   test_fraction = 0.2,
+  no_validation = FALSE,
   seed = 1234,
   max_epochs = 100,
   patience = 20,
   randomize_instances = TRUE,
+  balance_classes = TRUE,
   dropout_rate = 0,
   mc_dropout_reps = 100,
   optimize_for = "accuracy",
   pooling_strategy = "average",
   save_model = TRUE,
-  overwrite = FALSE
+  overwrite = FALSE,
+  verbose = 0
 )
 }
 \arguments{
@@ -31,8 +35,17 @@ grid for a set of species.}
 \item{path_to_output}{character string. The path to the location
 where the IUCNN model shall be saved}
 
+\item{cv_fold}{integer (default=1). When setting cv_fold > 1,
+\code{iucnn_cnn_train} will perform k-fold cross-validation. In this case, the
+provided setting for test_fraction will be ignored, as the test
+size of each CV-fold is determined by the specified number provided here.}
+
 \item{test_fraction}{numeric. The fraction of the input data used as
 test set.}
+
+\item{no_validation}{logical (default=FALSE). If set to TRUE, training will
+continue until the specified max_epochs value, instead of automatically
+determining and stopping at the best epoch.}
 
 \item{seed}{integer. Set a starting seed for reproducibility.}
 
@@ -41,8 +54,12 @@ test set.}
 \item{patience}{integer. Number of epochs with no improvement
 after which training will be stopped.}
 
-\item{randomize_instances}{logical. When set to TRUE (default) the
-instances will be shuffled before training (recommended).}
+\item{randomize_instances}{logical (default=TRUE). When set to TRUE (default)
+the instances will be shuffled before training (recommended).}
+
+\item{balance_classes}{logical (default=FALSE). If set to TRUE,
+\code{iucnn_cnn_train} will perform supersampling of the training instances to
+account for uneven class distribution in the training data.}
 
 \item{dropout_rate}{numeric. This will randomly turn off the specified
 fraction of nodes of the neural network during each epoch of training
@@ -73,6 +90,9 @@ layer. Choose between  "average" (default) and "max".}
 
 \item{overwrite}{logical. If TRUE existing models are
 overwritten. Default is set to FALSE.}
+
+\item{verbose}{Default 0, set to 1 for \code{iucnn_cnn_train} to print
+additional info to the screen while training.}
 }
 \value{
 outputs an \code{iucnn_model} object which can be used in

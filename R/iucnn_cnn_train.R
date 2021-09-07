@@ -15,14 +15,24 @@
 #' \code{\link{iucnn_prepare_labels}} containing the labels for all species.
 #'@param path_to_output character string. The path to the location
 #'where the IUCNN model shall be saved
+#'@param cv_fold integer (default=1). When setting cv_fold > 1,
+#'\code{iucnn_cnn_train} will perform k-fold cross-validation. In this case, the
+#'provided setting for test_fraction will be ignored, as the test
+#'size of each CV-fold is determined by the specified number provided here.
 #'@param test_fraction numeric. The fraction of the input data used as
 #'test set.
+#'@param no_validation logical (default=FALSE). If set to TRUE, training will
+#'continue until the specified max_epochs value, instead of automatically
+#'determining and stopping at the best epoch.
 #'@param seed integer. Set a starting seed for reproducibility.
 #'@param max_epochs integer. The maximum number of epochs.
 #'@param patience integer. Number of epochs with no improvement
 #' after which training will be stopped.
-#'@param randomize_instances logical. When set to TRUE (default) the
-#'instances will be shuffled before training (recommended).
+#'@param randomize_instances logical (default=TRUE). When set to TRUE (default)
+#'the instances will be shuffled before training (recommended).
+#'@param balance_classes logical (default=FALSE). If set to TRUE,
+#'\code{iucnn_cnn_train} will perform supersampling of the training instances to
+#'account for uneven class distribution in the training data.
 #'@param dropout_rate numeric. This will randomly turn off the specified
 #'fraction of nodes of the neural network during each epoch of training
 #'making the NN more stable and less reliant on individual nodes/weights, which
@@ -47,6 +57,8 @@
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.
+#'@param verbose Default 0, set to 1 for \code{iucnn_cnn_train} to print
+#'additional info to the screen while training.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 #'for a tutorial on how to run IUCNN.
@@ -71,17 +83,21 @@
 iucnn_cnn_train <- function(x,
                             lab,
                             path_to_output = "iuc_nn_model",
+                            cv_fold = 1,
                             test_fraction = 0.2,
+                            no_validation = FALSE,
                             seed = 1234,
                             max_epochs = 100,
                             patience = 20,
                             randomize_instances = TRUE,
+                            balance_classes = TRUE,
                             dropout_rate = 0.0,
                             mc_dropout_reps = 100,
                             optimize_for = 'accuracy',
                             pooling_strategy = 'average',
                             save_model = TRUE,
-                            overwrite = FALSE){
+                            overwrite = FALSE,
+                            verbose=0){
 
   # Check input
   ## assertion
@@ -99,12 +115,12 @@ iucnn_cnn_train <- function(x,
     mc_dropout = TRUE
   }else{
     mc_dropout = FALSE
+    mc_dropout_reps = 1
   }
 
   accthres_tbl_stored <- NaN
   act_f = "relu"
   act_f_out = "softmax"
-  verbose=0
 
   # check if the model directory already exists
   if(dir.exists(file.path(path_to_output))& !overwrite){
@@ -131,7 +147,7 @@ iucnn_cnn_train <- function(x,
                           max_epochs = as.integer(max_epochs),
                           patience = patience,
                           test_fraction = test_fraction,
-                          model_name = path_to_output,
+                          path_to_output = path_to_output,
                           act_f = act_f,
                           act_f_out = act_f_out,
                           seed = as.integer(seed),
@@ -141,7 +157,11 @@ iucnn_cnn_train <- function(x,
                           randomize_instances = as.integer(randomize_instances),
                           optimize_for = optimize_for,
                           pooling_strategy = pooling_strategy,
-                          verbose = verbose
+                          verbose = verbose,
+                          cv_k = cv_fold,
+                          balance_classes = balance_classes,
+                          no_validation = no_validation,
+                          save_model = save_model
                         )
 
   test_labels <- as.vector(res$test_labels)
@@ -204,12 +224,12 @@ iucnn_cnn_train <- function(x,
   named_res$max_epochs <- max_epochs
   named_res$n_layers <- 1
   named_res$use_bias <- FALSE
-  named_res$balance_classes <- FALSE
+  named_res$balance_classes <- balance_classes
   named_res$rescale_features <- FALSE
   named_res$act_f <- act_f
   named_res$act_f_out <- act_f_out
   named_res$test_fraction <- test_fraction
-  named_res$cv_fold <- 1
+  named_res$cv_fold <- cv_fold
   named_res$patience <- patience
   named_res$randomize_instances <- randomize_instances
   named_res$label_noise_factor <- NaN

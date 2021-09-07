@@ -62,7 +62,7 @@ test set.}
 
 \item{cv_fold}{integer (default=1). When setting cv_fold > 1,
 \code{iucnn_train_model} will perform k-fold cross-validation. In this case, the
-provided setting for test_fraction will be ignored, as the validation
+provided setting for test_fraction will be ignored, as the test
 size of each CV-fold is determined by the specified number provided here.}
 
 \item{seed}{integer. Set a starting seed for reproducibility.}
@@ -84,7 +84,7 @@ the first hidden layer.}
 
 \item{balance_classes}{logical (default=FALSE). If set to TRUE,
 \code{iucnn_train_model} will perform supersampling of the training instances to
-account for uneven class distribution in the training data. If case of
+account for uneven class distribution in the training data. In case of
 training an bnn-class model, choosing this option will add the estimation
 of class weights instead, to account for class imbalances.}
 
@@ -144,8 +144,8 @@ be rescaled to values between 0 and 1 prior to training (default=FALSE).}
 \item{overwrite}{logical. If TRUE existing models are
 overwritten. Default is set to FALSE.}
 
-\item{verbose}{Default 0, set to 1 for \code{iucnn_train_model} to print additional
-info to the screen while training.}
+\item{verbose}{Default 0, set to 1 for \code{iucnn_train_model} to print
+additional info to the screen while training.}
 }
 \value{
 outputs an \code{iucnn_model} object which can be used in
