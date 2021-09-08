@@ -54,7 +54,6 @@
 #'to optimize for minimum validation loss instead.
 #'@param pooling_strategy string. Pooling strategy after first convolutional
 #'layer. Choose between  "average" (default) and "max".
-#'@param label_res
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.
@@ -100,7 +99,6 @@ iucnn_cnn_train <- function(x,
                             mc_dropout_reps = 100,
                             optimize_for = 'accuracy',
                             pooling_strategy = 'average',
-                            label_res = 'detail',
                             save_model = TRUE,
                             overwrite = FALSE,
                             verbose=0){
