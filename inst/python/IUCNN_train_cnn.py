@@ -45,35 +45,50 @@ def get_confidence_threshold(predicted_labels,true_labels,target_acc=0.9):
         return selected_row[0]
 
 
-def build_cnn_model(input_shape, n_filters, kernels_conv, pool_size, act_f, act_f_out, n_class, dropout, dropout_rate, pooling_strategy):
-    # preprocessing
-    architecture = [tf.keras.layers.Conv2D(filters=n_filters,
-                                           kernel_size=kernels_conv,
-                                           activation=act_f,
-                                           input_shape=input_shape[1:])]
+def build_cnn_model(input_shape, kernels_conv, pool_size, act_f, act_f_out, n_class, dropout, dropout_rate, pooling_strategy):
+    architecture = []
+    # # ADD CONVOLUTION
+    architecture.append(tf.keras.layers.Conv2D(filters=1,
+                                               kernel_size=kernels_conv,
+                                               activation=act_f,
+                                               input_shape=input_shape[1:]))
     if pooling_strategy == 'max':
-        architecture.append(tf.keras.layers.MaxPooling2D(pool_size=pool_size, strides=(1, 1))) # or MaxPooling2D
+        architecture.append(tf.keras.layers.MaxPooling2D(pool_size=pool_size,
+                                                         strides=(1, 1),
+                                                         padding='same'))
     else:
-        architecture.append(tf.keras.layers.AveragePooling2D(pool_size=pool_size, strides=(1, 1))) # or MaxPooling2D
-
-
-    # fully connected
+        architecture.append(tf.keras.layers.AveragePooling2D(pool_size=pool_size,
+                                                             strides=(1, 1),
+                                                             padding='same'))
+    # # ADD CONVOLUTION
+    architecture.append(tf.keras.layers.Conv2D(filters=1,
+                                               kernel_size=kernels_conv,  # (50,50),
+                                               activation=act_f))
+    if pooling_strategy == 'max':
+        architecture.append(tf.keras.layers.MaxPooling2D(pool_size=pool_size,
+                                                         strides=(1, 1),
+                                                         padding='same'))
+    else:
+        architecture.append(tf.keras.layers.AveragePooling2D(pool_size=pool_size,
+                                                             strides=(1, 1),
+                                                             padding='same'))
+    # fully connected layers
     architecture.append(tf.keras.layers.Flatten())
-    architecture.append(tf.keras.layers.Dense(5, activation=act_f))
+    architecture.append(tf.keras.layers.Dense(20, activation=act_f))
     if dropout:
         architecture.append(MCDropout(dropout_rate))
-
+    architecture.append(tf.keras.layers.Dense(10, activation=act_f))
+    if dropout:
+        architecture.append(MCDropout(dropout_rate))
     # output layer
     architecture.append(tf.keras.layers.Dense(n_class,
                                               activation=act_f_out))
-
     model = tf.keras.Sequential(architecture)
-    # train model
+    # compile model
     loss_f = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     model.compile(loss=loss_f,
                   optimizer="adam",
                   metrics=['accuracy'])
-
     return model
 
 
@@ -203,20 +218,13 @@ def train_cnn_model(input_raw,
                     verbose
                     ):
 
-
-
-    #load_input_data_manually()
-
-
-
     # load settings
     # model hyper-parameters
     cv_k = int(cv_k)
-    n_filters = 32
     kernels_conv = (3,3)
     pool_size = (3, 3)
     # training settings
-    batch_size = 100 # can be set to a smaller number
+    batch_size = 10 # can be set to a smaller number
     dropout_reps = mc_dropout_reps
     if optimize_for == 'accuracy':
         criterion = 'val_accuracy'
@@ -232,6 +240,10 @@ def train_cnn_model(input_raw,
     data_matrix = np.array([input_raw[i] for i in instance_names]).astype(int)
     labels = np.array(labels).astype(int)
     min_max_label = [min(labels), max(labels)]
+
+    n_labs = len(np.unique(labels))
+    if n_labs == 2: # if briad labels, change some default settings
+        batch_size = 100
 
 #    label_res = 'detail'
 #    if label_res != 'detail':
@@ -331,7 +343,6 @@ def train_cnn_model(input_raw,
             tf.random.set_seed(seed)
             print('Building model ...', flush=True)
             model = build_cnn_model(input_shape,
-                                    n_filters,
                                     kernels_conv,
                                     pool_size,
                                     act_f,
@@ -356,7 +367,6 @@ def train_cnn_model(input_raw,
             tf.random.set_seed(seed)
             print('Building model ...',flush=True)
             model = build_cnn_model(input_shape,
-                                    n_filters,
                                     kernels_conv,
                                     pool_size,
                                     act_f,
