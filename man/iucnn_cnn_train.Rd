@@ -20,7 +20,6 @@ iucnn_cnn_train(
   mc_dropout_reps = 100,
   optimize_for = "accuracy",
   pooling_strategy = "average",
-  label_res = "detail",
   save_model = TRUE,
   overwrite = FALSE,
   verbose = 0
@@ -86,8 +85,6 @@ to optimize for minimum validation loss instead.}
 
 \item{pooling_strategy}{string. Pooling strategy after first convolutional
 layer. Choose between  "average" (default) and "max".}
-
-\item{label_res}{character. Resolution of the input labels. Either "detail" or "broad".}
 
 \item{save_model}{logical. If TRUE the model is saved to disk.}
 
