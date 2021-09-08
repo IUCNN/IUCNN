@@ -87,6 +87,8 @@ to optimize for minimum validation loss instead.}
 \item{pooling_strategy}{string. Pooling strategy after first convolutional
 layer. Choose between  "average" (default) and "max".}
 
+\item{label_res}{character. Resolution of the input labels. Either "detail" or "broad".}
+
 \item{save_model}{logical. If TRUE the model is saved to disk.}
 
 \item{overwrite}{logical. If TRUE existing models are
@@ -115,9 +117,13 @@ for a tutorial on how to run IUCNN.
 }
 \examples{
 \dontrun{
-
+trained_model <- iucnn_cnn_train(cnn_training_features,
+                                cnn_labels,
+                                cv_fold=5,
+                                overwrite = TRUE,
+                                dropout=0.1)
+summary(trained_model)
 }
-
 
 }
 \keyword{Training}

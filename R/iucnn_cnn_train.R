@@ -54,7 +54,6 @@
 #'to optimize for maximum validation accuracy instead.
 #'@param pooling_strategy string. Pooling strategy after first convolutional
 #'layer. Choose between  "average" (default) and "max".
-#'@param label_res
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.

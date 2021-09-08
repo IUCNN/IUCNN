@@ -19,3 +19,4 @@ training_stats.pdf
 ^codemeta\.json$
 ^feature_extraction$
 ^\.github$
+^feature_extraction$
