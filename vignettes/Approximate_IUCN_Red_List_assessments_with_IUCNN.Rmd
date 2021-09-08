@@ -374,10 +374,10 @@ Another statistic are the `pred2$sampled_cat_freqs` (only available for dropout 
 
 
 # Training and prediction using a convolutional neural network
-Instead of the fully connected neural networks presented above, IUCNN also implements a prediction algorithm using convolutional neural networks (CNNs). The input data for prediction are then rasterized per-species grids of occurrence numbers. Since the input features and network structure is different CNNs are implemented in IUCNN with a seperate workflow.
+Instead of the fully connected neural networks presented above, IUCNN also implements a prediction algorithm using Convolutional Neural Networks (CNNs). The input data for prediction are then rasterized per-species grids of occurrence numbers. Since the input features and network structure is different CNNs are implemented in IUCNN with a separate workflow.
 
 ## 1. Feature preparation
-Features are prepared using the `iucnn_cnn_features` function which will count the number of occurrence records in a custom raster with the extent of th specie occurrences. The function can be simply run on a dataframe of training and prediction occurrences separately. Yet, since the extent of these two datasets is likely different, it is recommendable to create a custom raster beforehand. Here, we will use a simple lat/lon raster, but users may provide coordinates and a raster in any suitable coordinate reference system, as long as they agree between occurrenc coordinates and raster.
+Features are prepared using the `iucnn_cnn_features` function which will count the number of occurrence records in a custom raster with the extent of th specie occurrences. The function can be simply run on a data frame of training and prediction occurrences separately. Yet, since the extent of these two datasets is likely different, it is recommendable to create a custom raster beforehand. Here, we will use a simple lat/lon raster, but users may provide coordinates and a raster in any suitable coordinate reference system, as long as they agree between occurrence coordinates and raster.
 
 ```{r}
 # preapre custom raster, you can split this step if training and test occurrences have the same extent

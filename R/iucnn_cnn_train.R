@@ -54,6 +54,7 @@
 #'to optimize for minimum validation loss instead.
 #'@param pooling_strategy string. Pooling strategy after first convolutional
 #'layer. Choose between  "average" (default) and "max".
+#'@param label_res
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.
@@ -71,9 +72,13 @@
 
 #' @examples
 #'\dontrun{
-#'
+#'trained_model <- iucnn_cnn_train(cnn_training_features,
+#'                                 cnn_labels,
+#'                                 cv_fold=5,
+#'                                 overwrite = TRUE,
+#'                                 dropout=0.1)
+#'summary(trained_model)
 #'}
-#'
 #'
 #' @export
 #' @importFrom reticulate py_get_attr source_python

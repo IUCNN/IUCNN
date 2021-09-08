@@ -3,4 +3,5 @@ utils::globalVariables(c("iucnn_predict",
                          "iucnn_train",
                          "predict_bnn",
                          "get_acctbl_and_catsample_bnn",
-                         "feature_importance_nn"))
+                         "feature_importance_nn",
+                         "train_cnn_model"))
