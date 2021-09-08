@@ -49,9 +49,9 @@
 #'table required for making predictions with an accuracy threshold.
 #'The default of 100 is usually sufficient, larger values will lead to longer
 #'computation times, particularly during model testing with cross-validation.
-#'@param optimize_for string. Default is "accuracy", which will train the model
-#'until optimal validation set accuracy is reached. Set to "loss" if you want
-#'to optimize for minimum validation loss instead.
+#'@param optimize_for string. Default is "loss", which will train the model
+#'until optimal validation set loss is reached. Set to "accuracy" if you want
+#'to optimize for maximum validation accuracy instead.
 #'@param pooling_strategy string. Pooling strategy after first convolutional
 #'layer. Choose between  "average" (default) and "max".
 #'@param label_res
@@ -98,7 +98,7 @@ iucnn_cnn_train <- function(x,
                             balance_classes = TRUE,
                             dropout_rate = 0.0,
                             mc_dropout_reps = 100,
-                            optimize_for = 'accuracy',
+                            optimize_for = 'loss',
                             pooling_strategy = 'average',
                             save_model = TRUE,
                             overwrite = FALSE,
