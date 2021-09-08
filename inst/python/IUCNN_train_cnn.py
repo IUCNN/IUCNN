@@ -199,7 +199,6 @@ def train_cnn_model(input_raw,
                     optimize_for,
                     no_validation,
                     pooling_strategy,
-                    label_res,
                     save_model,
                     verbose
                     ):
@@ -234,9 +233,10 @@ def train_cnn_model(input_raw,
     labels = np.array(labels).astype(int)
     min_max_label = [min(labels), max(labels)]
 
-    if label_res != 'detail':
-        labels[labels < 2] = 0
-        labels[labels > 1] = 1
+#    label_res = 'detail'
+#    if label_res != 'detail':
+#        labels[labels < 2] = 0
+#        labels[labels > 1] = 1
     # create empty lists for output (per cv fold)
     train_acc_per_fold = []
     train_loss_per_fold = []

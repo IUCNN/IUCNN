@@ -165,7 +165,6 @@ iucnn_cnn_train <- function(x,
                           cv_k = cv_fold,
                           balance_classes = balance_classes,
                           no_validation = no_validation,
-                          label_res = label_res,
                           save_model = save_model
                         )
 
