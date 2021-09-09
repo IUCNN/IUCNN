@@ -124,7 +124,7 @@ iucnn_biome_features <- function(x,
   # replace NAs
   biom[is.na(biom)] <- 0
 
-  # If desired by the user add biomes without anu occurrences
+  # If desired by the user add biomes without any occurrences
   if(!remove_zeros){
     #Get a list of all biomes in the dataset
     all_biomes <- unique(biome_input[[biome_id]])
@@ -141,6 +141,7 @@ iucnn_biome_features <- function(x,
   }else{
     biom <- biom[,c(TRUE, colSums(biom[,-1]) > 0)]
   }
+  # order biomes
 
   # change names
   names(biom)[-1] <- paste("biome_", names(biom)[-1], sep = "")
