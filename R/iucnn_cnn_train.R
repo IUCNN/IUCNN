@@ -15,15 +15,20 @@
 #' \code{\link{iucnn_prepare_labels}} containing the labels for all species.
 #'@param path_to_output character string. The path to the location
 #'where the IUCNN model shall be saved
+#'@param production_model an object of type iucnn_model (default=NULL).
+#'If an iucnn_model is provided, \code{iucnn_cnn_train} will read the settings of
+#'this model and reproduce it, but use all available data for training, by
+#'automatically setting the validation set to 0 and cv_fold to 1. This is
+#'recommended before using the model for predicting the IUCN status of
+#'not evaluated species, as it generally improves the prediction
+#'accuracy of the model. Choosing this option will ignore all other provided
+#'settings below.
 #'@param cv_fold integer (default=1). When setting cv_fold > 1,
 #'\code{iucnn_cnn_train} will perform k-fold cross-validation. In this case, the
 #'provided setting for test_fraction will be ignored, as the test
 #'size of each CV-fold is determined by the specified number provided here.
 #'@param test_fraction numeric. The fraction of the input data used as
 #'test set.
-#'@param no_validation logical (default=FALSE). If set to TRUE, training will
-#'continue until the specified max_epochs value, instead of automatically
-#'determining and stopping at the best epoch.
 #'@param seed integer. Set a starting seed for reproducibility.
 #'@param max_epochs integer. The maximum number of epochs.
 #'@param patience integer. Number of epochs with no improvement
@@ -87,9 +92,9 @@
 iucnn_cnn_train <- function(x,
                             lab,
                             path_to_output = "iuc_nn_model",
+                            production_model = NULL,
                             cv_fold = 1,
                             test_fraction = 0.2,
-                            no_validation = FALSE,
                             seed = 1234,
                             max_epochs = 100,
                             patience = 20,
@@ -114,6 +119,37 @@ iucnn_cnn_train <- function(x,
   assert_logical(randomize_instances)
   assert_numeric(dropout_rate, lower = 0, upper = 1)
   assert_logical(overwrite)
+
+
+  provided_model <- production_model
+
+  if (class(provided_model) == "iucnn_model"){
+    mode <- provided_model$model
+    if (mode != 'cnn'){
+      stop('Please provide CNN model as production model for iucnn_cnn_train.
+           Use iucnn_train_model for other non CNN models.')
+    }
+
+    test_fraction <- 0.
+    cv_fold <- 1
+    no_validation <- TRUE
+    seed <-  provided_model$seed
+    max_epochs = round(mean(provided_model$final_training_epoch))
+    patience <- 0
+    randomize_instances <-provided_model$randomize_instances
+    balance_classes <-  provided_model$balance_classes
+    dropout_rate <-  provided_model$dropout_rate
+    mc_dropout_reps <-  provided_model$mc_dropout_reps
+    accthres_tbl_stored <- provided_model$accthres_tbl
+    optimize_for <-  provided_model$optimize_for
+    pooling_strategy <-  provided_model$pooling_strategy
+  }else{
+    accthres_tbl_stored <- NaN
+    no_validation = FALSE
+  }
+
+
+
 
   if(dropout_rate >0){
     mc_dropout = TRUE
@@ -217,6 +253,7 @@ iucnn_cnn_train <- function(x,
 
   named_res$trained_model_path <- trained_model_path
 
+  if(is.nan(accthres_tbl[1])){accthres_tbl <- accthres_tbl_stored}
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
   named_res$sampled_cat_freqs <- sampled_cat_freqs
@@ -239,6 +276,8 @@ iucnn_cnn_train <- function(x,
   named_res$label_noise_factor <- NaN
   named_res$mc_dropout <- mc_dropout
   named_res$mc_dropout_reps <- mc_dropout_reps
+  named_res$optimize_for <- optimize_for
+  named_res$pooling_strategy <- pooling_strategy
 
   named_res$training_loss_history <- training_loss_history
   named_res$validation_loss_history <- validation_loss_history

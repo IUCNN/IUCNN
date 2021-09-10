@@ -8,9 +8,9 @@ iucnn_cnn_train(
   x,
   lab,
   path_to_output = "iuc_nn_model",
+  production_model = NULL,
   cv_fold = 1,
   test_fraction = 0.2,
-  no_validation = FALSE,
   seed = 1234,
   max_epochs = 100,
   patience = 20,
@@ -35,6 +35,15 @@ grid for a set of species.}
 \item{path_to_output}{character string. The path to the location
 where the IUCNN model shall be saved}
 
+\item{production_model}{an object of type iucnn_model (default=NULL).
+If an iucnn_model is provided, \code{iucnn_cnn_train} will read the settings of
+this model and reproduce it, but use all available data for training, by
+automatically setting the validation set to 0 and cv_fold to 1. This is
+recommended before using the model for predicting the IUCN status of
+not evaluated species, as it generally improves the prediction
+accuracy of the model. Choosing this option will ignore all other provided
+settings below.}
+
 \item{cv_fold}{integer (default=1). When setting cv_fold > 1,
 \code{iucnn_cnn_train} will perform k-fold cross-validation. In this case, the
 provided setting for test_fraction will be ignored, as the test
@@ -42,10 +51,6 @@ size of each CV-fold is determined by the specified number provided here.}
 
 \item{test_fraction}{numeric. The fraction of the input data used as
 test set.}
-
-\item{no_validation}{logical (default=FALSE). If set to TRUE, training will
-continue until the specified max_epochs value, instead of automatically
-determining and stopping at the best epoch.}
 
 \item{seed}{integer. Set a starting seed for reproducibility.}
 

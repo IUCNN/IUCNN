@@ -362,7 +362,7 @@ def train_cnn_model(input_raw,
                                 verbose=verbose,
                                 batch_size=batch_size)
             print('Done.\n', flush=True)
-            stopping_point = max_epochs
+            stopping_point = max_epochs-1
         else:
             tf.random.set_seed(seed)
             print('Building model ...',flush=True)
