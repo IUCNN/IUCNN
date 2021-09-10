@@ -10,10 +10,14 @@
 #'@param x a data.set, containing a column "species" with the species names, and
 #'subsequent columns with different features,
 #'in the same order as used for \code{\link{iucnn_train_model}}
-#'@param model the information on the NN model returned by \code{\link{iucnn_train_model}}
+#'@param model the information on the NN model returned by
+#'\code{\link{iucnn_train_model}}
 #'@param target_acc numerical, 0-1. The target accuracy of the overall model.
 #' Species that cannot be classified with
-#'enough certainty to reach this accuracy are classified as NA (Not Available/Not Assessed).
+#'@param dropout_reps integer, (default = 100). The number of how often the
+#'predictions are to be repeated (only for dropout models). A value of 100 is
+#'recommended to capture the stochasticity of the predictions, lower values
+#'speed up the prediction time.
 #'@param return_IUCN logical. If TRUE the predicted labels are translated
 #' into the original labels.
 #'If FALSE numeric labels as used by the model are returned
@@ -58,6 +62,7 @@
 iucnn_predict_status <- function(x,
                           model,
                           target_acc = 0.0,
+                          dropout_reps = 100,
                           return_IUCN = TRUE,
                           return_raw = FALSE){
 
@@ -146,7 +151,7 @@ iucnn_predict_status <- function(x,
                    model_dir = model$trained_model_path,
                    iucnn_mode = model$model,
                    dropout = model$mc_dropout,
-                   dropout_reps = 100,
+                   dropout_reps = dropout_reps,
                    confidence_threshold = confidence_threshold,
                    rescale_factor = model$label_rescaling_factor,
                    min_max_label = model$min_max_label_rescaled,

@@ -42,6 +42,27 @@ def turn_reg_output_into_softmax(reg_out_rescaled,label_cats):
         return softmax_probs_mean
     
 
+def store_pred_features_as_pkl(input_raw):
+    import pickle as pkl
+    filehandler = open('orchid_data/cnn_test/data/pred_features_raw.pkl', "wb")
+    pkl.dump(input_raw, filehandler)
+    filehandler.close()
+
+
+def load_input_data_manually():
+    import pickle as pkl
+    file = open("orchid_data/cnn_test/data/pred_features_raw.pkl",'rb')
+    input_raw = pkl.load(file)
+    file.close()
+    model_dir = "iuc_nn_model/production_cnn/cnn_model_0"
+    iucnn_mode = 'cnn'
+    dropout = True
+    dropout_reps = 10
+    confidence_threshold = 0.67
+    rescale_factor = None
+    min_max_label = [0,4]
+    stretch_factor_rescaled_labels = 1
+
 def iucnn_predict(input_raw,
                   model_dir,
                   iucnn_mode,
@@ -57,14 +78,30 @@ def iucnn_predict(input_raw,
         if iucnn_mode == 'cnn':
             instance_names = np.array(list(input_raw.keys()))
             data_matrix = np.array([input_raw[i] for i in instance_names]).astype(int)
-            feature_set = np.array(data_matrix.copy()).reshape(list(data_matrix.shape) + [1])
+            del input_raw
+            feature_set = np.array(data_matrix).reshape(list(data_matrix.shape) + [1])
+            del data_matrix
+
         else:
             feature_set = input_raw
 
         model = tf.keras.models.load_model(model_dir)
         if dropout:
-            predictions_raw = np.array([model.predict(feature_set) for i in np.arange(dropout_reps)])
-            mc_dropout_probs = np.mean(predictions_raw,axis=0)
+            if iucnn_mode == 'cnn':
+                for i in np.arange(dropout_reps):
+                    print('Predicting for dropout rep: %i'%i, flush=True)
+                    pred = model.predict(feature_set)
+                    # this summing below is done to save memory
+                    # instead of appending all pred arrays into one giant master array
+                    if i == 0:
+                        pred_sum = pred
+                    else:
+                        pred_sum = np.sum([pred_sum,pred],axis=0)
+                predictions_raw = pred_sum
+                mc_dropout_probs = pred_sum/dropout_reps
+            else:
+                predictions_raw = np.array([model.predict(feature_set) for i in np.arange(dropout_reps)])
+                mc_dropout_probs = np.mean(predictions_raw, axis=0)
             predictions = np.argmax(mc_dropout_probs, axis=1)
         else:
             predictions_raw = model.predict(feature_set, verbose=0)

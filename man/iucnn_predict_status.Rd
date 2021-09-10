@@ -8,6 +8,7 @@ iucnn_predict_status(
   x,
   model,
   target_acc = 0,
+  dropout_reps = 100,
   return_IUCN = TRUE,
   return_raw = FALSE
 )
@@ -17,11 +18,16 @@ iucnn_predict_status(
 subsequent columns with different features,
 in the same order as used for \code{\link{iucnn_train_model}}}
 
-\item{model}{the information on the NN model returned by \code{\link{iucnn_train_model}}}
+\item{model}{the information on the NN model returned by
+\code{\link{iucnn_train_model}}}
 
 \item{target_acc}{numerical, 0-1. The target accuracy of the overall model.
-Species that cannot be classified with
-enough certainty to reach this accuracy are classified as NA (Not Available/Not Assessed).}
+Species that cannot be classified with}
+
+\item{dropout_reps}{integer, (default = 100). The number of how often the
+predictions are to be repeated (only for dropout models). A value of 100 is
+recommended to capture the stochasticity of the predictions, lower values
+speed up the prediction time.}
 
 \item{return_IUCN}{logical. If TRUE the predicted labels are translated
 into the original labels.
