@@ -134,7 +134,7 @@ iucnn_cnn_train <- function(x,
     cv_fold <- 1
     no_validation <- TRUE
     seed <-  provided_model$seed
-    max_epochs = round(mean(provided_model$final_training_epoch))
+    max_epochs <- round(mean(provided_model$final_training_epoch))
     patience <- 0
     randomize_instances <-provided_model$randomize_instances
     balance_classes <-  provided_model$balance_classes
@@ -145,7 +145,7 @@ iucnn_cnn_train <- function(x,
     pooling_strategy <-  provided_model$pooling_strategy
   }else{
     accthres_tbl_stored <- NaN
-    no_validation = FALSE
+    no_validation <- FALSE
   }
 
 
@@ -158,7 +158,6 @@ iucnn_cnn_train <- function(x,
     mc_dropout_reps = 1
   }
 
-  accthres_tbl_stored <- NaN
   act_f = "relu"
   act_f_out = "softmax"
 

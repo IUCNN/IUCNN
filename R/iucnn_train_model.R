@@ -216,7 +216,7 @@ iucnn_train_model <- function(x,
     no_validation <- TRUE
   }else{
     accthres_tbl_stored <- NaN
-    no_validation = FALSE
+    no_validation <- FALSE
   }
 
   # check if the model directory already exists
