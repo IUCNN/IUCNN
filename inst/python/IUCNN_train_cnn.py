@@ -174,7 +174,7 @@ def load_input_data_manually():
     labels = pkl.load(file)
     file.close()
     max_epochs = 10
-    patience = 1
+    patience = 2
     test_fraction = 0.2
     path_to_output = 'orchid_data/cnn_test/cnn_model'
     act_f = 'relu'
@@ -379,7 +379,8 @@ def train_cnn_model(input_raw,
                 model.summary(print_fn=print(flush=True))
             print('\nDone.\n', flush=True)
             early_stop = keras.callbacks.EarlyStopping(monitor=criterion,
-                                                       patience=patience)
+                                                       patience=patience,
+                                                       restore_best_weights=True)
             print('Training model ...', flush=True)
             if cv:
                 history = model.fit(x_train,
@@ -403,7 +404,7 @@ def train_cnn_model(input_raw,
                 stopping_point = np.argmax(history.history['val_accuracy'])
             else:
                 stopping_point = np.argmin(history.history['val_loss'])
-            print('Best training epoch: ', stopping_point, flush=True)
+            print('Best training epoch: ', stopping_point+1, flush=True)
 
         if save_model:
             if not os.path.exists(path_to_output):

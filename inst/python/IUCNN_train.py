@@ -426,7 +426,7 @@ def iucnn_train(dataset,
                 stopping_point = np.argmax(history.history[optimize_for_this])
             else:
                 stopping_point = np.argmin(history.history[optimize_for_this])
-            print('Best training epoch: ',stopping_point,flush=True)
+            print('Best training epoch: ',stopping_point+1,flush=True)
     
         if mode == 'nn-class':
             train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,mc_dropout,dropout_reps,loss=True)
