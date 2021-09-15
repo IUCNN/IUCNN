@@ -1,5 +1,6 @@
 # IUCNN 2.0.0 (16.08.2021)
 =========================
+* moved to IUCNN/IUCNN
 * added iucnn_cnn_features function
 * standardized function naming scheme
 * added test for polygon validity to iucnn_biome_features

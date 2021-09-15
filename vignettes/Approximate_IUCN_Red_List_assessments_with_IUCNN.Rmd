@@ -35,8 +35,6 @@ IUCNN uses R and python. All software needed can be installed via R.
 ```{r, eval = FALSE}
 install.packages("devtools")
 library(devtools)
-
-install_github("azizka/IUCNN")
 library(IUCNN)
 ```
 

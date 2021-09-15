@@ -14,7 +14,7 @@ Batch estimation of species' IUCN Red List threat status using neural networks.
 install.packages("devtools")
 library(devtools)
 
-install_github("azizka/IUCNN")
+install_github("IUCNN/IUCNN")
 ```
 
 2. Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the `install_miniconda()` function of the package `reticulate` (this will need c. 3 GB disk space).
@@ -141,6 +141,8 @@ features_predict <- iucnn_cnn_features(prediction_occ) # Prediction features
 library(IUCNN)
 citation("IUCNN")
 ```
+
+Zizka A, Andermann T, Silvestro D (2021). "IUCNN - deep learning approaches to approximate species’ extinction risk." BioRxiv, https://doi.org/10.1101/2021.06.17.448832. 
 
 Zizka A, Silvestro D, Vitt P, Knight T (2020). “Automated conservation assessment of the orchid family with deep
 learning.” _Conservation Biology_, 0, 0-0. doi: doi.org/10.1111/cobi.13616 (URL: https://doi.org/doi.org/10.1111/cobi.13616),
