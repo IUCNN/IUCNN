@@ -40,7 +40,7 @@ reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
 4. Finally install the npBNN python library from Github:
 
 ```r
-reticulate::py_install("reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE)", pip = TRUE)
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE)
 ```
 
 # Usage
