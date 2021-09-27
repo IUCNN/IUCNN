@@ -84,6 +84,7 @@ stop("The chosen criterion val_loss can't be used to compare across
   cat("", sprintf("%s: %s\n", names(best_model), best_model))
   cat("\n")
 
-  iucnn_model <-  readRDS(best_model$model_outpath)
+  path_best_model <- best_model$model_outpath
+  iucnn_model <-  readRDS(path_best_model)
   return(iucnn_model)
 }
