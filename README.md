@@ -70,8 +70,8 @@ summary(m1)
 plot(m1)
 
 # 3. Prediction
-iucnn_predict(x = features_predict,
-              model = m1)
+iucnn_predict_status(x = features_predict,
+                     model = m1)
 ```
 
 With model testing
@@ -120,8 +120,8 @@ m_prod <- iucnn_train_model(x = features,
                             production_model = m_best)
 
 # Predict RL categories for target species
-pred <- iucnn_predict(x = features_predict,
-                      model = m_prod)
+pred <- iucnn_predict_status(x = features_predict,
+                             model = m_prod)
 plot(pred)
 
 ```
