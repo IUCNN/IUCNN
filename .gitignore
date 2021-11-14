@@ -19,3 +19,5 @@ docs/vignettes/iucnn_model*
 docs/feature_extraction
 docs/data-raw
 docs/reference/feature_extraction
+/doc/
+/Meta/

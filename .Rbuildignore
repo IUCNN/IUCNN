@@ -20,3 +20,5 @@ training_stats.pdf
 ^feature_extraction$
 ^\.github$
 ^feature_extraction$
+^doc$
+^Meta$

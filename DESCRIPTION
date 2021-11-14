@@ -17,6 +17,7 @@ Remotes: azizka/sampbias
 Suggests: 
     covr,
     knitr,
+    markdown,
     rmarkdown,
     spelling,
     testthat,
