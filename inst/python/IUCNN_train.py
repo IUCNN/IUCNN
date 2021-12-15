@@ -328,6 +328,7 @@ def iucnn_train(dataset,
     test_loss_per_fold = []
 
     all_test_labels = []
+    all_test_instance_names = []
     all_test_predictions = []
     all_test_predictions_raw = []
     
@@ -361,7 +362,9 @@ def iucnn_train(dataset,
         orig_train_labels = labels[train_ids]
         orig_test_set = dataset[test_ids,:]
         orig_test_labels = labels[test_ids]
+        orig_test_instance_names = instance_names[test_ids]
         all_test_labels.append(orig_test_labels)
+        all_test_instance_names.append(orig_test_instance_names)
 
         # supersample train_ids if balance_class mode is active
         if balance_classes:
@@ -536,10 +539,12 @@ def iucnn_train(dataset,
 
     if len(labels_for_testing)>0:
         all_test_labels = np.concatenate(all_test_labels).flatten()
+        all_test_instance_names = np.concatenate(all_test_instance_names).flatten()
         all_test_predictions = np.concatenate(all_test_predictions)
         all_test_predictions_raw = np.concatenate(all_test_predictions_raw)
     else:
         all_test_labels = np.nan
+        all_test_instance_names = np.nan
         all_test_predictions: np.nan
         all_test_predictions_raw = np.nan
       
@@ -579,6 +584,7 @@ def iucnn_train(dataset,
         labels_train = orig_train_labels.flatten()
         data_test = test_set
         labels_test = all_test_labels.flatten()
+        instance_names_test = all_test_instance_names.flatten()
         train_instance_names = instance_names[train_ids]
         test_instance_names = instance_names[test_ids]
 
@@ -607,6 +613,7 @@ def iucnn_train(dataset,
     output = {
                 'test_labels':all_test_labels,
                 'test_predictions':all_test_predictions,
+                'test_instance_names':all_test_instance_names,
                 'test_predictions_raw':all_test_predictions_raw,
                 
                 'training_accuracy':avg_train_acc,
