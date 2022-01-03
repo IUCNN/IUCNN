@@ -1,3 +1,7 @@
+# IUCNN 2.0.1 (03.01.2022)
+=========================
+* fixed bug with the export of the iucnn_feature_importance function
+
 # IUCNN 2.0.0 (16.08.2021)
 =========================
 * moved to IUCNN/IUCNN

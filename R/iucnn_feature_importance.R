@@ -73,12 +73,12 @@
 #' @importFrom reticulate import source_python
 #' @importFrom checkmate assert_class assert_numeric assert_character assert_logical
 
-feature_importance <- function(x,
-                               feature_blocks = list(),
-                               n_permutations = 100,
-                               provide_indices = FALSE,
-                               verbose = FALSE,
-                               unlink_features_within_block = TRUE){
+iucnn_feature_importance <- function(x,
+                                     feature_blocks = list(),
+                                     n_permutations = 100,
+                                     provide_indices = FALSE,
+                                     verbose = FALSE,
+                                     unlink_features_within_block = TRUE){
   # assertions
   assert_class(x, "iucnn_model")
   assert_class(feature_blocks, "list")
