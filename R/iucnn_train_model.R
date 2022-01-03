@@ -431,6 +431,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
 
     test_labels <- as.vector(res$test_labels)
     test_predictions <- as.vector(res$test_predictions)
+    test_instance_names <- as.vector(res$test_instance_names)
     test_predictions_raw <- res$test_predictions_raw
 
     training_accuracy <- res$training_accuracy
@@ -521,6 +522,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
   named_res$test_predictions_raw <- test_predictions_raw
   named_res$test_predictions <- test_predictions
   named_res$test_labels <- test_labels
+  named_res$test_instance_names <- test_instance_names
 
   named_res$confusion_matrix <- confusion_matrix
 

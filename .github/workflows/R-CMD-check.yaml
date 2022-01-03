@@ -85,6 +85,7 @@ jobs:
         run: |
           reticulate::install_miniconda()
           reticulate::conda_create("r-reticulate")
+          reticulate::conda_install("r-reticulate","python=3.7")
         shell: Rscript {0}
 
       - name: Install python dependencies Linux
