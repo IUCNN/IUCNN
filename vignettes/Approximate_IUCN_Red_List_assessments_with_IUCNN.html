@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Background</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+<!-- Styles for R syntax highlighter -->
+<style type="text/css">
+   pre .operator,
+   pre .paren {
+     color: rgb(104, 118, 135)
+   }
+
+   pre .literal {
+     color: #990073
+   }
+
+   pre .number {
+     color: #099;
+   }
+
+   pre .comment {
+     color: #998;
+     font-style: italic
+   }
+
+   pre .keyword {
+     color: #900;
+     font-weight: bold
+   }
+
+   pre .identifier {
+     color: rgb(0, 0, 0);
+   }
+
+   pre .string {
+     color: #d14;
+   }
+</style>
+
+<!-- R syntax highlighter -->
+<script type="text/javascript">
+var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h1>Background</h1>
+
+<p>The Red List of the International Union for the Conservation of nature (<a href="http://www.iucn.org">www.iucn.org</a>, IUCN RL), is arguably one of the most thorough and widely used tools to assess the global extinction risk of species. However, the IUCN RL assessment process&mdash;usually performed by a group of specialists for each taxonomic group, or professional assessors&mdash;are time consuming, and therefore only a small fraction of global biodiversity has been evaluated for the IUCN RL, with a strong bias towards vertebrates and certain regions. These biases and the low fraction of species evaluated, bias conservation towards evaluated groups and prevent synthetic, large-scale ecological and biogeographic analyses of extinction risk. </p>
+
+<p>IUCNN implements neural networks to predict the IUCN status of so far not evaluated or data deficient species based on species traits. IUCNN models are trained on the existing IUCN RL assessments and any traits may be used for prediction, although IUCNN implements a workflow based solely on publicly available geo-referenced species occurrence records and environmental data. Typical examples for the application of IUCNN are to predict the conservation status of a large number of species, to approximate extinction risk or number of threatened species in a region or specific taxonomic group for synthetic analyses or to predict the IUCN category of individual species of interest for systematic or ecological case studies. </p>
+
+<pre><code class="r">library(IUCNN)
+library(magrittr)
+library(dplyr)
+</code></pre>
+
+<h1>Installation</h1>
+
+<p>IUCNN uses R and python. All software needed can be installed via R.</p>
+
+<ol>
+<li>install IUCNN directly from Github using devtools. </li>
+</ol>
+
+<pre><code class="r">install.packages(&quot;devtools&quot;)
+library(devtools)
+library(IUCNN)
+</code></pre>
+
+<ol>
+<li>Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
+If problems occur at this step, check the excellent <a href="https://rstudio.github.io/reticulate/index.html">documentation of reticulate</a>.</li>
+</ol>
+
+<pre><code class="r">install.packages(reticulate)
+library(&quot;reticulate&quot;)
+install_miniconda()
+</code></pre>
+
+<p>If python has been installed before, you can specify the python version to sue with <code>reticulate::use_python()</code></p>
+
+<ol>
+<li>Install the tensorflow Python module. IUCNN uses functions of the python modules tensorflow and npBNN which also need to be installed (via R). </li>
+</ol>
+
+<pre><code class="r">reticulate::conda_install(&quot;r-reticulate&quot;,&quot;tensorflow=2.4&quot;)
+reticulate::py_install(&quot;https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz&quot;, 
+                       pip = TRUE)
+</code></pre>
+
+<h1>Prepare input data</h1>
+
+<p>IUCNN predicts the IUCN RL categories of Not Evaluated and Data Deficient species based on geographic occurrence records and a set of training species for which occurrence records and IUCN assessments that are available for a set of reference species (training data). The amount of training species necessary varies with the number of categories but in general &ldquo;the more, the better&rdquo;. Ideally, the training dataset should comprise several hundred species or more, so a typical scenario will be to use all available plant species from a region, or all available species from a plant family. If the availability of training species is limited, a good option can be to reduce detail and predict Possibly threatened (IUCN categories &ldquo;CR&rdquo;, &ldquo;EN&rdquo;, and &ldquo;VU&rdquo;) v. Not threatened species (&ldquo;NT&rdquo; and &ldquo;LC&rdquo;).</p>
+
+<p>Three types of input are necessary, which are easily available for many species: </p>
+
+<h2>1. Geographic occurrence records of training species (training occurrences)</h2>
+
+<p>Occurrence records might be obtained from a variety of databases, For example, from field collections or public databases such BIEN (<a href="https://bien.nceas.ucsb.edu/bien/">https://bien.nceas.ucsb.edu/bien/</a>) or GBIF (<a href="http://www.gbif.org">www.gbif.org</a>). GBIF data can be obtained from within R via the rgbif package, See <a href="https://docs.ropensci.org/rgbif/articles/index.html">here</a> for a tutorial on how to do so. IUCNN needs a dataset with (at least) three columns, containing the species name, decimal longitude coordinates and decimal latitude coordinates. If you are interested in cleaning records from GBIF, you may want to have a look at this <a href="https://data-blog.gbif.org/post/gbif-filtering-guide/">blog post</a> and check out the <a href="https://github.com/ropensci/CoordinateCleaner">CoordinateCleaner</a> and <a href="https://github.com/EduardoArle/bRacatus">bRacatus</a> packages. </p>
+
+<h2>2. IUCN Global Red List assessment of the training species (training labels)</h2>
+
+<p>IUCN RL assessments for the training species can be obtained from IUCN, either via <a href="http://www.iucnredlist.org">www.iucnredlist.org</a> or via the rredlist package via R (preferred for many species). See <a href="https://ropensci.org/tutorials/rredlist_tutorial/">here</a> for a tutorial on how to use rredlist. It is important, that all target label classes are well represented in the training data, which is rarely the case for IUCN data, since for instance &ldquo;VU&rdquo; and &ldquo;NT&rdquo; is rare. If the classes are to imbalanced, consider using possibly threatened (IUCN categories &ldquo;CR&rdquo;, &ldquo;EN&rdquo;, and &ldquo;VU&rdquo;) v. not threatened species (&ldquo;NT&rdquo; and &ldquo;LC&rdquo;), or the supersampling option of the <code>iucnn_train_model</code> function.</p>
+
+<h2>3. Geographic occurrence records of the species for which the IUCN status should be predicted (predict occurrences)</h2>
+
+<p>Geographic occurrence for the target species, in the same format as for the training occurrences described above.</p>
+
+<p>Example dataset are available with IUCNN: <code>data(training_occ)</code> (training occurrences), <code>data(training_labels)</code> (training labels) and <code>data(prediction_occ)</code>.</p>
+
+<h2>Feature preparation</h2>
+
+<p>IUCNN uses per species traits to as features for the neural networks. The required input format is a data.frame with one row per species , one column containing the species name and any number of additional columns containing the numerical features for each species. In general, features might represent any trait, for instance from taxonomy (e.g., family), anatomy (e.g., body size), ecology (e.g., feeding guild) or conservation (e.g., population dynamics). However, since often only geographic occurrence data are available IUCNN contains functions to obtain default features from geo-referenced occurrence records alone, by combining them with publicly available environmental data. These default features informing on species range, climatic niche, human footprint and biomes. See Table 2 for a detailed list of all default features. Users may chose to use specific groups of features only via the <code>type</code> option of <code>iucnn_prepare_labels</code>. In this tutorial, we will use the example datasets from the Orchid family (Orchidaceae) provided with the IUCNN package, </p>
+
+<p>You can prepare the default features with a single call to <code>iucnn_prepare_features</code></p>
+
+<pre><code class="r">data(&quot;training_occ&quot;) #geographic occurrences of species with IUCN assessment
+data(&quot;prediction_occ&quot;)
+
+features_train &lt;- iucnn_prepare_features(training_occ) # Training features
+features_predict &lt;- iucnn_prepare_features(prediction_occ) # Prediction features
+</code></pre>
+
+<h2>Label preparation</h2>
+
+<p>IUCNN expects the labels for training as numerical categories. So, to use IUCN RL categories, those need to be converted to numeric in the right way. This can be done using the <code>iucnn_prepare_labels</code> function. The function converts the category labels as obtained from the IUCN RL into standardized numeric values, either on the detailed level of IUCN RL categories or the broader Possibly threatened/Not threatened level. See <code>?iucnn_prepare_labels</code> for more information. The labels will be converted into numeric categories following the <code>accepted_labels</code> argument, so for instance, in the default case: LC -&gt; 0 and CR -&gt; 4. If you change the accepted labels, the match will change accordingly.</p>
+
+<pre><code class="r">data(&quot;training_labels&quot;)
+
+labels_train &lt;- iucnn_prepare_labels(x = training_labels,
+                                     y = features_train) # Training labels
+</code></pre>
+
+<h1>Running IUCNN</h1>
+
+<p>Running IUCNN consists of two steps: 1) training a neural network and 2) predicting the status of new species. IUCNN contains three different neural network approaches to predict the IUCN status of species, which can all be customized. We present the default approach here, see section &ldquo;Customizing analyses&rdquo; of this tutorial for details on how to train a Bayesian or regression type neural network. </p>
+
+<h2>Model training</h2>
+
+<p>Based on the training features and labels, IUCNN trains a neural network, via the <code>iucnn_train_model</code> function. There are multiple options to customize the design of the network, including among others the number of layers and the fraction of records used for testing and validation. The <code>iucnn_train_model</code> function will write a folder to the working directory containing the model and return summary statistics including cross-entropy loss and accuracy for the validation set, which can be used to compare the performance of different models.</p>
+
+<p>The following code trains a neural network model with 3 hidden layers of 60, 60, and 20 nodes, with ReLU activation function. By specifying a seed (here, the default: 1234) we make sure the same subsets of data are designated as training, validation and test sets across different runs and model configurations (see below). The model with estimated weights will be saved in the current working directory. </p>
+
+<pre><code class="r">res_1 &lt;- iucnn_train_model(x = features_train,
+                           lab = labels_train, 
+                           path_to_output = &quot;iucnn_model_1&quot;)
+</code></pre>
+
+<p>The <code>summary</code> and <code>plot</code> methods give an overview on the training process and model performance. </p>
+
+<pre><code class="r">summary(res_1)
+#&gt; A model of type nn-class, trained on 702 species and 45 features.
+#&gt; 
+#&gt; Training accuracy: 0.6
+#&gt; Validation accuracy: 0.532
+#&gt; Accuracy on unseen data (test set): 0.549
+#&gt; 
+#&gt; Label detail: 5 Classes (detailed)
+#&gt; 
+#&gt; Label representation
+#&gt;   Label Input_count Estimated_count
+#&gt; 1     0          67              92
+#&gt; 2     1          12               0
+#&gt; 3     2          28               3
+#&gt; 4     3          51              80
+#&gt; 
+#&gt; Confusion matrix (rows test data and columns predicted):
+#&gt;    LC NT VU EN CR
+#&gt; LC 56  0  1 10  0
+#&gt; NT  9  0  0  3  0
+#&gt; VU 15  0  1 12  0
+#&gt; EN 11  0  1 39  0
+#&gt; CR  1  0  0 16  0
+plot(res_1)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-8"/></p>
+
+<h2>Predict IUCN Global Red List status</h2>
+
+<p>The trained model can then predict the conservation status of <em>Not Evaluated</em> and <em>Data Deficient</em> species with the <code>iucnn_predict_status</code> function. The output contains a data frame with species names and numeric labels (as generated with iucnn_prepare_labels).</p>
+
+<pre><code class="r">predictions &lt;- iucnn_predict_status(x = features_predict, 
+                                    model = res_1)
+
+plot(predictions)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-9"/></p>
+
+<p>It is important to remember the following when using IUCNN:</p>
+
+<ol>
+<li><p>The resulting IUCNN categories are approximations only. While IUCNN has reached accuracies between 80 and 90% on the broad (threatened v non-threatened) level and up to 80% on the detailed level in some cases, the accuracy may be considerably lower in other cases, which means that some species will be mis-classified.</p></li>
+<li><p>IUCNN is indifferent to the provided features. On the one hand this means that any species traits for which data is available can be used, but on the other hand this means that thought is needed in the choice of the features. The default features of IUCNN are usually a safe choice. The number of features is not limited, but currently IUCNN does not support missing values in the feature table and removes species with missing values. </p></li>
+<li><p>IUCNN is indifferent to the relation between training and test data. So it is possible to use training data from Palearctic birds to predict the conservation status of South American Nematodes. This is not recommended. Instead, a better approach will be to predict the conservation status of species, from training data of the same genus, order, or family. Alternatively, training data could be chosen on geographic region or functional aspects (e.g., feeding guild or body size). However some inclusion of taxonomy/evolutionary history for the choice of training data is recommended.</p></li>
+<li><p>The amount of training data is important. The more the better. Minimum several hundred training species with a more or less equal distribution on the label classes should be included. If training data is limited, the broader Threatened/Not threatened level is recommended. </p></li>
+<li><p>If the proportion of the IUCN RL categories is imbalanced in the training data, the neural networks may be biased towards reproducing these frequencies in the prediction, especially if the imbalance of categories or the difference in category frequencies among training and prediction set are large. To avoid this category frequencies should be balanced in the training data if possible. Otherwise the use of the <code>supersampling</code> or option a <code>nn-reg</code> type model, or a limitation to the broader Possibly threatened/Not threatened level of detail may remedy the issue. </p></li>
+<li><p>IUCNN predictions are not equivalent to full IUCN Red List assessments. We see the main purpose of IUCNN in 1) identifying species that will likely need conservation action to trigger a full IUCN assessment, and 2) provide large-scale overviews on the extinction risk in a given taxonomic group, for instance in a macro-ecological and macro-evolutionary context.</p></li>
+</ol>
+
+<h1>Customizing IUCNN analyses</h1>
+
+<p>IUCNN contains multiple options to customize the steps of the analyses to adapt the fully connected neural networks to the peculiarities of IUCN RL and species distribution data. Below we describe the most important options to customize 1) feature and label preparation, 2) model training and testing, and 3) status prediction. The most important steps and options to customize an IUCNN analysis are summarized in Table 1.</p>
+
+<p>Table 1. Critical steps to customize an IUCNN analysis and relevant considerations at each point.</p>
+
+<table><thead>
+<tr>
+<th>Step</th>
+<th>Function(s)</th>
+<th>Argument</th>
+<th>Description</th>
+<th>User consideration</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Feature design</td>
+<td>iucnn_prepare_features, iucnn_feature_importance</td>
+<td>-</td>
+<td>Defines the features to be extracted from the provided occurrence records. Available defaults are: biome presence, bioclim variables, human footprint and geographic features. Averaged per species and rescaled.</td>
+<td>What determines extinction risk for target group? Which data are available? What do the results of feature importance suggest?</td>
+</tr>
+<tr>
+<td>Label detail</td>
+<td>prep_labels</td>
+<td>level, threatened</td>
+<td>Into how many different categories should the species be classified. Can be any number, defaults support full IUCN categories (LC, NT, VU, EN, CR) or binary (Possibly threatened v. Not threatened)</td>
+<td>Which detail is needed? Is the accuracy of the detailed level sufficient for the target application?</td>
+</tr>
+<tr>
+<td>Model type</td>
+<td>iucnn_train_model</td>
+<td>mode</td>
+<td>Which model framework should be applied: a categorical classification, a classification taking the ordinal number of categories into account, or a classification based in a Bayesian framework</td>
+<td>How many target categories are there? How important is a high accuracy for intermediate classes (e.g. VU, NT, EN)? How important is the uncertainty estimation for each species?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>validation fraction</td>
+<td>The fraction of the input training data used for validation (v. training).</td>
+<td>Which fraction of the data should be used for validation (and hence not training)? How large is the training data?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>cv_fold</td>
+<td>The number of folds used for cross-validation. For instance if = 5, the data is divided into 5 folds with 20% of the data used for validation in each run.</td>
+<td>How large is the training data?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>n_layers</td>
+<td>The number of hidden layers and nodes in the neural network.</td>
+<td>How complex should the model be?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>balance_classes</td>
+<td>Should the frequency of the class labels in the training data be balanced using supersampling?</td>
+<td>How imbalanced are the class labels? Will the frequency of class labels differ between training data and prediction data set?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>act_f_out/act_f</td>
+<td>The activation function of the neural network</td>
+<td>Which relationship between features and labels is expected?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>label_stretch_factor</td>
+<td>The factor to stretch input class labels to</td>
+<td>Am I using a nn-reg type model?  Does model testing suggest an effect on model accuracy?</td>
+</tr>
+<tr>
+<td>Model structure</td>
+<td>iucnn_train_model</td>
+<td>drop_out rate</td>
+<td>The number of nodes to be removed in individual epochs. Necessary if a target threshold is to be used with a nn-class model (not bnn-class though)</td>
+<td>Is a target accuracy to be sued for prediction? How many nodes are there in the model?</td>
+</tr>
+<tr>
+<td>Prediction</td>
+<td>predict_iucnn</td>
+<td>target_acc</td>
+<td>Defines an overall target accuracy for the model Species which cannot be classified with enough certainty to reach this threshold are labels as data deficient.</td>
+<td>Which error rate is acceptable? Which proportion of species needs to be included?</td>
+</tr>
+</tbody></table>
+
+<h2>1) Features and Labels</h2>
+
+<h3>Add and remove feature blocks</h3>
+
+<p>The default features are selected based on empirical tests on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. You can exclude feature blocks using the <code>type</code> argument of the <code>iucnn_prepare_features</code> function. For instance, to exclude the biome features:</p>
+
+<pre><code class="r">features_train2 &lt;- iucnn_prepare_features(training_occ, 
+                                          type = c(&quot;geographic&quot;, 
+                                                   &quot;climate&quot;, 
+                                                   &quot;humanfootprint&quot;))
+</code></pre>
+
+<h3>Prepare features individually</h3>
+
+<p>If more control over feature preparation is necessary, each feature block can be obtained by an individual function.</p>
+
+<p>Table 2. Functions to obtain default features and options to customize the features.</p>
+
+<table><thead>
+<tr>
+<th>Feature block</th>
+<th>Function name</th>
+<th>Options to customize</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Geographic</td>
+<td><code>iucnn_geographic_features</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>Biomes</td>
+<td><code>iucnn_biome_features</code></td>
+<td>change the reference dataset of biomes (biome_input, biome.id), remove biomes without any species occurrence (remove_zeros)</td>
+</tr>
+<tr>
+<td>Climate</td>
+<td><code>iucnn_climate_features</code></td>
+<td>the amount of bioclim variables from the default source to be included (type), the resolution of the default input data (res)</td>
+</tr>
+<tr>
+<td>Human footprint</td>
+<td><code>iucnn_footprint_features</code></td>
+<td>chose the time points from the default source (year), the break points for the different footprint categories (breaks, by default approximately quantiles on the global footprint dataset) or a default source for human footprint (footp_input)</td>
+</tr>
+<tr>
+<td>Geographic bias</td>
+<td><code>iucnn_bias_features</code></td>
+<td>The resolution of the bias raster (res) or providing a template raster (ras)</td>
+</tr>
+</tbody></table>
+
+<p>For instance:</p>
+
+<pre><code class="r">clim_features &lt;- iucnn_climate_features(x = training_occ, 
+                                        type = &quot;selected&quot;)
+
+clim_features2 &lt;- iucnn_climate_features(x = training_occ, 
+                                         type = &quot;all&quot;)
+</code></pre>
+
+<h3>Use custom features</h3>
+
+<p>It is also possible to provide features unrelated to the default features. They may contain any continuous or categorical features, but some processing will be needed. The format needs to be a data.frame with a compulsory column containing the species name. Continuous variables should be rescaled to cover a similar range, whereas categorical features should be coded binary (present/absent, as the results of <code>iucnn_biome_features</code>).</p>
+
+<p>For instance:</p>
+
+<pre><code class="r">feat &lt;- data.frame(species = c(&quot;Adansonia digitata&quot;, &quot;Ceiba pentandra&quot;),
+ max_plant_size_m = c(25, 50),
+ africa = c(1,1),
+ south_america = c(0,1),
+ fraction_of_records_in_protected_area = c(25, 75))
+</code></pre>
+
+<p>Table 3. Description of the default features included in <code>iucnn_prepare_features</code>. All continuous variables are rescaled to a similar range.</p>
+
+<table><thead>
+<tr>
+<th>Feature</th>
+<th>Block</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>tot_occ</td>
+<td>Geographic</td>
+<td>Number of occurrences</td>
+<td>The total number of occurrences available for this species</td>
+</tr>
+<tr>
+<td>uni_occ</td>
+<td>Geographic</td>
+<td>Number of geographically unique occurrences</td>
+<td>The number of geographically unique records available for this species</td>
+</tr>
+<tr>
+<td>mean_lat</td>
+<td>Geographic</td>
+<td>Mean latitude</td>
+<td>The mean latitude of all records of this species</td>
+</tr>
+<tr>
+<td>mean_lon</td>
+<td>Geographic</td>
+<td>Mean longitude</td>
+<td>The mean longitude of all records of this species</td>
+</tr>
+<tr>
+<td>lat_range</td>
+<td>Geographic</td>
+<td>Latitudinal range</td>
+<td>The latitudinal range (.95 quantile - .05 quantile).</td>
+</tr>
+<tr>
+<td>lon_range</td>
+<td>Geographic</td>
+<td>Longitudinal range</td>
+<td>The longitudinal range (.95 quantile - .05 quantile).</td>
+</tr>
+<tr>
+<td>alt_hemisphere</td>
+<td>Geographic</td>
+<td>The hemisphere</td>
+<td>0 = Southern hemisphere, 1 = Northern hemisphere</td>
+</tr>
+<tr>
+<td>eoo</td>
+<td>Geographic</td>
+<td>Extend of Occurrence</td>
+<td>The extend of occurrence. Calculated by rCAT. For species with less than 3 records set to AOO</td>
+</tr>
+<tr>
+<td>aoo</td>
+<td>Geographic</td>
+<td>Area of Occupancy</td>
+<td>The area of occupancy, as the sum of area of 4sqkm grid cells, where the species occurs</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Biome</td>
+<td>Tropical &amp; Subtropical Moist Broadleaf Forests</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Biome</td>
+<td>Tropical &amp; Subtropical Dry Broadleaf Forests</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Biome</td>
+<td>Tropical &amp; Subtropical Coniferous Forests</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Biome</td>
+<td>Temperate Broadleaf &amp; Mixed Forests</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Biome</td>
+<td>Temperate Conifer Forests</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Biome</td>
+<td>Boreal Forests/Taiga</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Biome</td>
+<td>Tropical &amp; Subtropical Grasslands, Savannas &amp; Shrublands</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Biome</td>
+<td>Temperate Grasslands, Savannas &amp; Shrublands</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Biome</td>
+<td>Flooded Grasslands &amp; Savannas</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Biome</td>
+<td>Montane Grasslands &amp; Shrublands</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Biome</td>
+<td>Tundra</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Biome</td>
+<td>Mediterranean Forests, Woodlands &amp; Scrub</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Biome</td>
+<td>Deserts &amp; Xeric Shrublands</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Biome</td>
+<td>Mangroves</td>
+<td>Tropical &amp; Subtropical Moist Broadleaf Forests</td>
+</tr>
+<tr>
+<td>98</td>
+<td>Biome</td>
+<td>Lake</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>99</td>
+<td>Biome</td>
+<td>Rock and ice</td>
+<td>Are at least 5% of the species records present in this biome?</td>
+</tr>
+<tr>
+<td>bio1</td>
+<td>Climate</td>
+<td>Annual Mean Temperature</td>
+<td>The median value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed</td>
+</tr>
+<tr>
+<td>bio4</td>
+<td>Climate</td>
+<td>Temperature Seasonality</td>
+<td>The median value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed</td>
+</tr>
+<tr>
+<td>bio11</td>
+<td>Climate</td>
+<td>Mean Temperature of Coldest Quarter</td>
+<td>The median value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed</td>
+</tr>
+<tr>
+<td>bio12</td>
+<td>Climate</td>
+<td>Annual Precipitation</td>
+<td>The median value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed</td>
+</tr>
+<tr>
+<td>bio15</td>
+<td>Climate</td>
+<td>Precipitation Seasonality</td>
+<td>The median value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed</td>
+</tr>
+<tr>
+<td>bio17</td>
+<td>Climate</td>
+<td>Precipitation of Driest Quarter</td>
+<td>The median value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed</td>
+</tr>
+<tr>
+<td>range_bio1</td>
+<td>Climate</td>
+<td>Range of annual Mean Temperature</td>
+<td>The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.</td>
+</tr>
+<tr>
+<td>range_bio4</td>
+<td>Climate</td>
+<td>Range of temperature Seasonality</td>
+<td>The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.</td>
+</tr>
+<tr>
+<td>range_bio11</td>
+<td>Climate</td>
+<td>Range of mean Temperature of Coldest Quarter</td>
+<td>The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.</td>
+</tr>
+<tr>
+<td>range_bio12</td>
+<td>Climate</td>
+<td>Range of annual Precipitation</td>
+<td>The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.</td>
+</tr>
+<tr>
+<td>range_bio15</td>
+<td>Climate</td>
+<td>Range of precipitation Seasonality</td>
+<td>The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.</td>
+</tr>
+<tr>
+<td>range_bio17</td>
+<td>Climate</td>
+<td>Range of precipitation of Driest Quarter</td>
+<td>The range of value of this bioclimatic layer for the occurrence records of a species. Records with NA values removed. Range is the .95-.05 quantile.</td>
+</tr>
+<tr>
+<td>humanfootprint_1993_1</td>
+<td>Human footprint</td>
+<td>Human footprint year 1993 lowest impact</td>
+<td>The fraction of records in areas of the lowest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_1993_2</td>
+<td>Human footprint</td>
+<td>Human footprint year 1993 intermediate impact 1</td>
+<td>The fraction of records in areas of the second lowest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_1993_3</td>
+<td>Human footprint</td>
+<td>Human footprint year 1993 intermediate impact 2</td>
+<td>The fraction of records in areas of the second highest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_1993_4</td>
+<td>Human footprint</td>
+<td>Human footprint year 1993 highest impact</td>
+<td>The fraction of records in areas of the highest category of human footprint in the year 1993. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_2009_1</td>
+<td>Human footprint</td>
+<td>Human footprint year 2009 lowest impact</td>
+<td>The fraction of records in areas of the lowest category of human footprint in the year 2009. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_2009_2</td>
+<td>Human footprint</td>
+<td>Human footprint year 2009 intermediate impact 1</td>
+<td>The fraction of records in areas of the second lowest category of human footprint in the year 2009. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_2009_3</td>
+<td>Human footprint</td>
+<td>Human footprint year 2009 intermediate impact 2</td>
+<td>The fraction of records in areas of the second highest category of human footprint in the year 2009. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+<tr>
+<td>humanfootprint_2009_4</td>
+<td>Human footprint</td>
+<td>Human footprint year 2009 highest impact</td>
+<td>The fraction of records in areas of the highest category of human footprint in the year 2009. Footprint was categorized so that categorize represent roughly quantiles.</td>
+</tr>
+</tbody></table>
+
+<h3>Labels: Full categories vs Threatened/Not threatened</h3>
+
+<p>The <code>iucnn_prepare_labels</code> function may accepted any custom labels as long as they are included in the <code>accepted_labels</code> option. It also can provide a classification into threatened/non-threatened, via the <code>level</code> and <code>threatened</code> options. On the broader level the model accuracy is usually significantly higher.</p>
+
+<p>For instance:</p>
+
+<pre><code class="r">labels_train &lt;- iucnn_prepare_labels(training_labels,
+                                     y = features, 
+                                     level = &quot;broad&quot;)
+</code></pre>
+
+<h2>2) Model training - NN regression model</h2>
+
+<h3>Customizing model parameters</h3>
+
+<p>The <code>iucnn_train_model</code> function contains various options to customize the neural network, including among other the fraction of validation and test data, the maximum number of epochs, the number of layers and nodes, the activation function , dropout and randomization of the input data. See <code>?iucnn_train_model</code> for a comprehensive list of options and their description. By default, <code>iucnn_train_model</code> trains a neural network with three hidden layers with 50, 30 and 10 nodes and a sigmoid as activation function. Depending on your dataset different networks may improve performance. For instance, you can set up a different model with 1 hidden layer of 60 nodes, a sigmoid activation function and without using a bias node in the first hidden layer.</p>
+
+<pre><code class="r">res_2 &lt;- iucnn_train_model(x = features_train,
+ lab = labels_train, 
+ dropout_rate = 0.3,
+ path_to_output= &quot;iucnn_model_2&quot;,
+ n_layers = &quot;60&quot;,
+ use_bias = FALSE,
+ act_f = &quot;sigmoid&quot;)
+</code></pre>
+
+<p>You can compare the validation loss of the models using <code>res_1$validation_loss</code> and <code>res_2$validation_loss</code>. Model 2 in this case yields a lower validation loss and is therefore preferred. Once you chose the preferred model configuration based on validation loss, we can check test accuracy of best model: <code>res_2$test_accuracy</code>. The <code>iucnn_train_model</code> function contains various options to adapt the model. See <code>?iucnn_train_model</code> for more detail. </p>
+
+<h3>Changing the modeling algorithm</h3>
+
+<p>There are three neural network algorithms implemented in IUCNN. Besides the default classifier approach based on a tensorflow implementation, these are a Bayesian neural network classifier and a regression type neural network.</p>
+
+<p>The Bayesian approach has the advantage that it returns true probabilities for the classification of species into the relative output classes (e.g. 80% probability of a species to be LC). We consider this approach more suitable for classification of species into IUCN categories, than the default option. It will need more time for model training and should best be applied once you have identified the best model parameters using the default approach. You can run a BNN setting the <code>mode</code> option of <code>iucnn_train_model</code> to <code>&quot;bnn-class&quot;</code>.</p>
+
+<pre><code class="r">res_3 &lt;- iucnn_train_model(x = features_train,
+ lab = labels_train, 
+ path_to_output = &quot;iucnn_model_3&quot;,
+ mode = &#39;bnn-class&#39;)
+</code></pre>
+
+<p>IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of ordinal categories sorted by increasing threat level, we can model the task of estimating these categories as a regression problem. Such a model can be trained with the <code>iucnn_train_model()</code> function, specifying to train a regression model by setting <code>mode = &#39;nn-reg&#39;</code>.</p>
+
+<pre><code class="r">res_4 &lt;- iucnn_train_model(x = features_train,
+ lab = labels_train, 
+ path_to_output = &quot;iucnn_model_4&quot;,
+ mode = &#39;nn-reg&#39;,
+ rescale_features = TRUE)
+</code></pre>
+
+<h3>Feature importance</h3>
+
+<p>The <code>iucnn_feature_importance</code> function can be used to gauge the importance of different feature blocks or individual features for model performance. The function implements the permutation feature importance technique, which randomly reshuffles the values within individual features or blocks of features and evaluate how this randomization affects the models prediction accuracy. If a given feature (or block of features) is important for the models ability to predict, randomizing this feature will lead to a large drop in prediction accuracy. When using <code>iucnn_feature_importance</code> with features other than the default, feature blocks can be defined using the <code>feature_blocks</code> option.</p>
+
+<pre><code class="r">fi &lt;- iucnn_feature_importance(x = res_1)
+plot(fi)
+</code></pre>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAkAAAAH4CAMAAACVNaKBAAAAxlBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZpAAZrY6AAA6ADo6AGY6OgA6OmY6OpA6ZpA6ZrY6kJA6kNtmAABmADpmAGZmOgBmOjpmZgBmZjpmZmZmkNtmtpBmtttmtv+A//+QOgCQOjqQZgCQZjqQZmaQkDqQkGaQkJCQ2/+2ZgC2Zjq2kDq2kGa2ttu225C22/+2/7a2/9u2//+////bkDrbtmbbtpDb25Db/7bb/9vb////gP//tmb/v///25D/27b//7b//9v////o43GCAAAACXBIWXMAAAsSAAALEgHS3X78AAANAUlEQVR4nO3dC3vbZgGGYaVrljAokLQFBgspx6TANkrGRjCe7f//p5AsOXF8iOW8Pvu+L5hTx58/S34qS0o2FQMIFNt+Aew3AREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERCRYw6od1mUPvvqyV2vPg36H6+29pr2joCK4mL8rjKg20JArR13QGUtg++KaqPz9/Pi5KvhXf+8Lps6G3TfF8Xrm/qBo6/7fyxvv3m47V+XI3uXp/f965Mvz1998/Rhw+92xus8SAIabnBum03RQ0D11un0vn5c/XW/+k6Z2+PtQ0DV93+YeNhd9bwnN1teyHUT0KB8o7vnp98Mfiz/+OQjrFt//+HrbrmV6d9Wj65vxwM6m/Wws+EjDpuAqoA69c7Qyc1jQP1//+mnRfP2N1+PPo9Gt+MfYTfTD+tflxuls20s2CYJqOplOqAfL1//44dmCzT6utNsZ0a3EwFNPmxwd/LX80PfBRLQcCd6+BH2cFcV0F3xi8F353VAo6+rz6bB34qL0W35yfVV+c1RQJMPG3TLHfND3wU68oAeDuPrnejT+yag4qzeJtUBjb6e3Il+GFUHNPmwcgvV7IUfMgENTyT2P54Xxc/v6y1QueU4+8/H4uS3d/XedH/0dflFfZze3PbeFye/e/gIm3pYGdjB7wIddUBrd3cEZyQFtD5HcBAvoDW6K04OfwMkIDICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIrLlgPS77wREREBEBEREQEQERERARAREREBEBEREQEQERERARBa/g93zsf9g6eanZ7ctfAf71/V/p62zlv9irYD23cJ3sPfu05PbDU/PjrMFIrL4HWz+e+72gZjFURgRAREREBEBEVl8GN9cE2k9e9EC2neL38H+9RqvuiegfdfiHey9nbjsXjGykenZack7KCAERKb1OzjjZ2ECwhaIjICIJL9QJiCiX+cQENEvlAkIWyAyyS+UCQhHYWQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEBEREQEQERERARAREREBEFr+D3fPi7M71wpht4TvY/3AzuDsrO3rT4oqFxfqtaLlZkYVvSHWt1LuLltdMLf67pOUHrGi5WZEVb4EEdGxa7QNdtN0HEtDRWe1RmICOjoCItPoIa33ZbwEdncU70ddXw9vOqZ1oprU6jB+/fXasgI6OLRCRxW9I73JyH2j+WWEBHR1HYUQERKT1G2InmllsgYgIiIgz0UScByLiTDQRWyAiLzkTPX+sgI6OozAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIisvgN6Z5f9a+LYvqChQKiRUDVJS9vr8qO3rjkJdMWviG9d5/6H25cdJfZFr8h5eanczEYdM5ajBXQ0WnxhtwOL7o73Y+AcBRGSEBE2hzGH9p140W4Qq0O4yud6RNBAqLVYfyT22fHCujo2AIRWbwye5eT+0DFyPSzCejYHONRmIBWSEBEWq9MO9HMsuUt0NIEtGMERGTLZ6IFtO+2fB5IQPtuy2eiBbTvbIGIvORM9PyxAjo6jsKICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiIiAiAiIiICICIiIgIgIiMgBBFSsX7CSDt0hBPS/JS0/IFhJh05AAooISEARAQkoIiABRQQkoIiABBQRkIAiAhJQREACighIQBEBCSjSct10v5i+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" alt="plot of chunk unnamed-chunk-17"/></p>
+
+<h3>Model testing</h3>
+
+<p>Before training the final model used for predicting the conservation status of not evaluated species, it is recommended to use the <code>iucnn_modeltest</code> function for finding the best settings for your model and dataset. This process, often referred to as hyperparameter tuning, is an essential step for building the most suitable model for the prediction task. The <code>iucnn_modeltest</code> function allows you to provide any settings for <code>iucnn_train_model</code> as vectors, which will lead the function to train a separate model for each provided setting. The function will explore all possible permutations of the provided settings, so that the following command results in 9 different models being trained:</p>
+
+<pre><code class="r">modeltest_results &lt;- iucnn_modeltest(features,
+ labels,
+ dropout_rate = c(0.0,0.1,0.3),
+ n_layers = c(&#39;30&#39;,&#39;40_20&#39;,&#39;50_30_10&#39;))
+</code></pre>
+
+<p>The model specifications and settings of each tested model are written to a log-file and can be inspected with the <code>iucnn_best_model</code> function, to decide which model settings to pick as best model. Different criteria for picking the best model can be selected, such as best prediction accuracy, best predicted over-all status distribution, lowest weighted mis-classification error, etc.</p>
+
+<pre><code class="r">best_m &lt;- iucnn_best_model(modeltest_results, criterion=&#39;val_acc&#39;)
+</code></pre>
+
+<p>After model testing, it is necessary to retrain using the model specifications identified by <code>iucnn_best_model</code>. It is possible to take the respective settings directly from the output of the <code>iucnn_best_model</code> function, via the <code>production-model</code> argument of <code>iucnn_train_model</code>.</p>
+
+<pre><code class="r"># Train the best model on all training data for prediction
+m_prod &lt;- iucnn_train_model(train_feat,
+                      train_lab,
+                      production_model = m_best,
+                      overwrite = TRUE)
+</code></pre>
+
+<p>The production model can then be used for the final predictions.</p>
+
+<pre><code class="r"># Predict RL categories for target species
+pred &lt;- iucnn_predict_status(pred_feat,
+                      m_prod)
+plot(pred)
+</code></pre>
+
+<h2>3) Status prediction</h2>
+
+<p>The <code>iucnn_predict_status</code> function offers options to customize the predictions. The most important option in many cases is <code>target_acc</code>, which allows to set an overall target-accuracy threshold that the model needs to achieve. This option is only available for nn-class and nn-reg models that were trained using dropout (see help function of <code>iucnn_train_model</code> for more explanation), as well as for all bnn-class models. The <code>target_acc</code> will be achieved by the model being more selective with making a category call for a given instance. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as NA (Not Assessed).</p>
+
+<pre><code class="r">pred_2 &lt;- iucnn_predict_status(x = features_predict, 
+ target_acc = 0.7,
+ model = res_2)
+plot(pred_2)
+</code></pre>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-22"/></p>
+
+<p>Furthermore, you can turn off the <code>return_IUCN</code> option if to return the numerical labels instead of the IUCNN RL category labels.</p>
+
+<pre><code class="r">pred_3 &lt;- iucnn_predict_status(x = features_predict, 
+ model = res_2,
+ return_IUCN = FALSE)
+</code></pre>
+
+<p>The output of the <code>iucnn_predict_status</code> function is an &ldquo;iucnn_predictions&rdquo; object, that contains several output objects. The predicted labels of the individual instances are accessible with <code>pred_2$class_predictions</code> and label probabilities estimated by the neural network via <code>pred_2$mc_dropout_probs</code> for &ldquo;nn-class&rdquo; and &ldquo;nn-reg&rdquo; with dropout, or <code>pred_2$posterior_probs</code> for &ldquo;bnn-class&rdquo;. For more detail, the <code>pred_2$raw_predictions</code> object contains the individual label probabilities resulting from the softmax output layer in case of &ldquo;nn-class&rdquo;, or the regressed labels in case of &ldquo;nn-reg&rdquo;.</p>
+
+<h2>4) The number of species per category</h2>
+
+<p>Another statistic that can be extracted from the &ldquo;iucnn_predictions&rdquo; object is the overall category distribution predicted for the given prediction instances. This can be accessed with <code>pred_2$pred_cat_count</code>, which shows the distribution of the label predictions, including the count of species that could not be predicted given the chosen <code>target_acc</code>.</p>
+
+<p>Another statistic are the <code>pred2$sampled_cat_freqs</code> (only available for dropout models and all &ldquo;bnn-class&rdquo; models, see above), which show the class distribution as sampled from the <code>pred_2$mc_dropout_probs</code> or the <code>pred_2$posterior_probs</code> (for &ldquo;bnn-class&rdquo; models). The difference between <code>pred2$sampled_cat_freqs</code> and <code>pred_2$mc_dropout_probs</code>/<code>pred_2$posterior_probs</code> is that the former represents the counts of the best labels determined for each instance, whereas the latter represents labels sampled from the predicted label probabilities, which also proportionally samples the labels for a given instance that do receive the maximum label probability. The latter is done repeatedly to include the stochasticity of the random sampling of classes from the given probability vectors. The <code>pred_2$mc_dropout_probs</code>/<code>pred_2$posterior_probs</code> can be used to plot histograms of the estimates for each class, and can be reported as uncertainty intervals around the number of species in each class for the set of species that were predicted.</p>
+
+<h1>Training and prediction using a convolutional neural network</h1>
+
+<p>Instead of the fully connected neural networks presented above, IUCNN also implements a prediction algorithm using Convolutional Neural Networks (CNNs). The input data for prediction are then rasterized per-species grids of occurrence numbers. Since the input features and network structure is different CNNs are implemented in IUCNN with a separate workflow.</p>
+
+<h2>1. Feature preparation</h2>
+
+<p>Features are prepared using the <code>iucnn_cnn_features</code> function which will count the number of occurrence records in a custom raster with the same extent as the species occurrences. The function can be simply run on a data frame of training and prediction occurrences separately. Yet, since the extent of these two datasets is likely different, it is recommendable to create a custom raster beforehand. Here, we will use a simple lat/lon raster, but users may provide coordinates and a raster in any suitable coordinate reference system, as long as they agree between occurrence coordinates and raster.</p>
+
+<pre><code class="r"># preapre custom raster, you can split this step if training and test occurrences have the same extent
+library(terra)
+data(&quot;training_occ&quot;)
+data(&quot;prediction_occ&quot;)
+
+# find the minimum latitude and longitude values for the extent of the raster
+min_lon &lt;- min(c(min(training_occ$decimallongitude), 
+                 min(prediction_occ$decimallongitude)))
+max_lon &lt;- max(c(max(training_occ$decimallongitude), 
+                 max(prediction_occ$decimallongitude)))
+min_lat &lt;- min(c(min(training_occ$decimallatitude), 
+                 min(prediction_occ$decimallatitude)))
+max_lat &lt;- max(c(max(training_occ$decimallatitude), 
+                 max(prediction_occ$decimallatitude)))
+## set the coordinate reference system
+ras &lt;- rast(crs = &quot;+proj=longlat +datum=WGS84&quot;)
+## set raster extent
+ext(ras) &lt;- c(min_lon,
+              max_lon, 
+              min_lat, 
+              max_lat)
+## set raster resolution
+res(ras) &lt;- 1 # the resolution in CRS units, in this case degrees lat/lon
+
+
+ # Training features
+cnn_features &lt;- iucnn_cnn_features(x = training_occ, 
+                                   y = ras)
+
+# Prediction features
+cnn_features_predict &lt;- iucnn_cnn_features(x = prediction_occ,
+                                           y = ras)
+ # Training labels
+cnn_labels &lt;- iucnn_prepare_labels(x = training_labels,
+                                   y = cnn_features)
+</code></pre>
+
+<h2>2. Model training</h2>
+
+<pre><code class="r">trained_model &lt;- iucnn_cnn_train(cnn_features,
+                                cnn_labels,
+                                overwrite = TRUE,
+                                dropout_rate = 0.1,
+                                optimize_for = &#39;accuracy&#39;)
+
+plot(trained_model)
+summary(trained_model)
+</code></pre>
+
+<h2>3. Status prediction</h2>
+
+<pre><code class="r">pred &lt;- iucnn_predict_status(cnn_features_predict,
+                             trained_model,
+                             target_acc = 0.0
+                             )
+</code></pre>
+
+</body>
+
+</html>

@@ -8,9 +8,8 @@ pre_submission_tests.R
 _site.yml
 ^docs$
 ^.github$
-^vignettes/wc10$
-^vignettes/WWF_ecoregions$
-^vignettes/iuc_nn_model$
+^vignettes/figure
+^vignettes/feature_extraction$
 ^manual_tests$
 ^.*HFP
 iuc_nn_model_feature_importance.txt
@@ -19,6 +18,6 @@ training_stats.pdf
 ^codemeta\.json$
 ^feature_extraction$
 ^\.github$
-^feature_extraction$
 ^doc$
 ^Meta$
+
