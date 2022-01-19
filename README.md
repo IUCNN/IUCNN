@@ -142,7 +142,7 @@ library(IUCNN)
 citation("IUCNN")
 ```
 
-Zizka A, Andermann T, Silvestro D (2021). "IUCNN - deep learning approaches to approximate species’ extinction risk." BioRxiv, https://doi.org/10.1101/2021.06.17.448832. 
+Zizka A, Andermann T, Silvestro D (2021). "IUCNN - deep learning approaches to approximate species’ extinction risk." [Diversity and Distributions, doi: 10.1111/ddi.13450](https://doi.org/10.1111/ddi.13450). 
 
 Zizka A, Silvestro D, Vitt P, Knight T (2020). “Automated conservation assessment of the orchid family with deep
 learning.” _Conservation Biology_, 0, 0-0. doi: doi.org/10.1111/cobi.13616 (URL: https://doi.org/doi.org/10.1111/cobi.13616),
