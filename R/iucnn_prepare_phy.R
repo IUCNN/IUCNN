@@ -5,8 +5,8 @@
 #'
 
 #'@inheritParams iucnn_prepare_features
-#'@param variance_fraction
-#'@param numeigen
+#'@param variance_fraction select number of eigenvalues that cumulative explain a specified fraction of variance 
+#'@param numeigen select the number eigenvalues
 #'
 #' @return a matrix of phylogenetic Eigenvectors
 #'
