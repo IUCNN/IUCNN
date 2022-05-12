@@ -45,7 +45,8 @@ iucnn_prepare_features <- function(x,
                                             "biomes",
                                             "climate",
                                             "humanfootprint"),
-                                   download_folder= "feature_extraction"){
+                                   download_folder= "feature_extraction",
+                                   impute_features=TRUE){
 
   # assertions
   assert_data_frame(x)
@@ -134,13 +135,14 @@ iucnn_prepare_features <- function(x,
     warning("No internet connection, only geographic features created")
   }
 
-
-
-
-
   class(out) <- c("iucnn_features", class(out))
+  # do imputation if argument is TRUE
+  if (impute_features){
+    warning("Imputing NA values in feature-dataframe using missForest. Set impute_features=FALSE to suppress imputation.")
+    final_out <- impute_missing_values(features)
+  }else{
+    final_out = out
+  }
 
-  out_imputed <- impute_missing_values(features)
-
-  return(out_imputed)
+  return(final_out)
 }
