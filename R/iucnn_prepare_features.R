@@ -140,5 +140,7 @@ iucnn_prepare_features <- function(x,
 
   class(out) <- c("iucnn_features", class(out))
 
-  return(out)
+  out_imputed <- impute_missing_values(features)
+
+  return(out_imputed)
 }

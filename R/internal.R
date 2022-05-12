@@ -4,6 +4,37 @@
 #' @importFrom dplyr select left_join mutate
 #' @importFrom utils write.table
 
+
+cat_bool <- function(x){
+  # function that decides if data is categorical
+  # 0: continuous 1: factor
+  return (prod(round(x) == x))
+}
+
+impute_missing_values <- function(df){
+  features = df
+  # apply function to determine whether features are categorical or numeric
+  categorical_boolean = apply(na.omit(features[,2:dim(features)[2]]), FUN=cat_bool, 2)
+  colnames = names(categorical_boolean)
+  # change the type of each column to either categorical or numeric
+  for (i in 1:length(categorical_boolean)){
+    name = colnames[i]
+    bool_value = categorical_boolean[i]
+    if (bool_value==1){
+      features[,name] = as.factor(unlist(features[,name]))
+    }
+  }
+  # impute missing values with missForest
+  missForest_imputation <- missForest(xmis = as.data.frame(features[,2:dim(features)[2]]), maxiter = 10, ntree = 100)
+  #head(missForest_imputation$ximp) #missForest printed results
+  # update the feature df with imputed values
+  new_features_df = features
+  new_features_df[,2:dim(new_features_df)[2]] = missForest_imputation$ximp
+  new_features_df[,2:dim(new_features_df)[2]] = sapply( new_features_df[,2:dim(new_features_df)[2]], as.numeric)
+  return(new_features_df)
+}
+
+
 get_footp <- function(x, file_path){
   test <- file.exists(file.path(file_path,
                                 paste("HFP", x, ".tif", sep = "")))
