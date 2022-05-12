@@ -1,3 +1,10 @@
+# IUCNN 2.1.0 (12.05.2022)
+=========================
+* add NA imputation in the features using missForest
+* added phylogenetic eigenvectors in iucnn_phylogenetic_features
+* updated citation
+* upgraded dependency on R >=4.1
+
 # IUCNN 2.0.1 (03.01.2022)
 =========================
 * fixed bug with the export of the iucnn_feature_importance function
