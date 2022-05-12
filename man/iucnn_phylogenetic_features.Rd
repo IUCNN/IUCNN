@@ -2,7 +2,7 @@
 % Please edit documentation in R/iucnn_phylogenetic_features.R
 \name{iucnn_phylogenetic_features}
 \alias{iucnn_phylogenetic_features}
-\title{Extract Phylogenetic Features Based on Phylogenteic Eigenvectors}
+\title{Extract Phylogenetic Features Based on Phylogenetic Eigenvectors}
 \usage{
 iucnn_phylogenetic_features(x, species = "species", phy.eigen)
 }
@@ -13,7 +13,7 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{species}{a character string. The name of the column with the species names.}
 
 \item{phy.eigen}{a matrix of phylogenetic Eigenvector calculated
-from a phylogenetic tree including trainng and prediction species
+from a phylogenetic tree including training and prediction species
 using the \code{iucnn_prepare_phy} function.}
 }
 \value{
@@ -29,7 +29,7 @@ dat <- data.frame(species = c("A","B", "X"),
                   decimallongitude = runif (180,10,15),
                   decimallatitude = runif (180,-5,5))
 
-tree <- rphylo(n = 10, birth=0.1, death=0)
+tree <- ape::rphylo(n = 10, birth=0.1, death=0)
 tree$tip.label <- LETTERS[1:10]
 phy <- iucnn_prepare_phy(phy = tree)
 

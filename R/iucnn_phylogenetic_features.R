@@ -1,4 +1,4 @@
-#' Extract Phylogenetic Features Based on Phylogenteic Eigenvectors
+#' Extract Phylogenetic Features Based on Phylogenetic Eigenvectors
 #'
 #' Extract features for a list of species based on phylogenetic Eigenvectors
 #'  prepared with the \code{iucnn_prepare_phy} function.
@@ -6,7 +6,7 @@
 #'
 #'@inheritParams iucnn_prepare_features
 #'@param phy.eigen a matrix of phylogenetic Eigenvector calculated
-#'from a phylogenetic tree including trainng and prediction species
+#'from a phylogenetic tree including training and prediction species
 #'using the \code{iucnn_prepare_phy} function.
 #'
 #'@return a data.frame of phylogenetic features
@@ -19,7 +19,7 @@
 #'                   decimallongitude = runif (180,10,15),
 #'                   decimallatitude = runif (180,-5,5))
 #'
-#' tree <- rphylo(n = 10, birth=0.1, death=0)
+#' tree <- ape::rphylo(n = 10, birth=0.1, death=0)
 #' tree$tip.label <- LETTERS[1:10]
 #' phy <- iucnn_prepare_phy(phy = tree)
 #'

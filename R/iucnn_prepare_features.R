@@ -20,6 +20,9 @@
 #'@param download_folder character string. The folder were to save the
 #'data used for feature extraction. Relative to the working directory.
 #'Set to NULL for the working directory
+#'@param impute_features logical. SHould na values be imputed for features? If TRUE
+#'NA values are filled using multiple imputation using missForest. If set to FALSE
+#'species with missing values are removed during the training process.
 #'
 #'@return a data.frame of features
 #'
@@ -138,8 +141,8 @@ iucnn_prepare_features <- function(x,
   class(out) <- c("iucnn_features", class(out))
   # do imputation if argument is TRUE
   if (impute_features){
-    warning("Imputing NA values in feature-dataframe using missForest. Set impute_features=FALSE to suppress imputation.")
-    final_out <- impute_missing_values(features)
+    warning("Imputing NA values in features using missForest. Set impute_features=FALSE to suppress imputation.")
+    final_out <- impute_missing_values(out)
   }else{
     final_out = out
   }

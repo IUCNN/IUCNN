@@ -7,7 +7,9 @@
 iucnn_prepare_phy(phy, variance_fraction = 0.8, numeigen = NULL)
 }
 \arguments{
-\item{variance_fraction}{select number of eigenvalues that cumulative explain a specified fraction of variance}
+\item{phy}{phylogenetic te in phylo format}
+
+\item{variance_fraction}{select number of Eigenvalues that cumulative explain a specified fraction of variance}
 
 \item{numeigen}{select the number eigenvalues}
 }
@@ -15,8 +17,8 @@ iucnn_prepare_phy(phy, variance_fraction = 0.8, numeigen = NULL)
 a matrix of phylogenetic Eigenvectors
 }
 \description{
-Extract Phylogenetic Eigenvectors to represent the phylogeentic relationsships
-in a matrix format ot use as NN features.
+Extract Phylogenetic Eigenvectors to represent the phylogenetic relationship
+in a matrix format for use as NN features.
 }
 \examples{
 library(ape)

@@ -1,11 +1,11 @@
 #' Prepare Phylogenetic Eigenvectors to Extract Phylogenetic Features
 #'
-#'Extract Phylogenetic Eigenvectors to represent the phylogeentic relationsships
-#'in a matrix format ot use as NN features.
+#'Extract Phylogenetic Eigenvectors to represent the phylogenetic relationship
+#'in a matrix format for use as NN features.
 #'
 
-#'@inheritParams iucnn_prepare_features
-#'@param variance_fraction select number of eigenvalues that cumulative explain a specified fraction of variance
+#'@param phy phylogenetic te in phylo format
+#'@param variance_fraction select number of Eigenvalues that cumulative explain a specified fraction of variance
 #'@param numeigen select the number eigenvalues
 #'
 #' @return a matrix of phylogenetic Eigenvectors
@@ -31,7 +31,7 @@ iucnn_prepare_phy <- function(phy,
   assert_numeric(numeigen, null.ok = TRUE)
 
   #produces object of class 'PVR' with eigenvectors
-  decomp <- PVRdecomp(tree, type = "newick")
+  decomp <- PVRdecomp(phy, type = "newick")
   label.decomp <- as.data.frame(decomp@phylo$tip.label)
   egvec <- as.data.frame(decomp@Eigen$vectors)
 

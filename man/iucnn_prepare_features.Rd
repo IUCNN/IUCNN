@@ -31,6 +31,10 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{download_folder}{character string. The folder were to save the
 data used for feature extraction. Relative to the working directory.
 Set to NULL for the working directory}
+
+\item{impute_features}{logical. SHould na values be imputed for features? If TRUE
+NA values are filled using multiple imputation using missForest. If set to FALSE
+species with missing values are removed during the training process.}
 }
 \value{
 a data.frame of features

@@ -3,6 +3,8 @@
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select left_join mutate
 #' @importFrom utils write.table
+#' @importFrom stats na.omit
+#' @importFrom missForest missForest
 
 
 cat_bool <- function(x){
@@ -12,25 +14,31 @@ cat_bool <- function(x){
 }
 
 impute_missing_values <- function(df){
-  features = df
+  features <-  df
+
   # apply function to determine whether features are categorical or numeric
-  categorical_boolean = apply(na.omit(features[,2:dim(features)[2]]), FUN=cat_bool, 2)
-  colnames = names(categorical_boolean)
+  categorical_boolean <-  apply(na.omit(features[,2:dim(features)[2]]),
+                              FUN = cat_bool,
+                              2)
+  colnames <-  names(categorical_boolean)
+
   # change the type of each column to either categorical or numeric
   for (i in 1:length(categorical_boolean)){
-    name = colnames[i]
-    bool_value = categorical_boolean[i]
-    if (bool_value==1){
-      features[,name] = as.factor(unlist(features[,name]))
+    name <-  colnames[i]
+    bool_value <-  categorical_boolean[i]
+    if (bool_value == 1){
+      features[,name] <-  as.factor(unlist(features[,name]))
     }
   }
+
   # impute missing values with missForest
-  missForest_imputation <- missForest(xmis = as.data.frame(features[,2:dim(features)[2]]), maxiter = 10, ntree = 100)
-  #head(missForest_imputation$ximp) #missForest printed results
+  missForest_imputation <- missForest(xmis = as.data.frame(features[,2:dim(features)[2]]),
+                                      maxiter = 10, ntree = 100)
+
   # update the feature df with imputed values
   new_features_df = features
-  new_features_df[,2:dim(new_features_df)[2]] = missForest_imputation$ximp
-  new_features_df[,2:dim(new_features_df)[2]] = sapply( new_features_df[,2:dim(new_features_df)[2]], as.numeric)
+  new_features_df[, 2:ncol(new_features_df)] <-  missForest_imputation$ximp
+  new_features_df[, 2:dim(new_features_df)] <-  sapply(new_features_df[,2:dim(new_features_df)[2]], as.numeric)
   return(new_features_df)
 }
 
