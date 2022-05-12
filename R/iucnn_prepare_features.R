@@ -133,6 +133,11 @@ iucnn_prepare_features <- function(x,
   }else{
     warning("No internet connection, only geographic features created")
   }
+
+
+
+
+
   class(out) <- c("iucnn_features", class(out))
 
   return(out)

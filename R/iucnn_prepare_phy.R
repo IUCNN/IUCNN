@@ -14,7 +14,9 @@
 #' @family Feature preparation
 #'
 #' @examples
-#'
+#'library(ape)
+#'tree <- rphylo(n = 10, birth=0.1, death=0)
+#'iucnn_prepare_phy(phy = tree)
 #'
 #' @export
 #' @importFrom PVR PVRdecomp
@@ -51,6 +53,7 @@ iucnn_prepare_phy <- function(phy,
   #Eigenvectors generated in object 'eigenTobind'
   #rename eigenTobind species column so it matches trait dataset species column
   names(eigenTobind)[1] <- "species"
+  names(eigenTobind)[-1] <- paste(phylo, names(eigenTobind)[-1])
 
   #return matrix of eigenvectors
   return(eigenTobind)
