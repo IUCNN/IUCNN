@@ -20,6 +20,7 @@
 #'                   decimallatitude = runif (180,-5,5))
 #'
 #' tree <- rphylo(n = 10, birth=0.1, death=0)
+#' tree$tip.label <- LETTERS[1:10]
 #' phy <- iucnn_prepare_phy(phy = tree)
 #'
 #'iucnn_phylogenetic_features(x = dat,
