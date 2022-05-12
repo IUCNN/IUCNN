@@ -10,7 +10,8 @@ iucnn_prepare_features(
   lon = "decimallongitude",
   lat = "decimallatitude",
   type = c("geographic", "biomes", "climate", "humanfootprint"),
-  download_folder = "feature_extraction"
+  download_folder = "feature_extraction",
+  impute_features = TRUE
 )
 }
 \arguments{
