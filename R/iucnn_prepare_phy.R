@@ -4,12 +4,11 @@
 #'in a matrix format ot use as NN features.
 #'
 
-#'@param species
-#'the 19 bioclim variables from www.worldclim.org are used as default.
+#'@inheritParams iucnn_prepare_features
 #'@param variance_fraction
 #'@param numeigen
 #'
-#'@return a matrix of phylogenetic Eigenvectors
+#' @return a matrix of phylogenetic Eigenvectors
 #'
 #' @keywords Feature preparation
 #' @family Feature preparation
@@ -55,5 +54,4 @@ iucnn_prepare_phy <- function(phy,
 
   #return matrix of eigenvectors
   return(eigenTobind)
-
 }
