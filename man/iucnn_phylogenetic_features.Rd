@@ -21,7 +21,7 @@ a data.frame of phylogenetic features
 }
 \description{
 Extract features for a list of species based on phylogenetic Eigenvectors
-prepared with the \\code{iucnn_prepare_phy} function.
+prepared with the \code{iucnn_prepare_phy} function.
 Tip labels need to match the species names in x.
 }
 \examples{
@@ -30,6 +30,7 @@ dat <- data.frame(species = c("A","B", "X"),
                   decimallatitude = runif (180,-5,5))
 
 tree <- rphylo(n = 10, birth=0.1, death=0)
+tree$tip.label <- LETTERS[1:10]
 phy <- iucnn_prepare_phy(phy = tree)
 
 iucnn_phylogenetic_features(x = dat,

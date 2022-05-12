@@ -5,7 +5,7 @@
 #'
 
 #'@inheritParams iucnn_prepare_features
-#'@param variance_fraction select number of eigenvalues that cumulative explain a specified fraction of variance 
+#'@param variance_fraction select number of eigenvalues that cumulative explain a specified fraction of variance
 #'@param numeigen select the number eigenvalues
 #'
 #' @return a matrix of phylogenetic Eigenvectors
@@ -53,7 +53,7 @@ iucnn_prepare_phy <- function(phy,
   #Eigenvectors generated in object 'eigenTobind'
   #rename eigenTobind species column so it matches trait dataset species column
   names(eigenTobind)[1] <- "species"
-  names(eigenTobind)[-1] <- paste(phylo, names(eigenTobind)[-1])
+  names(eigenTobind)[-1] <- paste("phylo", names(eigenTobind)[-1])
 
   #return matrix of eigenvectors
   return(eigenTobind)
