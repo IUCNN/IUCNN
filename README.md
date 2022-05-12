@@ -73,6 +73,8 @@ plot(m1)
 iucnn_predict_status(x = features_predict,
                      model = m1)
 ```
+Additional features quantifying phylogenetic relationships and geographic sampling bias are available via `iucnn_phylogenetic_features` and `iucnn_bias_features`.
+
 
 With model testing
 
