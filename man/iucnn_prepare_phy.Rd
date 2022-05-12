@@ -7,7 +7,9 @@
 iucnn_prepare_phy(phy, variance_fraction = 0.8, numeigen = NULL)
 }
 \arguments{
-\item{numeigen}{}
+\item{variance_fraction}{select number of eigenvalues that cumulative explain a specified fraction of variance}
+
+\item{numeigen}{select the number eigenvalues}
 }
 \value{
 a matrix of phylogenetic Eigenvectors
@@ -17,7 +19,9 @@ Extract Phylogenetic Eigenvectors to represent the phylogeentic relationsships
 in a matrix format ot use as NN features.
 }
 \examples{
-
+library(ape)
+tree <- rphylo(n = 10, birth=0.1, death=0)
+iucnn_prepare_phy(phy = tree)
 
 }
 \seealso{
@@ -28,6 +32,7 @@ Other Feature preparation:
 \code{\link{iucnn_cnn_features}()},
 \code{\link{iucnn_footprint_features}()},
 \code{\link{iucnn_geography_features}()},
+\code{\link{iucnn_phylogenetic_features}()},
 \code{\link{iucnn_prepare_features}()}
 }
 \concept{Feature preparation}

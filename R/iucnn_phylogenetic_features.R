@@ -15,9 +15,9 @@
 #' @family Feature preparation
 #'
 #' @examples
-#' dat <- data.frame(species = c("A","B"),
-#'                   decimallongitude = runif (200,10,15),
-#'                   decimallatitude = runif (200,-5,5))
+#' dat <- data.frame(species = c("A","B", "X"),
+#'                   decimallongitude = runif (180,10,15),
+#'                   decimallatitude = runif (180,-5,5))
 #'
 #' tree <- rphylo(n = 10, birth=0.1, death=0)
 #' phy <- iucnn_prepare_phy(phy = tree)
@@ -26,12 +26,11 @@
 #'                            phy.eigen = phy)
 
 #'
-#'
 #' @export
 #' @importFrom dplyr left_join
 
 
-icunn_phylogenetic_features <- function(x,
+iucnn_phylogenetic_features <- function(x,
                                         species = "species",
                                         phy.eigen){
 

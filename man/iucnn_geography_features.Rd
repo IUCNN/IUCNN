@@ -54,6 +54,7 @@ Other Feature preparation:
 \code{\link{iucnn_climate_features}()},
 \code{\link{iucnn_cnn_features}()},
 \code{\link{iucnn_footprint_features}()},
+\code{\link{iucnn_phylogenetic_features}()},
 \code{\link{iucnn_prepare_features}()},
 \code{\link{iucnn_prepare_phy}()}
 }
