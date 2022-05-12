@@ -1,7 +1,7 @@
 #' Extract Phylogenetic Features Based on Phylogenteic Eigenvectors
 #'
 #' Extract features for a list of species based on phylogenetic Eigenvectors
-#'  prepared with the \\code{iucnn_prepare_phy} function.
+#'  prepared with the \code{iucnn_prepare_phy} function.
 #'  Tip labels need to match the species names in x.
 #'
 #'@inheritParams iucnn_prepare_features
