@@ -47,7 +47,7 @@ iucnn_geography_features <- function(x,
 
   # Total occurrences
   tot_occ <- x %>%
-    group_by(species) %>%
+    group_by(.data[[species]]) %>%
     summarize(tot_occ = n())
 
   # Other geographic features
@@ -56,7 +56,7 @@ iucnn_geography_features <- function(x,
     distinct()
 
   geos <- uni%>%
-    group_by(species) %>%
+    group_by(.data[[species]]) %>%
     summarize(
       # Unique occurrences
       uni_occ = n(),
@@ -93,6 +93,8 @@ iucnn_geography_features <- function(x,
                            .data$eoo)) %>%
        mutate(eoo = round(as.numeric(.data$eoo), 3)) %>%
        mutate(aoo = round(as.numeric(.data$aoo), 3))
+
+    names(spa)[1] <- species
 
     # combine
      out <- tot_occ %>%
