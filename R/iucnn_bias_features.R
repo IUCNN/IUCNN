@@ -6,8 +6,8 @@
 #'See the ?sampbias::calculate_bias for details.
 #'
 #'@param res numeric. The resolution of the default resolution to calculate sampling bias. In decimal degrees.
-#'@param ras a raster object. Alternative to res, a sample raster to calculate sampling bias. Needs to use the same CRS as
-#'the coordinates in x.
+#'@param ras a SpatRaster object. Alternative to res, a sample SpatRaster to
+#'  calculate sampling bias. Needs to use the same CRS as the coordinates in x.
 #'@param plot logical. Should the results of the sampbias analysis be plotted for diagnostics?
 #'@inheritParams iucnn_geography_features
 #'
@@ -18,17 +18,17 @@
 #'
 #' @examples
 #'\dontrun{
-# dat <- data.frame(species = "A",
-#                   decimallongitude = runif (200,10,15),
-#                   decimallatitude = runif (200,-0,5))
-#'
+#' dat <- data.frame(species = c("A", "b"),
+#'                   decimallongitude = runif(200, 10, 15),
+#'                   decimallatitude = runif(200, -5, 5))
 #'iucnn_bias_features(dat)
+#'
 #'}
 #'
 #'
 #' @export
 #' @importFrom dplyr group_by mutate select summarize
-#' @importFrom raster extract getData
+#' @importFrom terra extract
 #' @importFrom magrittr %>%
 #' @importFrom stats median quantile
 #' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
@@ -39,8 +39,12 @@ iucnn_bias_features <- function(x,
                                 lat = "decimallatitude",
                                 res = 0.5,
                                 ras = NULL,
-                                plot = TRUE){
+                                plot = TRUE) {
 
+  #check if sampbias is installed
+  if (!requireNamespace("sampbias", character.only = TRUE)) {
+    stop("Bias features require the 'sampbias' package. Install from https://github.com/azizka/sampbias")
+  }
   # assertions
   assert_data_frame(x)
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
@@ -48,10 +52,6 @@ iucnn_bias_features <- function(x,
   assert_numeric(res)
   assert_logical(plot)
 
-  #check if sampbias is installed
-  if (!requireNamespace("sampbias", character.only = TRUE)) {
-    stop("Bias features require the 'sampbias' package. Install from https://github.com/azizka/sampbias")
-  }
 
   # Prepare the input data
   inp <- x %>%
@@ -67,13 +67,14 @@ iucnn_bias_features <- function(x,
   proj <- sampbias::project_bias(sampbias_out)
 
   # plot results if plot argument is set
-  if(plot){
+  if (plot) {
     plot(sampbias_out)
     sampbias::map_bias(proj)
   }
 
   # Extract values for each record
-  bias_extract <- raster::extract(proj[["Total_percentage"]], inp[, c("decimalLongitude", "decimalLatitude")])
+  bias_extract <- terra::extract(proj[["Total_percentage"]],
+                                  inp[, c("decimalLongitude", "decimalLatitude")])
 
   # summarize the mean value and range for each species
   bias_feat <- inp %>%

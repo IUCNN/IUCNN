@@ -1,14 +1,14 @@
 #' Model-Testing IUCNN Models using Cross-Validation (Hyperparameter-Tuning)
 #'
 #' Takes as input features produced with \code{\link{iucnn_prepare_features}}
-#' and labels produced with \code{\link{iucnn_prepare_labels}}, as well as a path to a
-#' log-file where results for each tested model will be stored. All available
-#' options are identical to the \code{\link{iucnn_train_model}} function and can be
-#' provided as vectors, e.g. \code{dropout_rate = c(0.0,0.1,0.3)} and
-#' \code{n_layers = c('30','40_20','50_30_10')}. \code{iucnn_modeltest} will
-#' then iterate through all possible permutations of the provided hyperparameter
-#' settings, train a separate model for each hyperparameter combination, and
-#' store the results in the provided log-file.
+#' and labels produced with \code{\link{iucnn_prepare_labels}}, as well as a
+#' path to a log-file where results for each tested model will be stored. All
+#' available options are identical to the \code{\link{iucnn_train_model}}
+#' function and can be provided as vectors, e.g. \code{dropout_rate =
+#' c(0.0,0.1,0.3)} and \code{n_layers = c('30','40_20','50_30_10')}.
+#' \code{iucnn_modeltest} will then iterate through all possible permutations of
+#' the provided hyperparameter settings, train a separate model for each
+#' hyperparameter combination, and store the results in the provided log-file.
 #'
 #' @inheritParams iucnn_train_model
 #'
@@ -35,18 +35,24 @@
 #'
 #' @examples
 #' \dontrun{
+#' data("training_occ") #geographic occurrences of species with IUCN assessment
+#' data("training_labels")# the corresponding IUCN assessments
+#'
+#' # 1. Feature and label preparation
+#' features <- iucnn_prepare_features(training_occ, type = "geographic") # Training features
+#' labels_train <- iucnn_prepare_labels(training_labels, features) # Training labels
+#'
+#'
 #' # Model-testing
-#' logfile = paste0("model_testing_results.txt")
-#' model_testing_results = iucnn_modeltest(features,
-#'                                        labels,
-#'                                        logfile,
-#'                                        model_outpath = 'iucnn_modeltest',
-#'                                        mode = 'nn-class',
-#'                                        seed = 1234,
-#'                                        dropout_rate = c(0.0,0.1,0.3),
-#'                                        n_layers = c('30','40_20','50_30_10'),
-#'                                        cv_fold = 5,
-#'                                        init_logfile = TRUE)
+#' mod_test <- iucnn_modeltest(x = features,
+#'                             lab = labels_train,
+#'                             logfile = "model_testing_results-2.txt",
+#'                             model_outpath = "iucnn_modeltest-2",
+#'                             mode = "nn-class",
+#'                             dropout_rate = c(0.0, 0.1, 0.3),
+#'                             n_layers = c("30", "40_20", "50_30_10"),
+#'                             cv_fold = 2,
+#'                             init_logfile = TRUE)
 #' }
 #'
 #'
@@ -54,12 +60,12 @@
 #' @importFrom utils read.csv
 #' @importFrom checkmate assert_data_frame assert_character assert_logical assert_numeric assert_list
 
-iucnn_modeltest<- function(x,
+iucnn_modeltest <- function(x,
                             lab,
                             logfile = "model_testing_logfile.txt",
                             model_outpath = "modeltest",
                             mode = "nn-class",
-                            cv_fold = 5,
+                            cv_fold = 2,
                             test_fraction = 0,
                             n_layers = c("50_30_10", "30"),
                             dropout_rate = c(0, 0.1, 0.3),

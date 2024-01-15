@@ -20,9 +20,9 @@ iucnn_climate_features(
 \item{x}{a data.frame of species occurrence records including three columns with
 species name, longitudinal coordinates and latitudinal coordinates (both decimal).}
 
-\item{climate_input}{a raster or rasterStack with climate data.
-Optional. If not provided,
-the 19 bioclim variables from www.worldclim.org are used as default.}
+\item{climate_input}{a SpatRaster object with climate data. Optional. If not
+provided, the 19 bioclim variables from www.worldclim.org are used as
+default.}
 
 \item{species}{a character string. The name of the column with the species names.}
 
@@ -64,12 +64,13 @@ Rescaling is only done for these default variables.
 All climate variables are summarized  to the species median.
 }
 \examples{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
-                  decimallongitude = runif (200,10,15),
-                  decimallatitude = runif (200,-5,5))
+                  decimallongitude = runif(200,10,15),
+                  decimallatitude = runif(200,-5,5))
 
 iucnn_climate_features(dat)
-
+}
 
 }
 \seealso{

@@ -32,7 +32,7 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 data used for feature extraction. Relative to the working directory.
 Set to NULL for the working directory}
 
-\item{impute_features}{logical. SHould na values be imputed for features? If TRUE
+\item{impute_features}{logical. Should NA values be imputed for features? If TRUE
 NA values are filled using multiple imputation using missForest. If set to FALSE
 species with missing values are removed during the training process.}
 }
@@ -51,12 +51,13 @@ For more control over feature preparation, you can use the
 Without internet access, only geographic features are calculated,
 }
 \examples{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
                   decimallongitude = runif (200,10,15),
                   decimallatitude = runif (200,-5,5))
 
 iucnn_prepare_features(dat)
-
+}
 }
 \seealso{
 Other Feature preparation: 

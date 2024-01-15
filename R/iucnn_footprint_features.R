@@ -12,9 +12,9 @@
 #' By default four categories of increasing human footprint index
 #'  ( 1 = lowest, 4 = highest) are selected and rescaled.
 #' @inheritParams iucnn_prepare_features
-#' @param footp_input an object of the class raster or RasterStack
-#' with values for the human footprint index.
-#' If a RasterStack, different layers are interpreted as different time-slices.
+#' @param footp_input an object of the class SpatRaster with values for the
+#'   human footprint index. If the SpatRaster object has two or more layers,
+#'   different layers are interpreted as different time-slices.
 #' @param rescale logical. If TRUE, the values are rescaled using
 #' natural logarithm transformation. If FALSE,
 #' remember to change the breaks argument.
@@ -36,22 +36,24 @@
 #' @family Feature preparation
 #'
 #' @examples
+#' \dontrun{
 #' dat <- data.frame(species = c("A","B"),
-#'                   decimallongitude = runif (200,10,15),
-#'                   decimallatitude = runif (200,-5,5))
+#'                   decimallongitude = runif(200,10,15),
+#'                   decimallatitude = runif(200,-5,5))
 #'
-#'iucnn_footprint_features(dat)
-#'
+#' iucnn_footprint_features(dat)
+#'}
 #'
 #' @export
 #' @importFrom dplyr filter .data group_by tally mutate select summarize_all
-#' @importFrom raster extract stack
+#' @importFrom terra extract rast
 #' @importFrom magrittr %>%
 #' @importFrom sf st_as_sf st_coordinates st_transform st_crs
 #' @importFrom curl has_internet
 #' @importFrom readr parse_number
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @importFrom checkmate assert_character assert_data_frame assert_logical assert_numeric
+#' @importFrom geodata footprint
 
 iucnn_footprint_features <- function(x,
                    footp_input = NULL,
@@ -61,7 +63,8 @@ iucnn_footprint_features <- function(x,
                    rescale = TRUE,
                    year = c(1993, 2009),
                    download_folder = "feature_extraction",
-                   breaks = c(0, 0.81, 1.6, 2.3, 100)){
+                   breaks = c(0, 0.81, 1.6, 2.3, 100),
+                   verbose = FALSE){
 
   # assertions
   assert_data_frame(x)
@@ -73,57 +76,62 @@ iucnn_footprint_features <- function(x,
   assert_numeric(breaks)
 
   # get human footprint
-  if(is.null(footp_input)){
-    message("Downloading Human Footprint data from https://wcshumanfootprint.org/")
+  if (is.null(footp_input)) {
+    if (verbose) {
+      message("Downloading Human Footprint data from https://wcshumanfootprint.org/")
+    }
 
     # file path
     # set download path
-    if(is.null(download_folder )){
+    if (is.null(download_folder)) {
       download_folder <- getwd()
     }
     # else{
     #   download_folder <- file.path(getwd(), download_folder )
     # }
-    if(!dir.exists(download_folder )){
+    if (!dir.exists(download_folder)) {
       dir.create(path = download_folder)
     }
 
     # test for internet
-    if(!curl::has_internet()){
+    if (!curl::has_internet()) {
       warning("No internet connection. Provide input raster via 'footp_inp'")
       return(NULL)
     }
 
     # download the human footprint raster from https://wcshumanfootprint.org/
-    if(length(year) > 1){
-      year <- as.list(year)
-      lapply(year, FUN = "get_footp", file_path = download_folder)
+    if (length(year) > 1) {
+      year2 <- as.list(year)
+      lapply(year2, FUN = geodata::footprint, path = download_folder)
     }else{
-      get_footp(x = year, file_path = download_folder)
+      geodata::footprint(x = year, path = download_folder)
     }
 
     # load raster
-    footp_inp <-  raster::stack(file.path(download_folder,
-                                          paste("HFP",
-                                                year, ".tif",
-                                                sep = "")))
+    footp_inp <-  terra::rast(file.path(download_folder,
+                                        paste("wildareas-v3-",
+                                              year, "-human-footprint_geo.tif",
+                                              sep = "")))
 
   }else{
     ## If no, download
-    footp_inp <-  raster::stack(footp_input)
+    footp_inp <-  terra::rast(footp_input)
   }
 
   # extract values
-  message("Extracting_footprint_index for occurrence records")
+  if (verbose) {
+    message("Extracting_footprint_index for occurrence records")
+  }
   pts <- sf::st_as_sf(x,
                       coords = c(lon, lat),
                       crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
   pts <- pts %>% sf::st_transform(sf::st_crs(footp_inp))
   pts <- sf::st_coordinates(pts)
 
-  footp_ex <- raster::extract(x = footp_inp, y = pts)
+  footp_ex <- terra::extract(x = footp_inp, y = pts)
+  colnames(footp_ex) <- year
 
-  if(rescale){
+  if (rescale) {
     footp_ex <- log(footp_ex)
   }
 
@@ -131,14 +139,16 @@ iucnn_footprint_features <- function(x,
                          footp_ex)
 
   # summarize per species and  create features object
+  if (verbose) {
   message("Summarizing information per species")
+  }
 
   ## classify the footprint into equal-sized bins
   footp_ex[, -1] <- apply(footp_ex[, -1],
                           2,
                           function(k){cut(k,
                                           breaks = breaks,
-                                          labels = 1:(length(breaks)-1),
+                                          labels = 1:(length(breaks) - 1),
                                           right = FALSE)})
 
   # prepare feature summary
@@ -147,11 +157,12 @@ iucnn_footprint_features <- function(x,
                  names_to = "year",
                  values_to = "HFP")
 
-  # check for NAs (i.e. records that did not yield andy human footprint)
+  # check for NAs (i.e. records that did not yield any human footprint)
   nas <- sum(is.na(out$HFP))
 
-  if(nas > 0){
-    warning(sprintf("Ignoring %s records without data in the input raster", nas))
+  if (nas > 0) {
+    warning(sprintf("Ignoring %s records without data in the input raster",
+                    nas))
   }
 
   # summarize features
@@ -164,6 +175,7 @@ iucnn_footprint_features <- function(x,
     mutate(label = paste("humanfootprint",
                          parse_number(.data$year),
                          .data$HFP, sep = "_")) %>%
+    dplyr::ungroup() %>%
     dplyr::select(.data$species, .data$label, .data$frac) %>%
     pivot_wider(id_cols = .data$species,
                 names_from = .data$label,

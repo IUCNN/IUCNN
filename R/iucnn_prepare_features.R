@@ -20,7 +20,7 @@
 #'@param download_folder character string. The folder were to save the
 #'data used for feature extraction. Relative to the working directory.
 #'Set to NULL for the working directory
-#'@param impute_features logical. SHould na values be imputed for features? If TRUE
+#'@param impute_features logical. Should NA values be imputed for features? If TRUE
 #'NA values are filled using multiple imputation using missForest. If set to FALSE
 #'species with missing values are removed during the training process.
 #'
@@ -30,12 +30,14 @@
 #' @family Feature preparation
 #'
 #' @examples
+#' \dontrun{
+
 #' dat <- data.frame(species = c("A","B"),
 #'                   decimallongitude = runif (200,10,15),
 #'                   decimallatitude = runif (200,-5,5))
 #'
-#'iucnn_prepare_features(dat)
-#'
+#' iucnn_prepare_features(dat)
+#'}
 #'@export
 #' @importFrom checkmate assert_character assert_data_frame assert_logical
 #' @importFrom dplyr left_join
@@ -59,11 +61,11 @@ iucnn_prepare_features <- function(x,
   assert_character(download_folder, null.ok = TRUE)
 
   # generate folder fore data
-  if(is.null(download_folder)){
-    download_folder<- getwd()
+  if (is.null(download_folder)) {
+    download_folder <- getwd()
   }
 
-  if(!dir.exists(download_folder)){
+  if (!dir.exists(download_folder)) {
     dir.create(download_folder)
   }
 
@@ -72,7 +74,7 @@ iucnn_prepare_features <- function(x,
   # }
 
   #prepare geographic features
-  if("geographic" %in% type){
+  if ("geographic" %in% type) {
     message("Calculating geographic features.")
     out <- iucnn_geography_features(x,
                                     species = species,
@@ -82,18 +84,18 @@ iucnn_prepare_features <- function(x,
 
 
 
-  if(curl::has_internet()){
+  if (curl::has_internet()) {
 
     #biomes
-    if("biomes" %in% type){
+    if ("biomes" %in% type) {
       message("Calculating biome features.")
       bio <- iucnn_biome_features(x,
                                   species = species,
                                   lon = lon,
                                   lat = lat,
-                                  download_folder= download_folder)
+                                  download_folder = download_folder)
 
-      if(exists("out")){
+      if (exists("out")) {
         out <- out %>%
           left_join(bio, by = species)
       }else{
@@ -102,15 +104,15 @@ iucnn_prepare_features <- function(x,
     }
 
     #climate
-    if("climate" %in% type){
+    if ("climate" %in% type) {
       message("Calculating climate features.")
       clim <- iucnn_climate_features(x,
                                      species = species,
                                      lon = lon,
                                      lat = lat,
-                                     download_folder= download_folder)
+                                     download_folder = download_folder)
 
-      if(exists("out")){
+      if (exists("out")) {
         out <- out %>%
           left_join(clim, by = species)
       }else{
@@ -119,15 +121,15 @@ iucnn_prepare_features <- function(x,
     }
 
     # human footprint
-    if("humanfootprint" %in% type){
+    if ("humanfootprint" %in% type) {
       message("Calculating human footprint features.")
       foot <- iucnn_footprint_features(x,
                                        species = species,
                                        lon = lon,
                                        lat = lat,
-                                       download_folder= download_folder)
+                                       download_folder = download_folder)
 
-      if(exists("out")){
+      if (exists("out")) {
         out <- out %>%
           left_join(foot, by = species)
       }else{
@@ -140,7 +142,7 @@ iucnn_prepare_features <- function(x,
 
   class(out) <- c("iucnn_features", class(out))
   # do imputation if argument is TRUE
-  if (impute_features){
+  if (impute_features) {
     warning("Imputing NA values in features using missForest. Set impute_features=FALSE to suppress imputation.")
     final_out <- impute_missing_values(out)
   }else{

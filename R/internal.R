@@ -7,54 +7,57 @@
 #' @importFrom missForest missForest
 
 
-cat_bool <- function(x){
+cat_bool <- function(x) {
   # function that decides if data is categorical
   # 0: continuous 1: factor
-  return (prod(round(x) == x))
+  return(prod(round(x) == x))
 }
 
-impute_missing_values <- function(df){
-  features <-  df
+impute_missing_values <- function(df) {
+  features <- df
 
   # apply function to determine whether features are categorical or numeric
-  categorical_boolean <-  apply(na.omit(features[,2:dim(features)[2]]),
+  categorical_boolean <-  apply(na.omit(features[, 2:dim(features)[2]]),
                               FUN = cat_bool,
                               2)
   colnames <-  names(categorical_boolean)
 
   # change the type of each column to either categorical or numeric
-  for (i in 1:length(categorical_boolean)){
+  for (i in seq_along(categorical_boolean)) {
     name <-  colnames[i]
     bool_value <-  categorical_boolean[i]
-    if (bool_value == 1){
-      features[,name] <-  as.factor(unlist(features[,name]))
+    if (bool_value == 1) {
+      features[,name] <-  as.factor(unlist(features[, name]))
     }
   }
 
   # impute missing values with missForest
-  missForest_imputation <- missForest(xmis = as.data.frame(features[,2:dim(features)[2]]),
-                                      maxiter = 10, ntree = 100)
+  xmis_ob <- as.data.frame(features[, 2:dim(features)[2]])
+  missForest_imputation <- missForest(xmis = xmis_ob,
+                                      maxiter = 10,
+                                      ntree = 100)
 
   # update the feature df with imputed values
-  new_features_df = features
+  new_features_df <- features
   new_features_df[, 2:ncol(new_features_df)] <-  missForest_imputation$ximp
-  new_features_df[, 2:dim(new_features_df)] <-  sapply(new_features_df[,2:dim(new_features_df)[2]], as.numeric)
+  mod_obj <- new_features_df[, 2:ncol(new_features_df)]
+  new_features_df[, 2:ncol(new_features_df)] <-  sapply(mod_obj, as.numeric)
   return(new_features_df)
 }
 
 
-get_footp <- function(x, file_path){
+# Download Human footprint data
+get_footp <- function(x, file_path) {
   test <- file.exists(file.path(file_path,
                                 paste("HFP", x, ".tif", sep = "")))
-  if(!test){
-    download.file(paste("https://wcshumanfootprint.org/data/HFP", x, ".zip", sep = ""),
-                  destfile = file.path(file_path, paste("HFP", x, ".zip", sep = "")))
-
-    unzip(file.path(file_path, paste("HFP", x, ".zip", sep = "")),
-          exdir = file_path)
-
-    file.remove(file.path(file_path, paste("HFP", x, ".zip", sep = "")))
-    }
+  if (!test) {
+    path1 <- paste("https://wcshumanfootprint.org/data/HFP",
+                   x, ".zip", sep = "")
+    path2 <- file.path(file_path, paste("HFP", x, ".zip", sep = ""))
+    download.file(path1, destfile = path2)
+    unzip(path2, exdir = file_path)
+    file.remove(path2)
+  }
 }
 
 # BNN helpers
@@ -75,7 +78,7 @@ bnn_load_data <- function(features,
                     seed = as.integer(seed),
                     testsize = testsize, # 10% test set
                     all_class_in_testset = as.integer(all_class_in_testset),
-                    randomize_order=randomize_order,
+                    randomize_order = randomize_order,
                     header = as.integer(header), # input data has a header
                     instance_id = as.integer(instance_id), # input data includes column with names of instances
                     from_file = from_file)
@@ -91,7 +94,7 @@ create_BNN_model <- function(feature_data,
                              actfun = 'swish',
                              prior = 1, # 0) uniform, 1) normal, 2) Cauchy, 3) Laplace
                              p_scale = 1, # std for Normal, scale parameter for Cauchy and Laplace, boundaries for Uniform
-                             init_std = 0.1){ # st dev of the initial weights
+                             init_std = 0.1) { # st dev of the initial weights
 
   # source python function
   bn <- reticulate::import("np_bnn")
@@ -122,7 +125,7 @@ MCMC_setup <- function(bnn_model,
                        sampling_f = 10, # how often to write to file (every n iterations)
                        print_f = 100, # how often to print to screen (every n iterations)
                        n_post_samples = 1000, # how many samples to keep in log file
-                       sample_from_prior = FALSE){
+                       sample_from_prior = FALSE) {
 
   # source python function
   bn <- reticulate::import("np_bnn")
@@ -171,11 +174,11 @@ calculate_accuracy <- function(bnn_data,
   # source python function
   bn <- reticulate::import("np_bnn")
 
-  if (data == 'test'){
+  if (data == 'test') {
     features <- bnn_data$test_data
     labels <- bnn_data$test_labels
     instance_id <- bnn_data$id_test_data
-  }else if(data =='train'){
+  }else if (data == 'train') {
     features <- bnn_data$data
     labels <- bnn_data$labels
     instance_id <- bnn_data$id_data
@@ -195,7 +198,7 @@ bnn_predict <- function(features,
                         model_path,
                         post_cutoff,
                         filename,
-                        post_summary_mode=1){
+                        post_summary_mode = 1){
 
   # source python function
   bn <- reticulate::import("np_bnn")
@@ -230,7 +233,8 @@ subsample_n_per_class <- function(features,
 log_results <- function(res,logfile,
                         iucnn_model_out,
                         init_logfile = FALSE){
-  if (init_logfile){ # init a new logfile, make sure, you don't overwrite previous results
+  # init a new logfile, make sure, you don't overwrite previous results
+  if (init_logfile) {
     header <- c("mode",
                 "level",
                 "dropout_rate",
@@ -273,21 +277,21 @@ log_results <- function(res,logfile,
                 "delta_0",
                 "delta_1",
                 "model_outpath")
-    if(file.exists(logfile)){
-      overwrite_prompt <-  readline(prompt="Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
-      if (overwrite_prompt == 'Y'){
+    if (file.exists(logfile)) {
+      overwrite_prompt <-  readline(prompt = "Specified log-file already exists. Do you want to overwrite? [Y/n]: ")
+      if (overwrite_prompt == 'Y') {
         cat(header, file = logfile, sep = "\t")
         cat('\n', file = logfile, append = TRUE)
       }else{
         stop('Not overwriting existing log-file. Please specify different logfile path or set init_logfile=FALSE')
       }
     }else{
-      cat(header, file = logfile,sep="\t")
+      cat(header, file = logfile,sep = "\t")
       cat('\n', file = logfile, append = TRUE)
     }
   }
-  if (class(res) == "iucnn_model"){
-    if (length(res$input_data$lookup.lab.num.z) == 2){
+  if (inherits(res, "iucnn_model")) {
+    if (length(res$input_data$lookup.lab.num.z) == 2) {
       label_level <- 'broad'
       ratio_prediction_lines <- c(NaN,
                                  NaN,
@@ -346,7 +350,7 @@ log_results <- function(res,logfile,
           round(res$test_loss,6),
           confusion_matrix_lines,
           ratio_prediction_lines,
-          iucnn_model_out), sep="\t", file = logfile, append = TRUE)
+          iucnn_model_out), sep = "\t", file = logfile, append = TRUE)
     cat('\n', file = logfile, append = TRUE)
   message(paste0("Model-testing results written to file: ", logfile))
   }
@@ -358,13 +362,13 @@ process_iucnn_input <- function(x,
                                 mode = NaN,
                                 outpath = '.',
                                 write_data_files = FALSE,
-                                verbose = 1){
-  if (typeof(lab) == 'double'){ # aka if lab=NaN when running from predict_iucnn
+                                verbose = 1) {
+  if (typeof(lab) == 'double') { # aka if lab=NaN when running from predict_iucnn
     # complete cases only
     tmp.in <- x[complete.cases(x),]
-    if(nrow(tmp.in) != nrow(x)){
+    if (nrow(tmp.in) != nrow(x)) {
       mis <- x[!complete.cases(x),]
-      if (verbose == 1){
+      if (verbose == 1) {
         warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
       }
     }
@@ -379,7 +383,7 @@ process_iucnn_input <- function(x,
 
   }else{
     ## specific checks
-    if(!"species" %in% names(x)){
+    if (!"species" %in% names(x)) {
       stop("species column not found in x.
            The features input need a column named 'species'
            with the species names matching those in labels")
@@ -389,16 +393,16 @@ process_iucnn_input <- function(x,
     tmp.in <- left_join(x, lab$labels, by = "species")
 
     # check if species were lost by the merging
-    if(nrow(tmp.in) != nrow(x)){
+    if (nrow(tmp.in) != nrow(x)) {
       mis <- x$species[!x$species %in% tmp$species]
-      if (verbose == 1){
+      if (verbose == 1) {
         warning("Labels for species not found, species removed.\n", paste(mis, "\n"))
       }
     }
 
-    if(nrow(tmp.in) != nrow(lab$labels)){
+    if (nrow(tmp.in) != nrow(lab$labels)) {
       mis <- lab$labels$species[!lab$labels$species %in% tmp$species]
-      if (verbose == 1){
+      if (verbose == 1) {
         warning("Features for species not found, species removed.\n", paste(mis, "\n"))
       }
     }
@@ -406,47 +410,47 @@ process_iucnn_input <- function(x,
     # complete cases only
     tmp <- tmp.in[complete.cases(tmp.in),]
 
-    if(nrow(tmp) != nrow(tmp.in)){
+    if (nrow(tmp) != nrow(tmp.in)) {
       mis <- tmp.in[!complete.cases(tmp.in),]
-      if (verbose == 1){
+      if (verbose == 1) {
         warning("Information for species was incomplete, species removed\n", paste(mis$species, "\n"))
       }
     }
 
     # check that not all species were removed
-    if(nrow(tmp) == 0){
+    if (nrow(tmp) == 0) {
       stop("Labels and features do not match or there are no species with complete features.")
     }
 
     # report the number of species
     t1 <- nrow(tmp)
 
-    if(t1 < 200){
-      if (verbose == 1){
+    if (t1 < 200) {
+      if (verbose == 1) {
         warning("The number of training taxa is low, consider including more species")
       }
     }
 
-    if (verbose == 1){
+    if (verbose == 1) {
       message(sprintf("%s species included in model training", t1))
     }
 
     # check class balance
     t2 <- table(tmp$labels)
 
-    if(max(t2) / min(t2) > 3){
-      if (verbose ==1){
+    if (max(t2) / min(t2) > 3) {
+      if (verbose == 1) {
         warning("Classes unbalanced")
       }
     }
-    if (verbose == 1){
+    if (verbose == 1) {
       message(sprintf("Class max/min representation ratio: %s", round(max(t2) / min(t2), 1)))
     }
     # prepare input data for the python function
     dataset <- tmp %>%
       dplyr::select(-.data$species, -.data$labels)
 
-    if (mode=='bnn-class'){
+    if (mode == 'bnn-class') {
       dataset <- tmp[, seq_along(names(tmp)) - 1]
     }
 
@@ -457,8 +461,8 @@ process_iucnn_input <- function(x,
       dplyr::select(.data$labels)
 
     # prepare labels to start at 0
-    if(min(labels$labels) != 0){
-      if (verbose == 1){
+    if (min(labels$labels) != 0) {
+      if (verbose == 1) {
         warning(sprintf("Labels need to start at 0. Labels substracted with %s",
                         min(labels$labels)))
       }
@@ -467,20 +471,20 @@ process_iucnn_input <- function(x,
         dplyr::mutate(labels = .data$labels - min(.data$labels))
     }
 
-    if (mode =='bnn-class'){
+    if (mode == 'bnn-class') {
       # in the current npbnn function we need to add a dummy column of instance names
       labels[['names']] <- replicate(length(labels$labels),'sp.')
       labels <- labels[, c('names','labels')]
     }
 
   }
-  if (write_data_files){
+  if (write_data_files) {
     write.table(as.matrix(dataset),
                 paste(outpath,'iucnn_input_features.txt' , sep = '/'),
                 sep = '\t',
                 quote = FALSE,
                 row.names = FALSE)
-    if (typeof(lab) == 'list'){
+    if (typeof(lab) == 'list') {
       write.table(as.matrix(labels),paste(outpath,'iucnn_input_labels.txt',sep = '/'),
                   sep = '\t',
                   quote = FALSE,
@@ -564,8 +568,6 @@ evaluate_iucnn <- function(res) {
   }
   summary(res)
   plot(res)
-
-  get_mc_dropout_cat_counts
   cat_count_out <- get_mc_dropout_cat_counts(res)
   accthres_tbl <- res$accthres_tbl
 }
@@ -585,11 +587,11 @@ get_weighted_errors <- function(model_testing_results,
 }
 
 get_cat_count <- function(target_vector,
-                          max_cat = 4, include_NA=FALSE) {
+                          max_cat = 4, include_NA = FALSE) {
   # count the different categories
   counts <- table(target_vector) # this doens't count NaN
   cats <- as.character(0:max_cat)
-  if (include_NA){
+  if (include_NA) {
     NA_count <- length(target_vector[is.na(target_vector)])
     counts['NA'] <- NA_count
     cats <- c(cats,'NA')
@@ -639,10 +641,10 @@ get_confusion_matrix <- function(best_model) {
 get_mc_dropout_cat_counts <- function(mc_dropout_probs,
                                       label_dict,
                                       mc_dropout,
-                                      true_lab=NaN,
+                                      true_lab = NaN,
                                       nreps = 1000) {
 
-  if (mc_dropout == FALSE){
+  if (mc_dropout == FALSE) {
     warning("This model contains no MC-dropout predictions for unseen data.
             No sampled_cat_freqs can be calculated for this model.")
     cat_count_all_matrix <- NaN
@@ -650,7 +652,7 @@ get_mc_dropout_cat_counts <- function(mc_dropout_probs,
 
   }else{
     nlabs <- length(label_dict)
-    if (is.nan(true_lab[1])){
+    if (is.nan(true_lab[1])) {
       true_cat_count <- NaN
     }else{
       true_cat_count <- get_cat_count(true_lab, max_cat = nlabs - 1)

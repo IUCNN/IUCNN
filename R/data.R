@@ -1,8 +1,7 @@
 #' IUCN threat categories for 884 orchid species
 #'
-#' A dataset containing the International Union for the
-#' Conservation of Nature's Global
-#'  Red List conservation assessments for 884 species of orchids.
+#' A dataset containing the International Union for the Conservation of Nature's
+#' Global Red List conservation assessments for 884 species of orchids.
 #'
 #' @format A data frame with 889 rows and 2 variables:
 #' \describe{

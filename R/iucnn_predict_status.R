@@ -40,16 +40,16 @@
 #'data("prediction_occ") #occurrences from Not Evaluated species to prdict
 #'
 #'# 1. Feature and label preparation
-#'features <- iucnn_prepare_labels(training_occ) # Training features
-#'labels_train <- iucnn_prepare_labels(training_labels) # Training labels
-#'features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
+#'features <- iucnn_prepare_features(training_occ, type = "geographic") # Training features
+#'labels_train <- iucnn_prepare_labels(training_labels, features) # Training labels
+#'features_predict <- iucnn_prepare_features(prediction_occ,
+#'                                           type = "geographic") # Prediction features
 #'
 #'# 2. Model training
 #'m1 <- iucnn_train_model(x = features, lab = labels_train)
 #'
 #'# 3. Prediction
-#'iucnn_predict_status (x = features_predict,
-#'              model = m1)
+#'iucnn_predict_status(x = features_predict, model = m1)
 #'}
 #'
 #'
@@ -71,7 +71,7 @@ iucnn_predict_status <- function(x,
 
   assert_class(model, classes = "iucnn_model")
 
-  if (model$cv_fold > 1){
+  if (model$cv_fold > 1) {
     stop("Provided model consists of multiple cross-validation (CV) folds.\n
           CV models are only used for model evaluation in IUCNN.
           Retrain your chosen model without using CV.
@@ -80,18 +80,18 @@ iucnn_predict_status <- function(x,
   }
 
   # only run tests for models other than cnn
-  if (!model$model == 'cnn'){
+  if (!model$model == 'cnn') {
     assert_class(x, classes = "data.frame")
     # check that the same features are in training and prediction
     test1 <- all(names(x)[-1] %in% model$input_data$feature_names)
-    if(!test1){
+    if (!test1) {
       mis <- names(x)[-1][!names(x)[-1] %in% model$input_data$feature_names]
       stop("Feature mismatch, missing in training features: \n",
            paste0(mis, collapse = ", "))
     }
 
     test2 <- all(model$input_data$feature_names %in% names(x))
-    if(!test2){
+    if (!test2) {
       mis <- model$input_data$feature_names[!model$input_data$feature_names %in% names(x)]
       stop("Feature mismatch, missing in prediction features: \n",
            paste0(mis, collapse = ", "))
@@ -110,11 +110,11 @@ iucnn_predict_status <- function(x,
   }
 
 
-  if (target_acc == 0){
+  if (target_acc == 0) {
     confidence_threshold <- NULL
   }else{
     acc_thres_tbl <- model$accthres_tbl
-    if (class(acc_thres_tbl)[1] == "matrix"){
+    if (class(acc_thres_tbl)[1] == "matrix") {
      confidence_threshold <- acc_thres_tbl[min(which(acc_thres_tbl[,2] >
                                                        target_acc)),][1]
     }else{
@@ -128,7 +128,7 @@ iucnn_predict_status <- function(x,
 
   message("Predicting conservation status")
 
-  if(model$model == 'bnn-class'){
+  if (model$model == 'bnn-class') {
     # source python function
     reticulate::source_python(system.file("python",
                                           "IUCNN_helper_functions.py",
@@ -160,19 +160,19 @@ iucnn_predict_status <- function(x,
 
   cat_count = get_cat_count(pred_out$class_predictions,
                 max_cat = length(model$input_data$lookup.lab.num.z)-1,
-                include_NA=TRUE)
+                include_NA = TRUE)
   pred_out$pred_cat_count = cat_count
 
   # Translate prediction to original labels
-  if(return_IUCN){
+  if (return_IUCN) {
     lu <- model$input_data$lookup.labels
     names(lu) <- model$input_data$lookup.lab.num.z
 
-    predictions <- lu[pred_out$class_predictions+1]
+    predictions <- lu[pred_out$class_predictions + 1]
     names(predictions) <- NULL
     pred_out$class_predictions <- predictions
   }
-  if (return_raw == FALSE){
+  if (return_raw == FALSE) {
     pred_out$raw_predictions <- NaN
   }
   pred_out$names <- instance_names

@@ -12,18 +12,23 @@
 #'@param rescale logical. If TRUE, the geographic features are rescaled.
 #'This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 #'feature values are returned.
+#'@param verbose logical. If TRUE, progress messages will be displayed. Default
+#'  = FALSE.
 #'
 #' @return a data.frame of geographic features
 #'
 #' @keywords Feature preparation
 #' @family Feature preparation
 #'
+#'
 #' @examples
+#' \dontrun{
 #' dat <- data.frame(species = c("A","B"),
-#'                   decimallongitude = runif (200,10,15),
-#'                   decimallatitude = runif (200,-5,5))
+#'                   decimallongitude = runif(200,10,15),
+#'                   decimallatitude = runif(200,-5,5))
 #'
 #' iucnn_geography_features(dat)
+#' }
 #'
 #' @export
 #' @importFrom tidyselect all_of
@@ -37,7 +42,8 @@ iucnn_geography_features <- function(x,
                                      species = "species",
                                      lon = "decimallongitude",
                                      lat = "decimallatitude",
-                                     rescale = TRUE){
+                                     rescale = TRUE,
+                                     verbose = FALSE) {
 
   # assertions
   assert_data_frame(x)
@@ -55,7 +61,7 @@ iucnn_geography_features <- function(x,
     select(all_of(species), all_of(lat), all_of(lon)) %>%
     distinct()
 
-  geos <- uni%>%
+  geos <- uni %>%
     group_by(.data[[species]]) %>%
     summarize(
       # Unique occurrences
@@ -72,7 +78,7 @@ iucnn_geography_features <- function(x,
         (.data[[lat]] %>% quantile(probs = 0.05) + 180),
 
       # Latitudinal range
-      lon_range = (.data[[lon]] %>% quantile(probs = 0.95) + 180)-
+      lon_range = (.data[[lon]] %>% quantile(probs = 0.95) + 180) -
         (.data[[lon]] %>% quantile(probs = 0.05) + 180) ) %>%
 
     # hemisphere
@@ -80,9 +86,10 @@ iucnn_geography_features <- function(x,
     mutate(mean_lat = abs(.data$mean_lat))
 
     # EOO and AOO
+    if (!verbose) {sink("/dev/null")}
     spa <- rCAT::ConBatch(taxa = uni[species] %>%  unlist(),
                            lat = uni[lat] %>%  unlist(),
-                           lon = uni[lon] %>%  unlist(),
+                           long = uni[lon] %>%  unlist(),
                            cellsize = 2000) %>%
        dplyr::select(species = .data$taxa,
                      eoo = .data$EOOkm2,
@@ -93,6 +100,7 @@ iucnn_geography_features <- function(x,
                            .data$eoo)) %>%
        mutate(eoo = round(as.numeric(.data$eoo), 3)) %>%
        mutate(aoo = round(as.numeric(.data$aoo), 3))
+    if (!verbose) {sink()}
 
     names(spa)[1] <- species
 
@@ -102,7 +110,7 @@ iucnn_geography_features <- function(x,
        left_join(spa, by = species)
 
     # rescale
-     if(rescale){
+     if (rescale) {
        out <- out %>%
          mutate(tot_occ = log10(1 + .data$tot_occ),
                 uni_occ = log10(1 + .data$uni_occ),

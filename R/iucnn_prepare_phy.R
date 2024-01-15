@@ -36,7 +36,7 @@ iucnn_prepare_phy <- function(phy,
   egvec <- as.data.frame(decomp@Eigen$vectors)
 
 
-  if (is.null(numeigen)){
+  if (is.null(numeigen)) {
     egval <- decomp@Eigen$values #extract eigenvalues
     eigPerc <- egval / (sum(egval)) #calculate % of variance
     eigPercCum <- t(cumsum(eigPerc)) #cumulated variance

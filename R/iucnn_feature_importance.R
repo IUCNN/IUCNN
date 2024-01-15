@@ -41,21 +41,23 @@
 #'feature importance. Default is FALSE.
 #'@param unlink_features_within_block logical. If TRUE, the features within each
 #'defined block are shuffled independently.
-#'If FALSE, each feature column within a block is resorted in the same manner. Default is TRUE
+#'If FALSE, each feature column within a block is resorted in the same manner.
+#'Default is TRUE.
 #'
-#'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
-#'tutorial on how to run IUCNN.
+#'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
+#'  for a tutorial on how to run IUCNN.
 #'
-#'@return a data.frame with the relative importance of each feature block (see delta_acc_mean column).
+#'@return a data.frame with the relative importance of each feature block (see
+#'  delta_acc_mean column).
 #'
 #' @examples
 #'\dontrun{
 #'data("training_occ")
 #'data("training_labels")
 #'
-#'train_feat <- iucnn_prepare_features(training_occ)
-#'labels_train <- iucnn_prepare_labels(training_labels,
-#'                            level = 'detail')
+#'train_feat <- iucnn_prepare_features(training_occ, type = "geographic")
+#'labels_train <- iucnn_prepare_labels(training_labels, train_feat,
+#'                                     level = 'detail')
 #'
 #'train_output <- iucnn_train_model(x = train_feat,
 #'                           lab = labels_train,
@@ -71,7 +73,8 @@
 #'
 #' @export
 #' @importFrom reticulate import source_python
-#' @importFrom checkmate assert_class assert_numeric assert_character assert_logical
+#' @importFrom checkmate assert_class assert_numeric assert_character
+#'   assert_logical
 
 iucnn_feature_importance <- function(x,
                                      feature_blocks = list(),
@@ -87,7 +90,7 @@ iucnn_feature_importance <- function(x,
   assert_logical(verbose)
   assert_logical(unlink_features_within_block)
 
-  if (length(feature_blocks) == 0){
+  if (length(feature_blocks) == 0) {
     ffb <- list(
       geographic = c("tot_occ",
                      "uni_occ",
@@ -137,21 +140,21 @@ iucnn_feature_importance <- function(x,
     )
 
   }else{
-    if (provide_indices){
+    if (provide_indices) {
       i <- 0
       ffb <- NULL
-      for (block in feature_blocks){
+      for (block in feature_blocks) {
         i <- i + 1
         selected_features <- x$input_data$feature_names[as.integer(block)]
         block_name <- paste(selected_features, collapse = ',')
         ffb[[block_name]] <- selected_features
       }
     }else{
-      if (is.null(names(feature_blocks))){
+      if (is.null(names(feature_blocks))) {
         names(feature_blocks) <- feature_blocks
       }
       ffb <- feature_blocks
-      if ('species' %in% names(ffb)){
+      if ('species' %in% names(ffb)) {
         ffb['species'] <- NULL
       }
     }
@@ -159,10 +162,10 @@ iucnn_feature_importance <- function(x,
 
   all_selected_feature_names <- c()
   feature_block_indices <- ffb
-  for (i in names(ffb)){
+  for (i in names(ffb)) {
     feature_names <- ffb[i][[1]]
     feature_indices <- c()
-    for (fname in feature_names){
+    for (fname in feature_names) {
       all_selected_feature_names <- c(all_selected_feature_names, fname)
       findex <- which(x$input_data$feature_names == fname)
       feature_indices <- c(feature_indices, as.integer(findex - 1))
@@ -174,11 +177,11 @@ iucnn_feature_importance <- function(x,
   # treat all features that are not part of a defined feature block as an individual block
   remaining_features <- setdiff(x$input_data$feature_names,
                                all_selected_feature_names)
-  for (fname in remaining_features){
+  for (fname in remaining_features) {
     findex <- which(x$input_data$feature_names == fname)
     feature_block_indices[fname] <- as.integer(findex - 1)
   }
-  if (x$model == 'bnn-class'){
+  if (x$model == 'bnn-class') {
     # source python function
     bn <- import("np_bnn")
     feature_importance_out <- bn$feature_importance(x$input_data$test_data,
@@ -192,7 +195,7 @@ iucnn_feature_importance <- function(x,
                                                    unlink_features_within_block = unlink_features_within_block)
     selected_cols <- feature_importance_out[,2:4]
   }else{
-    if (is.nan(x$input_data$test_data[1])){
+    if (is.nan(x$input_data$test_data[1])) {
       use_these_features <- x$input_data$data
       use_these_labels <- x$input_data$labels
 
@@ -209,13 +212,13 @@ iucnn_feature_importance <- function(x,
                                                    rescale_factor = x$label_rescaling_factor,
                                                    min_max_label = x$min_max_label,
                                                    stretch_factor_rescaled_labels = x$label_stretch_factor,
-                                                   verbose=verbose,
+                                                   verbose = verbose,
                                                    n_permutations = as.integer(n_permutations),
                                                    feature_blocks = feature_block_indices,
                                                    unlink_features_within_block = unlink_features_within_block)
     d <- round(data.frame(matrix(unlist(feature_importance_out),
                                  nrow = length(feature_importance_out),
-                                 byrow=TRUE)), 3)
+                                 byrow = TRUE)), 3)
     d['feature_block'] <- names(feature_importance_out)
     selected_cols <- d[c('feature_block','X1','X2')]
   }

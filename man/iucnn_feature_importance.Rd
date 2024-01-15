@@ -38,10 +38,12 @@ feature importance. Default is FALSE.}
 
 \item{unlink_features_within_block}{logical. If TRUE, the features within each
 defined block are shuffled independently.
-If FALSE, each feature column within a block is resorted in the same manner. Default is TRUE}
+If FALSE, each feature column within a block is resorted in the same manner.
+Default is TRUE.}
 }
 \value{
-a data.frame with the relative importance of each feature block (see delta_acc_mean column).
+a data.frame with the relative importance of each feature block (see
+delta_acc_mean column).
 }
 \description{
 Uses a model generated with \code{\link{iucnn_train_model}}
@@ -68,17 +70,17 @@ of each of these blocks of features. The
 feature blocks can be manually defined using the feature_blocks argument.
 }
 \note{
-See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
-tutorial on how to run IUCNN.
+See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
+for a tutorial on how to run IUCNN.
 }
 \examples{
 \dontrun{
 data("training_occ")
 data("training_labels")
 
-train_feat <- iucnn_prepare_features(training_occ)
-labels_train <- iucnn_prepare_labels(training_labels,
-                           level = 'detail')
+train_feat <- iucnn_prepare_features(training_occ, type = "geographic")
+labels_train <- iucnn_prepare_labels(training_labels, train_feat,
+                                    level = 'detail')
 
 train_output <- iucnn_train_model(x = train_feat,
                           lab = labels_train,

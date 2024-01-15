@@ -9,7 +9,8 @@ iucnn_geography_features(
   species = "species",
   lon = "decimallongitude",
   lat = "decimallatitude",
-  rescale = TRUE
+  rescale = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 \item{rescale}{logical. If TRUE, the geographic features are rescaled.
 This is recommended to run IUCNN, and the default. If FALSE, raw (human readable)
 feature values are returned.}
+
+\item{verbose}{logical. If TRUE, progress messages will be displayed. Default
+= FALSE.}
 }
 \value{
 a data.frame of geographic features
@@ -40,11 +44,13 @@ Coordinate ranges are 90\% quantiles, for species with
 less than three occurrences EOO is set to AOO.
 }
 \examples{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
-                  decimallongitude = runif (200,10,15),
-                  decimallatitude = runif (200,-5,5))
+                  decimallongitude = runif(200,10,15),
+                  decimallatitude = runif(200,-5,5))
 
 iucnn_geography_features(dat)
+}
 
 }
 \seealso{

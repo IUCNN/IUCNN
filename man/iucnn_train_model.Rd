@@ -169,12 +169,10 @@ for a tutorial on how to run IUCNN.
 \dontrun{
 data("training_occ") #geographic occurrences of species with IUCN assessment
 data("training_labels")# the corresponding IUCN assessments
-data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # 1. Feature and label preparation
-features <- iucnn_prepare_features(training_occ) # Training features
-labels_train <- iucnn_prepare_labels(training_labels) # Training labels
-features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
+features <- iucnn_prepare_features(training_occ, type = "geographic") # Training features
+labels_train <- iucnn_prepare_labels(training_labels, features) # Training labels
 
 # 2. Model training
 m1 <- iucnn_train_model(x = features, lab = labels_train)

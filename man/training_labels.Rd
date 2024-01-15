@@ -24,8 +24,7 @@ converted to numerical for use with IUCNN.
 training_labels
 }
 \description{
-A dataset containing the International Union for the
-Conservation of Nature's Global
-Red List conservation assessments for 884 species of orchids.
+A dataset containing the International Union for the Conservation of Nature's
+Global Red List conservation assessments for 884 species of orchids.
 }
 \keyword{datasets}

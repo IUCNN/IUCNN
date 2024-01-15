@@ -6,7 +6,7 @@
 #' If y is not provided, assumes a lat/lon grid with extent equal to the respective minimum and maximum in x
 #'
 #'@param x a data.frame with at least three columns containing taxon name, decimal longitude and latitude values.
-#'@param y a raster as reference to count the number of occurrence records in.
+#'@param y a SpatRaster object as reference to count the number of occurrence records in.
 #' Can be of any resolution and CRS but the coordinates in x need to be in the same CRS.
 #'@param crs_x a proj4string specifying the Coordinate Reference system of the coordinates in x.
 #'Default is to lat/lon WGS84.
@@ -21,12 +21,13 @@
 #'@family Feature preparation
 #'
 #'@examples
+#' \dontrun{
 #' dat <- data.frame(species = c("A","B"),
-#'                   decimallongitude = runif (200,10,15),
-#'                   decimallatitude = runif (200,-5,5))
+#'                   decimallongitude = runif(200, 10, 15),
+#'                   decimallatitude = runif(200, -5, 5))
 #'
-#'iucnn_cnn_features(dat)
-#'
+#' iucnn_cnn_features(dat)
+#' }
 #'
 #'@export
 #'@importFrom checkmate assert_data_frame assert_character assert_numeric assert_number
@@ -56,27 +57,27 @@ iucnn_cnn_features <- function(x,
                 crs = crs_x)
 
   # if no raster is provided assume lat/lon and do a lat/lon raster
-  if(is.null(y)){
+  if (is.null(y)) {
     warning("assuming lat/long coordinates.")
     warning("rasterizing using unprojected lat/lon. provide projected coordinates and raster in the same projection if possible")
-    if(res_y == 1){
+    if (res_y == 1) {
       warning("using 1 degree resolution")
     }
 
     # create lat/lon default raster
-    y <- rast(crs = "+proj=longlat +datum=WGS84")
-    ext(y) <- c(min(x[,lon]), max(x[,lon]), min(x[,lat]), max(x[,lat]))
-    res(y) <- res_y
+    y <- terra::rast(crs = "+proj=longlat +datum=WGS84")
+    terra::ext(y) <- c(min(x[,lon]), max(x[,lon]), min(x[,lat]), max(x[,lat]))
+    terra::res(y) <- res_y
 
   }else{
     # if y is a raster raster convert to terra
-    if(class(y) == "RasterLayer"){
-      y <- rast(y)
+    if (inherits(y, "RasterLayer")) {
+      y <- terra::rast(y)
     }
 
     #check that projections between x and y are similar
     t <- st_crs(pts[[1]])
-    if(st_crs(terra::crs(y)) != t){
+    if (st_crs(terra::crs(y)) != t) {
       stop("x and y have different CRS.")
     }
   }
@@ -84,7 +85,7 @@ iucnn_cnn_features <- function(x,
   # perform rasterization
   out <- lapply(pts, function(k){
     # convert to terra object
-    sub <- vect(k)
+    sub <- terra::vect(k)
     # rasterize/count the number of records per grid cell
     sub_out <- terra::rasterize(sub, y = y, fun = length)
 

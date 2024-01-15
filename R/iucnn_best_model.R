@@ -40,9 +40,17 @@
 #'
 #' @examples
 #'\dontrun{
+#'
+#'data("training_occ") #geographic occurrences of species with IUCN assessment
+#'data("training_labels")# the corresponding IUCN assessments
+#'
+#'# 1. Feature and label preparation
+#'features <- iucnn_prepare_features(training_occ, type = "geographic") # Training features
+#'labels <- iucnn_prepare_labels(training_labels, features) # Training labels
+#'
 #'# Model-testing
-#'logfile = paste0("model_testing_results.txt")
-#'model_testing_results = modeltest_iucnn(features,
+#'logfile <- paste0("model_testing_results.txt")
+#'model_testing_results <- iucnn_modeltest(features,
 #'                                        labels,
 #'                                        logfile,
 #'                                        model_outpath = 'iucnn_modeltest',
@@ -50,11 +58,11 @@
 #'                                        seed = 1234,
 #'                                        dropout_rate = c(0.0,0.1,0.3),
 #'                                        n_layers = c('30','40_20','50_30_10'),
-#'                                        cv_fold = 5,
+#'                                        cv_fold = 2,
 #'                                        init_logfile = TRUE)
 #'
 #'# Selecting best model based on chosen criterion
-#'best_iucnn_model = bestmodel_iucnn(model_testing_results,
+#'best_iucnn_model <- iucnn_best_model(model_testing_results,
 #'                                    criterion = 'val_acc',
 #'                                    require_dropout = TRUE)
 #'}
@@ -62,11 +70,11 @@
 #'
 #' @export
 
-iucnn_best_model<- function(x,
+iucnn_best_model <- function(x,
                             criterion = "val_acc",
                             require_dropout = FALSE) {
 
-  if(criterion == "val_loss" & length(unique(x$mode))>1){
+  if (criterion == "val_loss" & length(unique(x$mode)) > 1) {
 stop("The chosen criterion val_loss can't be used to compare across
   different model types (e.g. nn-class and nn-reg). Choose different criterion or
   provide modeltesting results that are restricted to only one mode.")

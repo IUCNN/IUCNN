@@ -26,10 +26,10 @@ Tip labels need to match the species names in x.
 }
 \examples{
 dat <- data.frame(species = c("A","B", "X"),
-                  decimallongitude = runif (180,10,15),
-                  decimallatitude = runif (180,-5,5))
+                  decimallongitude = runif(180,10,15),
+                  decimallatitude = runif(180,-5,5))
 
-tree <- ape::rphylo(n = 10, birth=0.1, death=0)
+tree <- ape::rphylo(n = 10, birth = 0.1, death = 0)
 tree$tip.label <- LETTERS[1:10]
 phy <- iucnn_prepare_phy(phy = tree)
 

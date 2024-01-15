@@ -112,12 +112,10 @@
 #'\dontrun{
 #'data("training_occ") #geographic occurrences of species with IUCN assessment
 #'data("training_labels")# the corresponding IUCN assessments
-#'data("prediction_occ") #occurrences from Not Evaluated species to prdict
 #'
 #'# 1. Feature and label preparation
-#'features <- iucnn_prepare_features(training_occ) # Training features
-#'labels_train <- iucnn_prepare_labels(training_labels) # Training labels
-#'features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
+#'features <- iucnn_prepare_features(training_occ, type = "geographic") # Training features
+#'labels_train <- iucnn_prepare_labels(training_labels, features) # Training labels
 #'
 #'# 2. Model training
 #'m1 <- iucnn_train_model(x = features, lab = labels_train)
@@ -179,27 +177,27 @@ iucnn_train_model <- function(x,
   assert_logical(overwrite)
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class", "cnn-class"))
 
-  if (cv_fold == 1){
-    if (test_fraction == 0){
+  if (cv_fold == 1) {
+    if (test_fraction == 0) {
       patience <- 0
     }
   }
 
-  if(mode == "bnn-class"){
+  if (mode == "bnn-class") {
     cat("Please add the number of MCMC generations. Should be at least 1M:\n")
     max_epochs <- as.integer(readline())
   }
 
   provided_model <- production_model
 
-  if (class(provided_model) == "iucnn_model"){
+  if (inherits(provided_model, "iucnn_model")) {
     mode <- provided_model$model
     test_fraction <- 0.
     cv_fold <- 1
     seed <- provided_model$seed
     max_epochs <- round(mean(provided_model$final_training_epoch))
     patience <- 0
-    n_layers <- paste(provided_model$n_layers,collapse='_')
+    n_layers <- paste(provided_model$n_layers,collapse = '_')
     use_bias <- provided_model$use_bias
     balance_classes <- provided_model$balance_classes
     act_f <- provided_model$act_f
@@ -220,7 +218,7 @@ iucnn_train_model <- function(x,
   }
 
   # check if the model directory already exists
-  if(dir.exists(file.path(path_to_output))& !overwrite){
+  if (dir.exists(file.path(path_to_output)) & !overwrite) {
     stop(sprintf("Directory %s exists. Provide alternative 'path_to_output' or set `overwrite` to TRUE.",
                  path_to_output))
   }
@@ -230,7 +228,7 @@ iucnn_train_model <- function(x,
                                  mode = mode,
                                  outpath = '.',
                                  write_data_files = FALSE,
-                                 verbose=verbose)
+                                 verbose = verbose)
 
   dataset <- data_out[[1]]
   labels <- data_out[[2]]
@@ -239,31 +237,31 @@ iucnn_train_model <- function(x,
   n_layers <- as.numeric(strsplit(n_layers,'_')[[1]])
 
   # set act fun if chosen auto
-  if (act_f_out == 'auto'){
-    if (mode == 'nn-reg'){
+  if (act_f_out == 'auto') {
+    if (mode == 'nn-reg') {
       act_f_out  <- 'tanh'
     }else{
       act_f_out  <- 'softmax'
     }
   }
-  if (act_f == 'auto'){
-    if (mode == 'bnn-class'){
+  if (act_f == 'auto') {
+    if (mode == 'bnn-class') {
       act_f  <- 'swish'
     }else{
       act_f  <- 'relu'
     }
   }
 
-  if (mode == 'bnn-class'){
+  if (mode == 'bnn-class') {
     warning('
 The following settings are currently not supported for BNN models and are being ignored:
 cv_fold, patience, act_f_out.
 Instead of applying chosen settings for dropout_rate, mc_dropout, and mc_dropout_reps,
 the BNN will instead provide posterior estimates of the class labels for each instance.\n')
-    if (max_epochs < 1000000){
+    if (max_epochs < 1000000) {
       message('For proper convergence for bnn-class models it is recommended to set max_epochs=1000000 or more.')
-      overwrite_prompt <-  readline(prompt='Do you want to continue with current max_epochs settings (not recommended)? [Y/n]: ')
-      if (overwrite_prompt != 'Y'){
+      overwrite_prompt <-  readline(prompt = 'Do you want to continue with current max_epochs settings (not recommended)? [Y/n]: ')
+      if (overwrite_prompt != 'Y') {
         stop('Stopping training request. Increase max_epochs to >= 1000000 before relaunching.')
       }
     }
@@ -273,7 +271,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
                              labels,
                              seed = as.integer(seed),
                              testsize = test_fraction,
-                             all_class_in_testset=FALSE,
+                             all_class_in_testset = FALSE,
                              randomize_order = randomize_instances,
                              header = TRUE, # input data has a header
                              # input data includes names of instances
@@ -283,10 +281,10 @@ the BNN will instead provide posterior estimates of the class labels for each in
 
     # define number of layers and nodes per layer for BNN
     # define the BNN model
-    if (use_bias){
+    if (use_bias) {
       bias_node_setting = 3
     }else{
-      bias_node_setting=0
+      bias_node_setting = 0
     }
     bnn_model <- create_BNN_model(bnn_data,
                                  n_layers,
@@ -481,7 +479,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
 
   named_res$trained_model_path <- trained_model_path
 
-  if(is.nan(accthres_tbl[1])){accthres_tbl <- accthres_tbl_stored}
+  if (is.nan(accthres_tbl[1])) {accthres_tbl <- accthres_tbl_stored}
 
   named_res$accthres_tbl <- accthres_tbl
   named_res$final_training_epoch <- stopping_point
@@ -532,7 +530,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
 
   class(named_res) <- "iucnn_model"
 
-  if(mode == "bnn-class"){
+  if (mode == "bnn-class") {
     warning("Remember to check MCMC convergence in the log file")
   }
 

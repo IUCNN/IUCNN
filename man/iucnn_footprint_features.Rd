@@ -16,16 +16,17 @@ iucnn_footprint_features(
   rescale = TRUE,
   year = c(1993, 2009),
   download_folder = "feature_extraction",
-  breaks = c(0, 0.81, 1.6, 2.3, 100)
+  breaks = c(0, 0.81, 1.6, 2.3, 100),
+  verbose = FALSE
 )
 }
 \arguments{
 \item{x}{a data.frame of species occurrence records including three columns with
 species name, longitudinal coordinates and latitudinal coordinates (both decimal).}
 
-\item{footp_input}{an object of the class raster or RasterStack
-with values for the human footprint index.
-If a RasterStack, different layers are interpreted as different time-slices.}
+\item{footp_input}{an object of the class SpatRaster with values for the
+human footprint index. If the SpatRaster object has two or more layers,
+different layers are interpreted as different time-slices.}
 
 \item{species}{a character string. The name of the column with the species names.}
 
@@ -50,6 +51,9 @@ for the final features. The defaults are
 empirical values for the global footprint and rescale=TRUE.
 For custom values ensure that they
 cover the whole value range and are adapted to the value of rescale.}
+
+\item{verbose}{logical. If TRUE, progress messages will be displayed. Default
+= FALSE.}
 }
 \value{
 a data.frame of human footprint features
@@ -69,12 +73,13 @@ By default four categories of increasing human footprint index
 ( 1 = lowest, 4 = highest) are selected and rescaled.
 }
 \examples{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
-                  decimallongitude = runif (200,10,15),
-                  decimallatitude = runif (200,-5,5))
+                  decimallongitude = runif(200,10,15),
+                  decimallatitude = runif(200,-5,5))
 
 iucnn_footprint_features(dat)
-
+}
 
 }
 \seealso{

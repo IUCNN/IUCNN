@@ -180,7 +180,7 @@ def iucnn_train(dataset,
             np.random.seed(seed)
         if shuffle:
             indices = np.random.choice(indices, len(indices), replace=False)
-        fold_sizes = np.full(n_splits, n_samples // n_splits, dtype=np.int)
+        fold_sizes = np.full(n_splits, n_samples // n_splits, dtype=np.int_)
         fold_sizes[:n_samples % n_splits] += 1
         current = 0
         index_output = []

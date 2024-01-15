@@ -26,8 +26,8 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 
 \item{res}{numeric. The resolution of the default resolution to calculate sampling bias. In decimal degrees.}
 
-\item{ras}{a raster object. Alternative to res, a sample raster to calculate sampling bias. Needs to use the same CRS as
-the coordinates in x.}
+\item{ras}{a SpatRaster object. Alternative to res, a sample SpatRaster to
+calculate sampling bias. Needs to use the same CRS as the coordinates in x.}
 
 \item{plot}{logical. Should the results of the sampbias analysis be plotted for diagnostics?}
 }
@@ -43,8 +43,11 @@ See the ?sampbias::calculate_bias for details.
 }
 \examples{
 \dontrun{
-
+dat <- data.frame(species = c("A", "b"),
+                  decimallongitude = runif(200, 10, 15),
+                  decimallatitude = runif(200, -5, 5))
 iucnn_bias_features(dat)
+
 }
 
 

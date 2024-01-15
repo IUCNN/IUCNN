@@ -25,7 +25,7 @@ species name, longitudinal coordinates and latitudinal coordinates (both decimal
 
 \item{lat}{a character string. The name of the column with the latitude.}
 
-\item{biome_input}{s simple features collection of geometry type polygon,
+\item{biome_input}{a simple features collection of geometry type polygon,
 contain polygons of different biomes.
 If NULL, the WWF biome scheme is downloaded from
 https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world}
@@ -56,12 +56,13 @@ https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world
 and save them in the working directory
 }
 \examples{
-dat <- data.frame(species = c("A","b"),
-                  decimallongitude = runif (200,10,15),
-                  decimallatitude = runif (200,-5,5))
+\dontrun{
+dat <- data.frame(species = c("A", "b"),
+                  decimallongitude = runif(200, 10, 15),
+                  decimallatitude = runif(200, -5, 5))
 
 iucnn_biome_features(dat)
-
+}
 
 }
 \seealso{

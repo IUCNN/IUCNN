@@ -62,16 +62,16 @@ data("training_labels")# the corresponding IUCN assessments
 data("prediction_occ") #occurrences from Not Evaluated species to prdict
 
 # 1. Feature and label preparation
-features <- iucnn_prepare_labels(training_occ) # Training features
-labels_train <- iucnn_prepare_labels(training_labels) # Training labels
-features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
+features <- iucnn_prepare_features(training_occ, type = "geographic") # Training features
+labels_train <- iucnn_prepare_labels(training_labels, features) # Training labels
+features_predict <- iucnn_prepare_features(prediction_occ,
+                                          type = "geographic") # Prediction features
 
 # 2. Model training
 m1 <- iucnn_train_model(x = features, lab = labels_train)
 
 # 3. Prediction
-iucnn_predict_status (x = features_predict,
-             model = m1)
+iucnn_predict_status(x = features_predict, model = m1)
 }
 
 

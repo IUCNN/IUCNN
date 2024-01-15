@@ -1,6 +1,7 @@
 #'Format IUCN Red List categories for IUCNN
 #'
-#'Converting IUCN category labels into numeric categories required by \code{\link{iucnn_train_model}}.
+#'Converting IUCN category labels into numeric categories required by
+#'\code{\link{iucnn_train_model}}.
 #'
 #'
 #'@param x a data.frame or a list. If a data.frame,
@@ -33,11 +34,11 @@
 #'@return a data.frame with species names and numeric labels
 #'
 #' @examples
-#' dat <- data.frame(species = c("A","B"),
-#'                   decimallongitude = runif (200,10,15),
-#'                   decimallatitude = runif (200,-5,5))
+#' dat <- data.frame(species = c("A", "B"),
+#'                   decimallongitude = runif(200, 10, 15),
+#'                   decimallatitude = runif(200, -5, 5))
 #'
-#' labs <- data.frame(species = c("A","B"),
+#' labs <- data.frame(species = c("A", "B"),
 #'                    labels = c("CR", "LC"))
 #'
 #' features <- iucnn_prepare_features(dat,
@@ -67,10 +68,10 @@ iucnn_prepare_labels <- function(x,
   assert_character(threatened)
 
  # check for input from rredlist
-  if(is.list(x) & !is.data.frame(x)){
+  if (is.list(x) & !is.data.frame(x)) {
     warning("x is list. Assuming input from rredlist")
 
-    dat <- bind_rows(x[names(x) == "result"])%>%
+    dat <- bind_rows(x[names(x) == "result"]) %>%
       dplyr::select(species = .data$scientific_name, labels = .data$category)
   }else{
     dat <- x %>% select(.data[[species]], .data[[labels]])
@@ -83,7 +84,7 @@ iucnn_prepare_labels <- function(x,
   rem <- dat %>%
     filter(!.data[[labels]] %in% accepted_labels)
 
-  if(nrow(rem) > 0){
+  if (nrow(rem) > 0) {
     mis <- rem %>%
       select(.data[[labels]]) %>%
       distinct() %>%
@@ -93,14 +94,14 @@ iucnn_prepare_labels <- function(x,
   }
 
   # if broad convert to broad categories
-  if(level == "broad"){
+  if (level == "broad") {
     out <- out %>%
       mutate(lab.num.z = ifelse(.data[[labels]] %in% threatened, 1, 0))
     lookup <- data.frame(labels = c("Not Threatened", "Threatened"),
                          lab.num.z = c(0,1))
   }else{
     lookup <- data.frame(IUCN = accepted_labels,
-                         lab.num.z = seq(0, (length(accepted_labels)-1)))
+                         lab.num.z = seq(0, (length(accepted_labels) - 1)))
 
     names(lookup) <- c(labels, "lab.num.z")
 
@@ -114,12 +115,12 @@ iucnn_prepare_labels <- function(x,
     dplyr::select(species = .data[[species]], labels = .data$lab.num.z)
 
   # match labels to y if supplied
-  if(!is.null(y)){
+  if (!is.null(y)) {
     # if y are cnn features
-    if("cnn_features" %in% class(y)){
+    if ("cnn_features" %in% class(y)) {
       # if not all species are there, crop
-      if(!all(names(y) %in% out$species)|
-         !all(out$species %in% names(y))){
+      if (!all(names(y) %in% out$species) |
+         !all(out$species %in% names(y))) {
 
         out_in <- out
         out <- out %>%
@@ -132,10 +133,10 @@ iucnn_prepare_labels <- function(x,
       out <- out %>%
         arrange(ordered(species, names(y)))
       # if y are iucnn features
-    }else if("iucnn_features" %in% class(y)){
+    }else if ("iucnn_features" %in% class(y)) {
       # if not all species are there, crop
-      if(!all(y$species %in% out$species)|
-         !all(out$species %in% y$species)){
+      if (!all(y$species %in% out$species) |
+         !all(out$species %in% y$species)) {
 
         out_in <- out
         out <- out %>%

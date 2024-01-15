@@ -49,18 +49,19 @@ Which labels to consider threatened.}
 a data.frame with species names and numeric labels
 }
 \description{
-Converting IUCN category labels into numeric categories required by \code{\link{iucnn_train_model}}.
+Converting IUCN category labels into numeric categories required by
+\code{\link{iucnn_train_model}}.
 }
 \note{
 See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 for a tutorial on how to run IUCNN.
 }
 \examples{
-dat <- data.frame(species = c("A","B"),
-                  decimallongitude = runif (200,10,15),
-                  decimallatitude = runif (200,-5,5))
+dat <- data.frame(species = c("A", "B"),
+                  decimallongitude = runif(200, 10, 15),
+                  decimallatitude = runif(200, -5, 5))
 
-labs <- data.frame(species = c("A","B"),
+labs <- data.frame(species = c("A", "B"),
                    labels = c("CR", "LC"))
 
 features <- iucnn_prepare_features(dat,

@@ -17,7 +17,7 @@ iucnn_cnn_features(
 \arguments{
 \item{x}{a data.frame with at least three columns containing taxon name, decimal longitude and latitude values.}
 
-\item{y}{a raster as reference to count the number of occurrence records in.
+\item{y}{a SpatRaster object as reference to count the number of occurrence records in.
 Can be of any resolution and CRS but the coordinates in x need to be in the same CRS.}
 
 \item{species}{a character string. The name of the column with the species names.}
@@ -44,12 +44,13 @@ a convolutional neural network to approximate species extinction risk.
 If y is not provided, assumes a lat/lon grid with extent equal to the respective minimum and maximum in x
 }
 \examples{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
-                  decimallongitude = runif (200,10,15),
-                  decimallatitude = runif (200,-5,5))
+                  decimallongitude = runif(200, 10, 15),
+                  decimallatitude = runif(200, -5, 5))
 
 iucnn_cnn_features(dat)
-
+}
 
 }
 \seealso{

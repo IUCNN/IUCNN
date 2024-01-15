@@ -110,7 +110,7 @@ def iter_test_indices(features, n_splits = 5, shuffle = True, seed = None):
         np.random.seed(seed)
     if shuffle:
         indices = np.random.choice(indices, len(indices), replace=False)
-    fold_sizes = np.full(n_splits, n_samples // n_splits, dtype=np.int)
+    fold_sizes = np.full(n_splits, n_samples // n_splits, dtype=np.int_)
     fold_sizes[:n_samples % n_splits] += 1
     current = 0
     index_output = []
