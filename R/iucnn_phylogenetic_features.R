@@ -15,6 +15,7 @@
 #' @family Feature preparation
 #'
 #' @examples
+#' \dontrun{
 #' dat <- data.frame(species = c("A","B", "X"),
 #'                   decimallongitude = runif(180,10,15),
 #'                   decimallatitude = runif(180,-5,5))
@@ -25,8 +26,7 @@
 #'
 #'iucnn_phylogenetic_features(x = dat,
 #'                            phy.eigen = phy)
-
-#'
+#'}
 #' @export
 #' @importFrom dplyr left_join
 

@@ -25,6 +25,7 @@ prepared with the \code{iucnn_prepare_phy} function.
 Tip labels need to match the species names in x.
 }
 \examples{
+\dontrun{
 dat <- data.frame(species = c("A","B", "X"),
                   decimallongitude = runif(180,10,15),
                   decimallatitude = runif(180,-5,5))
@@ -35,7 +36,7 @@ phy <- iucnn_prepare_phy(phy = tree)
 
 iucnn_phylogenetic_features(x = dat,
                            phy.eigen = phy)
-
+}
 }
 \seealso{
 Other Feature preparation: 

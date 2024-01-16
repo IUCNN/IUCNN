@@ -36,7 +36,7 @@
 #'}
 #'
 #' @export
-#' @importFrom dplyr bind_cols select distinct mutate
+#' @importFrom dplyr bind_cols select distinct mutate matches
 #' @importFrom sf st_as_sf st_crs st_geometry st_geometry<- st_intersects st_is_valid st_make_valid st_read
 #' @importFrom magrittr %>%
 #' @importFrom tidyr pivot_wider
@@ -131,7 +131,7 @@ iucnn_biome_features <- function(x,
     tidyr::pivot_wider(id_cols = .data$species,
                        names_from = .data$biome,
                        values_from = .data$presence) %>%
-  dplyr::select_if(!names(.) %in% c('NA'))
+  dplyr::select(!dplyr::matches("NA"))
 
   # replace NAs
   biom[is.na(biom)] <- 0

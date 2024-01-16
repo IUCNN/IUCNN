@@ -34,6 +34,7 @@
 #'@return a data.frame with species names and numeric labels
 #'
 #' @examples
+#' \dontrun{
 #' dat <- data.frame(species = c("A", "B"),
 #'                   decimallongitude = runif(200, 10, 15),
 #'                   decimallatitude = runif(200, -5, 5))
@@ -46,7 +47,7 @@
 #'
 #' iucnn_prepare_labels(x = labs,
 #'                      y = features)
-#'
+#'}
 #' @export
 #' @importFrom magrittr %>%
 #' @importFrom dplyr arrange bind_rows distinct filter left_join mutate select

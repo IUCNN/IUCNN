@@ -45,6 +45,11 @@ iucnn_geography_features <- function(x,
                                      rescale = TRUE,
                                      verbose = FALSE) {
 
+  #check if sampbias is installed
+  if (!requireNamespace("rCAT", character.only = TRUE)) {
+    stop("Geography features require the 'rCAT' package. Install from https://github.com/xct/rcat")
+  }
+
   # assertions
   assert_data_frame(x)
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)
