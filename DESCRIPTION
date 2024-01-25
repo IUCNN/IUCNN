@@ -23,8 +23,7 @@ Suggests:
     markdown,
     rmarkdown,
     spelling,
-    testthat,
-    sampbias
+    testthat
 Language: en-US
 Imports: 
     checkmate,
@@ -45,7 +44,8 @@ Imports:
     geodata,
     keras,
     tibble,
-    rCAT
+    rCAT,
+    sampbias
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.1)

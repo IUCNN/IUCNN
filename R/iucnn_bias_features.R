@@ -21,7 +21,7 @@
 #' dat <- data.frame(species = c("A", "b"),
 #'                   decimallongitude = runif(200, 10, 15),
 #'                   decimallatitude = runif(200, -5, 5))
-#'iucnn_bias_features(dat)
+#' iucnn_bias_features(dat)
 #'
 #'}
 #'
@@ -58,7 +58,7 @@ iucnn_bias_features <- function(x,
     dplyr::select(species = .data[[species]], decimalLongitude = .data[[lon]], decimalLatitude = .data[[lat]])
 
   # run sampbias analysis
-  sampbias_out <- sampbias::calculate_bias(x = inp, res = res)
+  sampbias_out <- sampbias::calculate_bias(x = inp, res = res, verbose = FALSE)
 
   # write summary of samp bias to screen
   summary(sampbias_out)
@@ -74,12 +74,13 @@ iucnn_bias_features <- function(x,
 
   # Extract values for each record
   bias_extract <- terra::extract(proj[["Total_percentage"]],
-                                  inp[, c("decimalLongitude", "decimalLatitude")])
+                                  inp[, c("decimalLongitude",
+                                          "decimalLatitude")])
 
   # summarize the mean value and range for each species
   bias_feat <- inp %>%
     dplyr::select(.data[[species]]) %>%
-    mutate(bias_feat = bias_extract) %>%
+    mutate(bias_feat = bias_extract[, 2]) %>%
     mutate(bias_feat = .data$bias_feat / 100) %>%
     group_by(.data$species) %>%
     summarize(bias_median = median(.data$bias_feat, na.rm = TRUE),
