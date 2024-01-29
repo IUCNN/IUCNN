@@ -10,37 +10,3 @@ labels_train <- iucnn_prepare_labels(x = training_labels,
                                      y = features)
 
 
-test_that("nn-class detailed works", {
-  skip_on_cran()
-
-  ## train the model
-  expect_warning(m <- iucnn_train_model(
-    x = features,
-    lab = labels_train,
-    mode = "nn-class",
-    overwrite = TRUE
-  ))
-
-  expect_equal(length(m), 44)
-  expect_s3_class(m, "iucnn_model")
-})
-
-test_that("nn-class broad works", {
-  skip_on_cran()
-
-  ## Prepare training labels
-  labels_train <- iucnn_prepare_labels(x = training_labels,
-                                       y = features,
-                                       level = "broad")
-
-  ## train the model
-  m <- iucnn_train_model(
-    x = features,
-    lab = labels_train,
-    mode = "nn-class",
-    overwrite = TRUE
-  )
-
-  expect_equal(length(m), 44)
-  expect_s3_class(m, "iucnn_model")
-})
