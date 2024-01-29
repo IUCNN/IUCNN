@@ -1,3 +1,7 @@
+# IUCNN 3.0.0 (29.01.2024)
+=========================
+  * Modified all functions to remove dependencies on retired spatial packages
+
 # IUCNN 2.1.0 (12.05.2022)
 =========================
 * add NA imputation in the features using missForest

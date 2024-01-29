@@ -4,6 +4,7 @@
 [![R-CMD-check](https://github.com/azizka/IUCNN/workflows/check-standard/badge.svg)](https://github.com/azizka/IUCNN/actions)
 <!-- badges: end -->
 
+**IUCNN has been updated to version 3.0 on github and will shortly be updated on CRAN to adapt to the retirement of sp and raster. The update may not be compatible with analysis-pipelines build with version 2.x**
 
 # IUCNN
 Batch estimation of species' IUCN Red List threat status using neural networks.
