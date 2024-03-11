@@ -105,15 +105,6 @@ The following code trains a neural network model with 3 hidden layers of 60, 60,
 res_1 <- iucnn_train_model(x = features_train,
                            lab = labels_train, 
                            path_to_output = "iucnn_model_1")
-#> Training model on 712 training instances (177 test instances)...
-#> Best training epoch:  64
-#> 
- 1/23 [>.............................] - ETA: 2s
-23/23 [==============================] - 0s 1ms/step
-#> 
-1/6 [====>.........................] - ETA: 0s
-6/6 [==============================] - 0s 1ms/step
-#> IUC-NN model saved at:  iucnn_model_1/nn_model_0
 ```
 
 The `summary` and `plot` methods give an overview on the training process and model performance. 
@@ -147,7 +138,7 @@ summary(res_1)
 plot(res_1)
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-8](unnamed-chunk-8-1.png)
 
 ## Predict IUCN Global Red List status
 The trained model can then predict the conservation status of *Not Evaluated* and *Data Deficient* species with the `iucnn_predict_status` function. The output contains a data frame with species names and numeric labels (as generated with iucnn_prepare_labels).
@@ -160,7 +151,7 @@ predictions <- iucnn_predict_status(x = features_predict,
 plot(predictions)
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-9](unnamed-chunk-9-1.png)
 
 It is important to remember the following when using IUCNN:
 
@@ -357,7 +348,7 @@ fi <- iucnn_feature_importance(x = res_1)
 plot(fi)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
+![plot of chunk unnamed-chunk-17](unnamed-chunk-17-1.png)
 
 ### Model testing
 Before training the final model used for predicting the conservation status of not evaluated species, it is recommended to use the `iucnn_modeltest` function for finding the best settings for your model and dataset. This process, often referred to as hyperparameter tuning, is an essential step for building the most suitable model for the prediction task. The `iucnn_modeltest` function allows you to provide any settings for `iucnn_train_model` as vectors, which will lead the function to train a separate model for each provided setting. The function will explore all possible permutations of the provided settings, so that the following command results in 9 different models being trained:
@@ -409,7 +400,7 @@ pred_2 <- iucnn_predict_status(x = features_predict,
 plot(pred_2)
 ```
 
-![plot of chunk unnamed-chunk-22](figure/unnamed-chunk-22-1.png)
+![plot of chunk unnamed-chunk-22](unnamed-chunk-22-1.png)
 
 Furthermore, you can turn off the `return_IUCN` option if to return the numerical labels instead of the IUCNN RL category labels.
 
@@ -491,7 +482,6 @@ summary(trained_model)
 ```r
 pred <- iucnn_predict_status(cnn_features_predict,
                              trained_model,
-                             target_acc = 0.0
-                             )
+                             target_acc = 0.0)
 ```
 
