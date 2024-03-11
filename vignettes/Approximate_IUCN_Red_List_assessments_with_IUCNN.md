@@ -105,6 +105,15 @@ The following code trains a neural network model with 3 hidden layers of 60, 60,
 res_1 <- iucnn_train_model(x = features_train,
                            lab = labels_train, 
                            path_to_output = "iucnn_model_1")
+#> Training model on 712 training instances (177 test instances)...
+#> Best training epoch:  64
+#> 
+ 1/23 [>.............................] - ETA: 2s
+23/23 [==============================] - 0s 1ms/step
+#> 
+1/6 [====>.........................] - ETA: 0s
+6/6 [==============================] - 0s 1ms/step
+#> IUC-NN model saved at:  iucnn_model_1/nn_model_0
 ```
 
 The `summary` and `plot` methods give an overview on the training process and model performance. 
@@ -112,28 +121,29 @@ The `summary` and `plot` methods give an overview on the training process and mo
 
 ```r
 summary(res_1)
-#> A model of type nn-class, trained on 702 species and 45 features.
+#> A model of type nn-class, trained on 712 species and 45 features.
 #> 
-#> Training accuracy: 0.6
-#> Validation accuracy: 0.532
-#> Accuracy on unseen data (test set): 0.549
+#> Training accuracy: 0.629
+#> Validation accuracy: 0.58
+#> Accuracy on unseen data (test set): 0.633
 #> 
 #> Label detail: 5 Classes (detailed)
 #> 
 #> Label representation
 #>   Label Input_count Estimated_count
-#> 1     0          67              92
-#> 2     1          12               0
-#> 3     2          28               3
-#> 4     3          51              80
+#> 1     0          82             107
+#> 2     1           8               0
+#> 3     2          16               0
+#> 4     3          46              46
+#> 5     4          25              24
 #> 
 #> Confusion matrix (rows test data and columns predicted):
 #>    LC NT VU EN CR
-#> LC 56  0  1 10  0
-#> NT  9  0  0  3  0
-#> VU 15  0  1 12  0
-#> EN 11  0  1 39  0
-#> CR  1  0  0 16  0
+#> LC 71  0  0  7  4
+#> NT  7  0  0  1  0
+#> VU 10  0  0  4  2
+#> EN 15  0  0 27  4
+#> CR  4  0  0  7 14
 plot(res_1)
 ```
 

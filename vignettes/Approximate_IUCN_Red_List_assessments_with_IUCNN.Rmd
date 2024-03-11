@@ -8,22 +8,15 @@ vignette: >
  %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
- collapse = TRUE,
- comment = "#>",
- warning = FALSE,
- message = FALSE,
- fig.width = 8
-)
-```
+
 
 # Background
 The Red List of the International Union for the Conservation of nature (www.iucn.org, IUCN RL), is arguably one of the most thorough and widely used tools to assess the global extinction risk of species. However, the IUCN RL assessment process---usually performed by a group of specialists for each taxonomic group, or professional assessors---are time consuming, and therefore only a small fraction of global biodiversity has been evaluated for the IUCN RL, with a strong bias towards vertebrates and certain regions. These biases and the low fraction of species evaluated, bias conservation towards evaluated groups and prevent synthetic, large-scale ecological and biogeographic analyses of extinction risk. 
 
 IUCNN implements neural networks to predict the IUCN status of so far not evaluated or data deficient species based on species traits. IUCNN models are trained on the existing IUCN RL assessments and any traits may be used for prediction, although IUCNN implements a workflow based solely on publicly available geo-referenced species occurrence records and environmental data. Typical examples for the application of IUCNN are to predict the conservation status of a large number of species, to approximate extinction risk or number of threatened species in a region or specific taxonomic group for synthetic analyses or to predict the IUCN category of individual species of interest for systematic or ecological case studies. 
 
-```{r setup}
+
+```r
 library(IUCNN)
 library(magrittr)
 library(dplyr)
@@ -33,7 +26,8 @@ library(dplyr)
 IUCNN uses R and python. All software needed can be installed via R.
 
 1. install IUCNN directly from Github using devtools. 
-```{r, eval = FALSE}
+
+```r
 install.packages("devtools")
 library(devtools)
 library(IUCNN)
@@ -41,7 +35,8 @@ library(IUCNN)
 
 2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
-```{r, eval = FALSE}
+
+```r
 install.packages(reticulate)
 library("reticulate")
 install_miniconda()
@@ -50,7 +45,8 @@ install_miniconda()
 If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
 
 3. Install the tensorflow Python module. IUCNN uses functions of the python modules tensorflow and npBNN which also need to be installed (via R). 
-```{r, eval = FALSE}
+
+```r
 reticulate::conda_install("r-reticulate","tensorflow=2.4")
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", 
                        pip = TRUE)
@@ -76,19 +72,20 @@ Example dataset are available with IUCNN: `data(training_occ)` (training occurre
 IUCNN uses per species traits to as features for the neural networks. The required input format is a data.frame with one row per species , one column containing the species name and any number of additional columns containing the numerical features for each species. In general, features might represent any trait, for instance from taxonomy (e.g., family), anatomy (e.g., body size), ecology (e.g., feeding guild) or conservation (e.g., population dynamics). However, since often only geographic occurrence data are available IUCNN contains functions to obtain default features from geo-referenced occurrence records alone, by combining them with publicly available environmental data. These default features informing on species range, climatic niche, human footprint and biomes. See Table 2 for a detailed list of all default features. Users may chose to use specific groups of features only via the `type` option of `iucnn_prepare_labels`. In this tutorial, we will use the example datasets from the Orchid family (Orchidaceae) provided with the IUCNN package, 
 
 You can prepare the default features with a single call to `iucnn_prepare_features`
-```{r, results='hide'}
+
+```r
 data("training_occ") #geographic occurrences of species with IUCN assessment
 data("prediction_occ")
 
 features_train <- iucnn_prepare_features(training_occ) # Training features
 features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
-
 ```
 
 ## Label preparation
 IUCNN expects the labels for training as numerical categories. So, to use IUCN RL categories, those need to be converted to numeric in the right way. This can be done using the `iucnn_prepare_labels` function. The function converts the category labels as obtained from the IUCN RL into standardized numeric values, either on the detailed level of IUCN RL categories or the broader Possibly threatened/Not threatened level. See `?iucnn_prepare_labels` for more information. The labels will be converted into numeric categories following the `accepted_labels` argument, so for instance, in the default case: LC -> 0 and CR -> 4. If you change the accepted labels, the match will change accordingly.
 
-```{r}
+
+```r
 data("training_labels")
 
 labels_train <- iucnn_prepare_labels(x = training_labels,
@@ -103,28 +100,67 @@ Based on the training features and labels, IUCNN trains a neural network, via th
 
 The following code trains a neural network model with 3 hidden layers of 60, 60, and 20 nodes, with ReLU activation function. By specifying a seed (here, the default: 1234) we make sure the same subsets of data are designated as training, validation and test sets across different runs and model configurations (see below). The model with estimated weights will be saved in the current working directory. 
 
-```{r}
+
+```r
 res_1 <- iucnn_train_model(x = features_train,
                            lab = labels_train, 
                            path_to_output = "iucnn_model_1")
+#> Training model on 712 training instances (177 test instances)...
+#> Best training epoch:  64
+#> 
+ 1/23 [>.............................] - ETA: 2s
+23/23 [==============================] - 0s 1ms/step
+#> 
+1/6 [====>.........................] - ETA: 0s
+6/6 [==============================] - 0s 1ms/step
+#> IUC-NN model saved at:  iucnn_model_1/nn_model_0
 ```
 
 The `summary` and `plot` methods give an overview on the training process and model performance. 
 
-```{r}
+
+```r
 summary(res_1)
+#> A model of type nn-class, trained on 712 species and 45 features.
+#> 
+#> Training accuracy: 0.629
+#> Validation accuracy: 0.58
+#> Accuracy on unseen data (test set): 0.633
+#> 
+#> Label detail: 5 Classes (detailed)
+#> 
+#> Label representation
+#>   Label Input_count Estimated_count
+#> 1     0          82             107
+#> 2     1           8               0
+#> 3     2          16               0
+#> 4     3          46              46
+#> 5     4          25              24
+#> 
+#> Confusion matrix (rows test data and columns predicted):
+#>    LC NT VU EN CR
+#> LC 71  0  0  7  4
+#> NT  7  0  0  1  0
+#> VU 10  0  0  4  2
+#> EN 15  0  0 27  4
+#> CR  4  0  0  7 14
 plot(res_1)
 ```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 
 ## Predict IUCN Global Red List status
 The trained model can then predict the conservation status of *Not Evaluated* and *Data Deficient* species with the `iucnn_predict_status` function. The output contains a data frame with species names and numeric labels (as generated with iucnn_prepare_labels).
 
-```{r}
+
+```r
 predictions <- iucnn_predict_status(x = features_predict, 
                                     model = res_1)
 
 plot(predictions)
 ```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
 
 It is important to remember the following when using IUCNN:
 
@@ -164,7 +200,8 @@ Table 1. Critical steps to customize an IUCNN analysis and relevant consideratio
 ### Add and remove feature blocks
 The default features are selected based on empirical tests on relevance for different taxa and regions. However, for some analyses only part of the features may be relevant. You can exclude feature blocks using the `type` argument of the `iucnn_prepare_features` function. For instance, to exclude the biome features:
 
-```{r, eval = FALSE}
+
+```r
 features_train2 <- iucnn_prepare_features(training_occ, 
                                           type = c("geographic", 
                                                    "climate", 
@@ -186,7 +223,8 @@ Table 2. Functions to obtain default features and options to customize the featu
 
 For instance:
 
-```{r, eval = FALSE}
+
+```r
 clim_features <- iucnn_climate_features(x = training_occ, 
                                         type = "selected")
 
@@ -199,7 +237,8 @@ It is also possible to provide features unrelated to the default features. They 
 
 For instance:
 
-```{r, eval = FALSE}
+
+```r
 feat <- data.frame(species = c("Adansonia digitata", "Ceiba pentandra"),
  max_plant_size_m = c(25, 50),
  africa = c(1,1),
@@ -262,7 +301,8 @@ The `iucnn_prepare_labels` function may accepted any custom labels as long as th
 
 For instance:
 
-```{r, eval = FALSE}
+
+```r
 labels_train <- iucnn_prepare_labels(training_labels,
                                      y = features, 
                                      level = "broad")
@@ -272,7 +312,8 @@ labels_train <- iucnn_prepare_labels(training_labels,
 ### Customizing model parameters
 The `iucnn_train_model` function contains various options to customize the neural network, including among other the fraction of validation and test data, the maximum number of epochs, the number of layers and nodes, the activation function , dropout and randomization of the input data. See `?iucnn_train_model` for a comprehensive list of options and their description. By default, `iucnn_train_model` trains a neural network with three hidden layers with 50, 30 and 10 nodes and a sigmoid as activation function. Depending on your dataset different networks may improve performance. For instance, you can set up a different model with 1 hidden layer of 60 nodes, a sigmoid activation function and without using a bias node in the first hidden layer.
 
-```{r}
+
+```r
 res_2 <- iucnn_train_model(x = features_train,
  lab = labels_train, 
  dropout_rate = 0.3,
@@ -289,7 +330,8 @@ There are three neural network algorithms implemented in IUCNN. Besides the defa
 
 The Bayesian approach has the advantage that it returns true probabilities for the classification of species into the relative output classes (e.g. 80% probability of a species to be LC). We consider this approach more suitable for classification of species into IUCN categories, than the default option. It will need more time for model training and should best be applied once you have identified the best model parameters using the default approach. You can run a BNN setting the `mode` option of `iucnn_train_model` to `"bnn-class"`.
 
-```{r, eval = FALSE}
+
+```r
 res_3 <- iucnn_train_model(x = features_train,
  lab = labels_train, 
  path_to_output = "iucnn_model_3",
@@ -298,7 +340,8 @@ res_3 <- iucnn_train_model(x = features_train,
 
 IUCNN also offers the option to train a NN regression model instead of a classifier. Since the IUCN threat statuses constitute a list of ordinal categories sorted by increasing threat level, we can model the task of estimating these categories as a regression problem. Such a model can be trained with the `iucnn_train_model()` function, specifying to train a regression model by setting `mode = 'nn-reg'`.
 
-```{r}
+
+```r
 res_4 <- iucnn_train_model(x = features_train,
  lab = labels_train, 
  path_to_output = "iucnn_model_4",
@@ -308,15 +351,19 @@ res_4 <- iucnn_train_model(x = features_train,
 
 ### Feature importance
 The `iucnn_feature_importance` function can be used to gauge the importance of different feature blocks or individual features for model performance. The function implements the permutation feature importance technique, which randomly reshuffles the values within individual features or blocks of features and evaluate how this randomization affects the models prediction accuracy. If a given feature (or block of features) is important for the models ability to predict, randomizing this feature will lead to a large drop in prediction accuracy. When using `iucnn_feature_importance` with features other than the default, feature blocks can be defined using the `feature_blocks` option.
-```{r, eval = TRUE}
+
+```r
 fi <- iucnn_feature_importance(x = res_1)
 plot(fi)
 ```
 
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
+
 ### Model testing
 Before training the final model used for predicting the conservation status of not evaluated species, it is recommended to use the `iucnn_modeltest` function for finding the best settings for your model and dataset. This process, often referred to as hyperparameter tuning, is an essential step for building the most suitable model for the prediction task. The `iucnn_modeltest` function allows you to provide any settings for `iucnn_train_model` as vectors, which will lead the function to train a separate model for each provided setting. The function will explore all possible permutations of the provided settings, so that the following command results in 9 different models being trained:
 
-```{r, eval = FALSE}
+
+```r
 modeltest_results <- iucnn_modeltest(features,
  labels,
  dropout_rate = c(0.0,0.1,0.3),
@@ -325,13 +372,15 @@ modeltest_results <- iucnn_modeltest(features,
 
 The model specifications and settings of each tested model are written to a log-file and can be inspected with the `iucnn_best_model` function, to decide which model settings to pick as best model. Different criteria for picking the best model can be selected, such as best prediction accuracy, best predicted over-all status distribution, lowest weighted mis-classification error, etc.
 
-```{r, eval = FALSE}
+
+```r
 best_m <- iucnn_best_model(modeltest_results, criterion='val_acc')
 ```
 
 After model testing, it is necessary to retrain using the model specifications identified by `iucnn_best_model`. It is possible to take the respective settings directly from the output of the `iucnn_best_model` function, via the `production-model` argument of `iucnn_train_model`.
 
-```{r, eval = FALSE}
+
+```r
 # Train the best model on all training data for prediction
 m_prod <- iucnn_train_model(train_feat,
                       train_lab,
@@ -341,7 +390,8 @@ m_prod <- iucnn_train_model(train_feat,
 
 The production model can then be used for the final predictions.
 
-```{r, eval = FALSE}
+
+```r
 # Predict RL categories for target species
 pred <- iucnn_predict_status(pred_feat,
                       m_prod)
@@ -351,15 +401,19 @@ plot(pred)
 
 ## 3) Status prediction
 The `iucnn_predict_status` function offers options to customize the predictions. The most important option in many cases is `target_acc`, which allows to set an overall target-accuracy threshold that the model needs to achieve. This option is only available for nn-class and nn-reg models that were trained using dropout (see help function of `iucnn_train_model` for more explanation), as well as for all bnn-class models. The `target_acc` will be achieved by the model being more selective with making a category call for a given instance. All species that cannot be classified with enough certainty to reach this target accuracy will be classified as NA (Not Assessed).
-```{r}
+
+```r
 pred_2 <- iucnn_predict_status(x = features_predict, 
  target_acc = 0.7,
  model = res_2)
 plot(pred_2)
 ```
 
+![plot of chunk unnamed-chunk-22](figure/unnamed-chunk-22-1.png)
+
 Furthermore, you can turn off the `return_IUCN` option if to return the numerical labels instead of the IUCNN RL category labels.
-```{r, eval = FALSE}
+
+```r
 pred_3 <- iucnn_predict_status(x = features_predict, 
  model = res_2,
  return_IUCN = FALSE)
@@ -379,7 +433,8 @@ Instead of the fully connected neural networks presented above, IUCNN also imple
 ## 1. Feature preparation
 Features are prepared using the `iucnn_cnn_features` function which will count the number of occurrence records in a custom raster with the same extent as the species occurrences. The function can be simply run on a data frame of training and prediction occurrences separately. Yet, since the extent of these two datasets is likely different, it is recommendable to create a custom raster beforehand. Here, we will use a simple lat/lon raster, but users may provide coordinates and a raster in any suitable coordinate reference system, as long as they agree between occurrence coordinates and raster.
 
-```{r}
+
+```r
 # preapre custom raster, you can split this step if training and test occurrences have the same extent
 library(terra)
 data("training_occ")
@@ -415,12 +470,12 @@ cnn_features_predict <- iucnn_cnn_features(x = prediction_occ,
  # Training labels
 cnn_labels <- iucnn_prepare_labels(x = training_labels,
                                    y = cnn_features)
-
 ```
 
 
 ## 2. Model training
-```{r, eval = FALSE}
+
+```r
 trained_model <- iucnn_cnn_train(cnn_features,
                                 cnn_labels,
                                 overwrite = TRUE,
@@ -432,7 +487,8 @@ summary(trained_model)
 ```
 
 ## 3. Status prediction
-```{r, eval = FALSE}
+
+```r
 pred <- iucnn_predict_status(cnn_features_predict,
                              trained_model,
                              target_acc = 0.0
