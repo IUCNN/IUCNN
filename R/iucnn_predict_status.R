@@ -34,7 +34,7 @@
 #'labels for the input species.
 #'
 #' @examples
-#'\dontrun{
+#'\donttest{
 #'data("training_occ") #geographic occurrences of species with IUCN assessment
 #'data("training_labels")# the corresponding IUCN assessments
 #'data("prediction_occ") #occurrences from Not Evaluated species to prdict
@@ -46,7 +46,7 @@
 #'                                           type = "geographic") # Prediction features
 #'
 #'# 2. Model training
-#'m1 <- iucnn_train_model(x = features, lab = labels_train)
+#'m1 <- iucnn_train_model(x = features, lab = labels_train, overwrite = TRUE)
 #'
 #'# 3. Prediction
 #'iucnn_predict_status(x = features_predict, model = m1)

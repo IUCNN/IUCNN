@@ -17,7 +17,7 @@
 #' @family Feature preparation
 #'
 #' @examples
-#'\dontrun{
+#'\donttest{
 #' dat <- data.frame(species = c("A", "b"),
 #'                   decimallongitude = runif(200, 10, 15),
 #'                   decimallatitude = runif(200, -5, 5))
@@ -41,10 +41,6 @@ iucnn_bias_features <- function(x,
                                 ras = NULL,
                                 plot = TRUE) {
 
-  #check if sampbias is installed
-  if (!requireNamespace("sampbias", character.only = TRUE)) {
-    stop("Bias features require the 'sampbias' package. Install from https://github.com/azizka/sampbias")
-  }
   # assertions
   assert_data_frame(x)
   assert_numeric(x[[lon]], any.missing = FALSE, lower = -180, upper = 180)

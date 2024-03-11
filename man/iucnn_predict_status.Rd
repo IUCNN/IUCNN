@@ -56,7 +56,7 @@ See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")} for a
 tutorial on how to run IUCNN.
 }
 \examples{
-\dontrun{
+\donttest{
 data("training_occ") #geographic occurrences of species with IUCN assessment
 data("training_labels")# the corresponding IUCN assessments
 data("prediction_occ") #occurrences from Not Evaluated species to prdict
@@ -68,7 +68,7 @@ features_predict <- iucnn_prepare_features(prediction_occ,
                                           type = "geographic") # Prediction features
 
 # 2. Model training
-m1 <- iucnn_train_model(x = features, lab = labels_train)
+m1 <- iucnn_train_model(x = features, lab = labels_train, overwrite = TRUE)
 
 # 3. Prediction
 iucnn_predict_status(x = features_predict, model = m1)

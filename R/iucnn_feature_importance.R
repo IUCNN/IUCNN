@@ -51,7 +51,7 @@
 #'  delta_acc_mean column).
 #'
 #' @examples
-#'\dontrun{
+#'\donttest{
 #'data("training_occ")
 #'data("training_labels")
 #'
@@ -61,7 +61,8 @@
 #'
 #'train_output <- iucnn_train_model(x = train_feat,
 #'                           lab = labels_train,
-#'                           patience = 10)
+#'                           patience = 10,
+#'                           overwrite = TRUE)
 #'
 #'
 #'imp_def <- iucnn_feature_importance(x = train_output)

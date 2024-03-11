@@ -18,6 +18,14 @@ Version: \tab 3.0\cr
 License: \tab LGPL-2.1\cr
 }
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/IUCNN/IUCNN}
+  \item Report bugs at \url{https://github.com/IUCNN/IUCNN/issues}
+}
+
+}
 \author{
 \strong{Alexander Zizka}\cr
 (email: \email{alexander.zizka@idiv.de})

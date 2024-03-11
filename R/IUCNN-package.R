@@ -5,7 +5,6 @@
 #' @name IUCNN-package
 #' @aliases IUCNN
 #' @aliases IUCNN-package
-#' @docType package
 #' @title Neural Networks to Approximate IUCN Red List Conservation Assessments
 #' @author \strong{Alexander Zizka}\cr
 #' (email: \email{alexander.zizka@@idiv.de})
@@ -23,4 +22,4 @@
 #'
 #'
 #' @import keras
-NULL
+"_PACKAGE"

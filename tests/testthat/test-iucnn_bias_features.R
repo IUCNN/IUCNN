@@ -5,12 +5,8 @@ dat <- data.frame(species = c("A","B"),
 
 test_that("iucnn_bias_features works", {
   skip_on_cran()
-  if (!require(sampbias, quietly = TRUE)) {
-  expect_error(res <- iucnn_bias_features(dat))
-  } else {
-    res <- iucnn_bias_features(dat)
-    expect_s3_class(res, "tbl")
-    expect_equal(ncol(res), 3)
-  }
+  res <- iucnn_bias_features(dat)
+  expect_s3_class(res, "tbl")
+  expect_equal(ncol(res), 3)
 })
 

@@ -22,7 +22,7 @@
 #'
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' dat <- data.frame(species = c("A","B"),
 #'                   decimallongitude = runif(200,10,15),
 #'                   decimallatitude = runif(200,-5,5))
@@ -33,7 +33,6 @@
 #' @export
 #' @importFrom tidyselect all_of
 #' @importFrom dplyr .data distinct left_join mutate summarize group_by n select
-#' @importFrom rCAT ConBatch
 #' @importFrom magrittr %>%
 #' @importFrom stats quantile
 #' @importFrom checkmate assert_character assert_data_frame assert_logical
@@ -45,10 +44,6 @@ iucnn_geography_features <- function(x,
                                      rescale = TRUE,
                                      verbose = FALSE) {
 
-  #check if sampbias is installed
-  if (!requireNamespace("rCAT", character.only = TRUE)) {
-    stop("Geography features require the 'rCAT' package. Install from https://github.com/xct/rcat")
-  }
 
   # assertions
   assert_data_frame(x)
@@ -92,7 +87,7 @@ iucnn_geography_features <- function(x,
 
     # EOO and AOO
     if (!verbose) {sink("/dev/null")}
-    spa <- rCAT::ConBatch(taxa = uni[species] %>%  unlist(),
+    spa <- ConBatch(taxa = uni[species] %>%  unlist(),
                            lat = uni[lat] %>%  unlist(),
                            long = uni[lon] %>%  unlist(),
                            cellsize = 2000) %>%

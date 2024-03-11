@@ -42,7 +42,7 @@ sampling bias for all records per species.Values summarized per species are the 
 See the ?sampbias::calculate_bias for details.
 }
 \examples{
-\dontrun{
+\donttest{
 dat <- data.frame(species = c("A", "b"),
                   decimallongitude = runif(200, 10, 15),
                   decimallatitude = runif(200, -5, 5))

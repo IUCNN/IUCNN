@@ -109,7 +109,7 @@
 #'@keywords Training
 
 #' @examples
-#'\dontrun{
+#'\donttest{
 #'data("training_occ") #geographic occurrences of species with IUCN assessment
 #'data("training_labels")# the corresponding IUCN assessments
 #'
@@ -118,7 +118,7 @@
 #'labels_train <- iucnn_prepare_labels(training_labels, features) # Training labels
 #'
 #'# 2. Model training
-#'m1 <- iucnn_train_model(x = features, lab = labels_train)
+#'m1 <- iucnn_train_model(x = features, lab = labels_train, overwrite = TRUE)
 #'
 #'summary(m1)
 #'plot(m1)

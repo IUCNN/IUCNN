@@ -5,17 +5,14 @@ Authors@R: c(person(given = "Alexander", family = "Zizka", email = "alexander.zi
                     role = c("aut", "cre")),
              person(given = "Tobias", family = "Andermann", role = "ctb"),
              person(given = "Daniele", family = "Silvestro", role = "ctb"))
-Description: Train neural networks based on geographic species occurrences, environmental data and existing IUCN Red List assessments to predict the conservation status of "Not Evaluated" or "Data Deficient" species, for any taxon or geographic region of interest.
+Description: Train neural networks based on geographic species occurrences, environmental data and existing IUCN Red List assessments to predict the conservation status of "Not Evaluated" or "Data Deficient" species, for any taxon or geographic region of interest. The reference for the methodology is: Zizka et al. (2022) <10.1111/ddi.13450>.
 License: LGPL-2.1
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 URL: https://github.com/IUCNN/IUCNN
 BugReports: https://github.com/IUCNN/IUCNN/issues
-Remotes:
-  github::azizka/sampbias
-  github::xct/rCAT
 Suggests: 
     ape,
     covr,
@@ -44,7 +41,6 @@ Imports:
     geodata,
     keras,
     tibble,
-    rCAT,
     sampbias
 VignetteBuilder: knitr
 Depends: 
