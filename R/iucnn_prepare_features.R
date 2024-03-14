@@ -50,7 +50,7 @@ iucnn_prepare_features <- function(x,
                                             "biomes",
                                             "climate",
                                             "humanfootprint"),
-                                   download_folder = "feature_extraction",
+                                   download_folder = tempdir(),
                                    impute_features = TRUE){
 
   # assertions

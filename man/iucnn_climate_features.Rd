@@ -13,7 +13,7 @@ iucnn_climate_features(
   rescale = TRUE,
   res = 10,
   type = "selected",
-  download_folder = "feature_extraction"
+  download_folder = tempdir()
 )
 }
 \arguments{

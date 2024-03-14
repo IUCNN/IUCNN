@@ -4,7 +4,12 @@
 \alias{iucnn_best_model}
 \title{Select the Best Model After Model-testing}
 \usage{
-iucnn_best_model(x, criterion = "val_acc", require_dropout = FALSE)
+iucnn_best_model(
+  x,
+  criterion = "val_acc",
+  require_dropout = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{a data.frame of model-testing results as produced
@@ -35,6 +40,8 @@ that contains a dropout rate of > 0 will be picked, even if other non-dropout
 models scored higher given the chosen criterion. Dropout models are required
 for certain functionalities within IUCNN, such as e.g. choosing a target
 accuracy when using predict_iucnn.}
+
+\item{verbose}{logical. Set to TRUE to print screen output. Default is FALSE.}
 }
 \value{
 outputs an \code{iucnn_model} object containing all
@@ -60,11 +67,8 @@ features <- iucnn_prepare_features(training_occ, type = "geographic") # Training
 labels <- iucnn_prepare_labels(training_labels, features) # Training labels
 
 # Model-testing
-logfile <- paste0("model_testing_results.txt")
 model_testing_results <- iucnn_modeltest(features,
                                        labels,
-                                       logfile,
-                                       model_outpath = 'iucnn_modeltest',
                                        mode = 'nn-class',
                                        seed = 1234,
                                        dropout_rate = c(0.0,0.1,0.3),

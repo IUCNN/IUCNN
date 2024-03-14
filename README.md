@@ -100,8 +100,6 @@ features_predict <- iucnn_prepare_features(prediction_occ) # Prediction features
 
 mod_test <- iucnn_modeltest(x = features,
                             lab = labels_train,
-                            logfile = "model_testing_results-2.txt",
-                            model_outpath = "iucnn_modeltest-2",
                             mode = "nn-class",
                             dropout_rate = c(0.0, 0.1, 0.3),
                             n_layers = c("30", "40_20", "50_30_10"),

@@ -83,6 +83,12 @@ iucnn_feature_importance <- function(x,
                                      provide_indices = FALSE,
                                      verbose = FALSE,
                                      unlink_features_within_block = TRUE){
+
+  if (!file.exists(x$trained_model_path)) {
+    stop("Model path doesn't exists.
+         Please check if you saved it in a temporary directory.")
+  }
+
   # assertions
   assert_class(x, "iucnn_model")
   assert_class(feature_blocks, "list")

@@ -62,7 +62,7 @@ iucnn_footprint_features <- function(x,
                    lat = "decimallatitude",
                    rescale = TRUE,
                    year = c(1993, 2009),
-                   download_folder = "feature_extraction",
+                   download_folder = tempdir(),
                    breaks = c(0, 0.81, 1.6, 2.3, 100),
                    verbose = FALSE){
 

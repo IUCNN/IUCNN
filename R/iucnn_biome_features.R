@@ -50,7 +50,7 @@ iucnn_biome_features <- function(x,
                                  lat = "decimallatitude",
                                  biome_input = NULL,
                                  biome_id = "BIOME",
-                                 download_folder = "feature_extraction",
+                                 download_folder = tempdir(),
                                  remove_zeros = FALSE){
 
   #assertions

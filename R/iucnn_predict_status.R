@@ -67,7 +67,10 @@ iucnn_predict_status <- function(x,
                           return_raw = FALSE){
 
   # assertions
-
+  if (!file.exists(model$trained_model_path)) {
+    stop("Model path doesn't exist.
+         Maybe you saved the model in a temporary file")
+  }
 
   assert_class(model, classes = "iucnn_model")
 

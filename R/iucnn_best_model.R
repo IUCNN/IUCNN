@@ -31,6 +31,7 @@
 #'models scored higher given the chosen criterion. Dropout models are required
 #'for certain functionalities within IUCNN, such as e.g. choosing a target
 #'accuracy when using predict_iucnn.
+#'@param verbose logical. Set to TRUE to print screen output. Default is FALSE.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 #'for a tutorial on how to run IUCNN.
@@ -49,11 +50,8 @@
 #'labels <- iucnn_prepare_labels(training_labels, features) # Training labels
 #'
 #'# Model-testing
-#'logfile <- paste0("model_testing_results.txt")
 #'model_testing_results <- iucnn_modeltest(features,
 #'                                        labels,
-#'                                        logfile,
-#'                                        model_outpath = 'iucnn_modeltest',
 #'                                        mode = 'nn-class',
 #'                                        seed = 1234,
 #'                                        dropout_rate = c(0.0,0.1,0.3),
@@ -72,12 +70,14 @@
 
 iucnn_best_model <- function(x,
                             criterion = "val_acc",
-                            require_dropout = FALSE) {
+                            require_dropout = FALSE,
+                            verbose = FALSE) {
 
   if (criterion == "val_loss" & length(unique(x$mode)) > 1) {
-stop("The chosen criterion val_loss can't be used to compare across
-  different model types (e.g. nn-class and nn-reg). Choose different criterion or
-  provide modeltesting results that are restricted to only one mode.")
+    stop("The chosen criterion val_loss can't be used to compare across
+         different model types (e.g. nn-class and nn-reg). Choose different
+         criterion or provide modeltesting results that are restricted to only
+         one mode.")
   }
 
   ranked_models <- rank_models(x, rank_by = criterion)
@@ -87,12 +87,19 @@ stop("The chosen criterion val_loss can't be used to compare across
   } else {
     best_model <- ranked_models[1, ]
   }
-
-  cat("Best model:\n")
-  cat("", sprintf("%s: %s\n", names(best_model), best_model))
-  cat("\n")
-
+  if (verbose) {
+    cat("Best model:\n")
+    cat("", sprintf("%s: %s\n", names(best_model), best_model))
+    cat("\n")
+  }
   path_best_model <- best_model$model_outpath
-  iucnn_model <-  readRDS(path_best_model)
+  if (file.exists(path_best_model)) {
+    iucnn_model <- readRDS(path_best_model)
+  } else {
+    warning("The path to the best model does not exist.
+            Check if you saved it in a temporary folder.
+            Returning the available information of the best model.")
+    iucnn_model <- best_model
+  }
   return(iucnn_model)
 }

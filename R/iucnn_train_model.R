@@ -132,7 +132,7 @@
 
 iucnn_train_model <- function(x,
                         lab,
-                        path_to_output = "iuc_nn_model",
+                        path_to_output = tempdir(),
                         production_model = NULL,
                         mode = 'nn-class',
                         test_fraction = 0.2,

@@ -95,7 +95,7 @@
 
 iucnn_cnn_train <- function(x,
                             lab,
-                            path_to_output = "iuc_nn_model",
+                            path_to_output = tempdir(),
                             production_model = NULL,
                             cv_fold = 1,
                             test_fraction = 0.2,

@@ -46,8 +46,6 @@
 #' # Model-testing
 #' mod_test <- iucnn_modeltest(x = features,
 #'                             lab = labels_train,
-#'                             logfile = "model_testing_results-2.txt",
-#'                             model_outpath = "iucnn_modeltest-2",
 #'                             mode = "nn-class",
 #'                             dropout_rate = c(0.0, 0.1, 0.3),
 #'                             n_layers = c("30", "40_20", "50_30_10"),
@@ -62,8 +60,8 @@
 
 iucnn_modeltest <- function(x,
                             lab,
-                            logfile = "model_testing_logfile.txt",
-                            model_outpath = "modeltest",
+                            logfile = tempfile(),
+                            model_outpath = paste0(tempdir(), "/a"),
                             mode = "nn-class",
                             cv_fold = 1,
                             test_fraction = 0.2,
