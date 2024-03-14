@@ -1,4 +1,5 @@
 require(ape)
+skip_on_cran()
 
 dat <- data.frame(species = c("A","B", "X"),
                   decimallongitude = runif(180,10,15),
@@ -10,13 +11,11 @@ res <- iucnn_prepare_phy(phy = tree, numeigen = 5)
 
 
 test_that("iucnn_prepare_phy works", {
-  skip_on_cran()
   expect_type(res, "list")
   expect_equal(dim(res), c(10, 6))
 })
 
 test_that("iucnn_phylogenetic_features works", {
-  skip_on_cran()
   res <- iucnn_phylogenetic_features(x = dat,
                               phy.eigen = res)
 
