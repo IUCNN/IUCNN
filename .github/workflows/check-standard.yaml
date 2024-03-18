@@ -18,11 +18,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: 'release'}
-          - {os: ubuntu-latest,   r: 'oldrel-1'}
+      - {os: macos-latest,   r: "release",  py: "3.x" }
+      - {os: windows-latest, r: "release",  py: "3.x" }
+      - {os: ubuntu-latest,  r: "devel",    py: "3.x", http-user-agent: "release"}
+      - {os: ubuntu-latest,  r: "oldrel-1", py: "3.x" }
+      - {os: ubuntu-latest,  r: "release",  py: "3.9" }
+      - {os: ubuntu-latest,  r: "release",  py: "3.10"}
+      - {os: ubuntu-latest,  r: "release",  py: "3.11"}
+      - {os: ubuntu-latest,  r: "release",  py: "3.12"}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -38,12 +41,65 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.config.py }}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: setup r-reticulate venv
+        shell: Rscript {0}
+        run: |
+          python_packages <- c("numpy")
+
+        library(reticulate)
+        virtualenv_create("r-reticulate", Sys.which("python"))
+        virtualenv_install("r-reticulate", python_packages)
+
+        path_to_python <- virtualenv_python("r-reticulate")
+        writeLines(sprintf("RETICULATE_PYTHON=%s", path_to_python),
+                   Sys.getenv("GITHUB_ENV"))
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+  R-CMD-check-no-python:
+    runs-on: ${{ matrix.config.os }}
+
+    name: CHK no python
+
+    strategy:
+      fail-fast: false
+    matrix:
+      config:
+      - {os: ubuntu-latest,  r: "release" }
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v3
+
+    - uses: r-lib/actions/setup-pandoc@v2
+
+    - uses: r-lib/actions/setup-r@v2
+    with:
+      r-version: ${{ matrix.config.r }}
+    http-user-agent: ${{ matrix.config.http-user-agent }}
+    use-public-rspm: true
+
+    - uses: r-lib/actions/setup-r-dependencies@v2
+    with:
+      extra-packages: any::rcmdcheck
+    needs: check
+
+    - uses: r-lib/actions/check-r-package@v2
+    with:
+      upload-snapshots: true
+
+
