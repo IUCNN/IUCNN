@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release', python: '3.11'}
-          - {os: windows-latest, r: 'release', python: '3.11'}
-          - {os: ubuntu-latest,   r: 'release', python: '3.11'}
-          - {os: ubuntu-latest,   r: 'oldrel-1', python: '3.11'}
+          - {os: macos-latest,   r: 'release', python: '3.11',  tf: 'default'}
+          - {os: windows-latest, r: 'release', python: '3.11',  tf: 'default'}
+          - {os: ubuntu-latest,   r: 'release', python: '3.11',  tf: 'default'}
+          - {os: ubuntu-latest,   r: 'oldrel-1', python: '3.11',  tf: 'default'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -54,6 +54,9 @@ jobs:
           reticulate::virtualenv_install("agcounts", c("numpy", "tensorflow"))
           python <- reticulate::virtualenv_python("agcounts")
           writeLines(sprintf("RETICULATE_PYTHON=%s", python), Sys.getenv("GITHUB_ENV"))
+
+      - name: Install TensorFlow
+        run: tensorflow::install_tensorflow(version = '${{ matrix.tf }}-cpu')
 
       - uses: r-lib/actions/check-r-package@v2
         with:

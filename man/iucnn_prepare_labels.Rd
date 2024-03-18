@@ -19,7 +19,7 @@ iucnn_prepare_labels(
 two columns with the species names and IUCN categories
 respectively. The column names are defined by the
 species and labels arguments. If a list, expecting
-the format as returned by \link[rredlist]{rl_search}.}
+the format as returned by \code{rredlist::rl_search}.}
 
 \item{y}{object of class \code{iucnn-features} or \code{iucnn_cnn_features}.
 Ensures that the species in the return value are in the same order as in y.}
