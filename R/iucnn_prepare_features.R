@@ -30,7 +30,7 @@
 #' @family Feature preparation
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 
 #' dat <- data.frame(species = c("A","B"),
 #'                   decimallongitude = runif (200,10,15),

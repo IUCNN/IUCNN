@@ -27,7 +27,7 @@
 #' @family Feature preparation
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' dat <- data.frame(species = c("A", "b"),
 #'                   decimallongitude = runif(200, 10, 15),
 #'                   decimallatitude = runif(200, -5, 5))

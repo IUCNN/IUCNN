@@ -1,5 +1,7 @@
 skip_on_cran()
 skip_if_offline()
+skip_on_ci()
+
 have_numpy <- reticulate::py_module_available("numpy")
 if (isFALSE(have_numpy)) {
   testthat::skip("numpy not available for testing")

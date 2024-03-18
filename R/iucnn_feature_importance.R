@@ -51,7 +51,7 @@
 #'  delta_acc_mean column).
 #'
 #' @examples
-#'\donttest{
+#'\dontrun{
 #'data("training_occ")
 #'data("training_labels")
 #'

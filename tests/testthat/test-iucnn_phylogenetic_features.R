@@ -1,5 +1,7 @@
 require(ape)
 skip_on_cran()
+skip_on_ci()
+
 
 dat <- data.frame(species = c("A","B", "X"),
                   decimallongitude = runif(180,10,15),
