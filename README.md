@@ -1,7 +1,7 @@
 <!-- badges: start -->
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![DOI](https://zenodo.org/badge/293626039.svg)](https://zenodo.org/badge/latestdoi/293626039)
-[![R-CMD-check](https://github.com/azizka/IUCNN/workflows/check-standard/badge.svg)](https://github.com/azizka/IUCNN/actions)
+[![R-CMD-check](https://github.com/azizka/IUCNN/workflows/check-standard/badge.svg)](https://github.com/azizka/IUCNN/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
 
 **IUCNN has been updated to version 3.0 on github and will shortly be updated on CRAN to adapt to the retirement of sp and raster. The update may not be compatible with analysis-pipelines build with version 2.x**
