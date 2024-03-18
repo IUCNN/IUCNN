@@ -86,7 +86,7 @@ iucnn_geography_features <- function(x,
     mutate(mean_lat = abs(.data$mean_lat))
 
     # EOO and AOO
-    if (!verbose) {sink("/dev/null")}
+    if (!verbose) {sink(tempfile())}
     spa <- ConBatch(taxa = uni[species] %>%  unlist(),
                            lat = uni[lat] %>%  unlist(),
                            long = uni[lon] %>%  unlist(),

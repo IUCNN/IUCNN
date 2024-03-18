@@ -110,7 +110,7 @@ iucnn_cnn_train <- function(x,
                             pooling_strategy = 'average',
                             save_model = TRUE,
                             overwrite = FALSE,
-                            verbose=0){
+                            verbose = 0){
 
   # Check input
   ## assertion
