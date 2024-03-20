@@ -16,8 +16,8 @@
           reticulate::py_install('numpy==1.23.5')")
   }
   config <- reticulate::py_config()
-  np_version <- config$numpy$version
-  if (np_version != '1.23.5') {
+  np_version <- as.numeric(gsub("\\.", "", config$numpy$version))
+  if (np_version > 1235) {
     message("Incompatible numpy version available. Download it using:
           reticulate::py_install('numpy==1.23.5')")
   }

@@ -41,8 +41,16 @@ reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
 4. Install the npBNN python library from Github:
 
 ```r
-reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE, packages = c("scipy>=1.5.2", "pandas>=1.1.5", "matplotlib>=3.3.3", "numpy==1.23.5"))
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE, packages = c("scipy>=1.5.2", "pandas>=1.1.5", "matplotlib>=3.3.3", "numpy<=1.23.5"))
 ```
+
+5. Get compatible version of numpy:
+
+```r
+reticulate::py_install('numpy==1.23.5')
+```
+
+
 
 # Usage
 There are multiple models and features available in IUCNN. A vignette with a detailed tutorial on how to use those is available as part of the package: `vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")`. Running IUCNN will write files to your working directory.
