@@ -85,7 +85,7 @@ def build_cnn_model(input_shape, kernels_conv, pool_size, act_f, act_f_out, n_cl
                                               activation=act_f_out))
     model = tf.keras.Sequential(architecture)
     # compile model
-    loss_f = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    loss_f = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)
     model.compile(loss=loss_f,
                   optimizer="adam",
                   metrics=['accuracy'])

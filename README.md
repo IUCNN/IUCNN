@@ -38,10 +38,15 @@ If you are using **Windows**, you can install tensorflow using pip:
 reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
 ```
 
-4. Finally install the npBNN python library from Github:
+4. Install the npBNN python library from Github:
 
 ```r
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE)
+```
+
+5. Install the compatible version of numpy
+```r
+reticulate::py_install("numpy==1.23.5")
 ```
 
 # Usage
