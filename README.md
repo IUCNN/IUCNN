@@ -10,7 +10,7 @@
 Batch estimation of species' IUCN Red List threat status using neural networks.
 
 # Installation
-1. Install IUCNN directly from Github using devtools. 
+1. Install IUCNN directly from Github using devtools (some users, will need to start from the step 2 before installing the package). 
 ```r
 install.packages("devtools")
 library(devtools)
@@ -35,7 +35,7 @@ reticulate::conda_install("r-reticulate","tensorflow=2.4")
 If you are using **Windows**, you can install tensorflow using pip:
 
 ```r
-reticulate::py_install("tensorflow~=2.4.0rc4", pip = TRUE)
+reticulate::py_install("tensorflow~=2.5.0rc4", pip = TRUE)
 ```
 
 4. Install the npBNN python library from Github:

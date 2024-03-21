@@ -4,6 +4,9 @@
   # numpy <<- reticulate::import("numpy", delay_load = TRUE)
   # tensorflow <<- reticulate::import("tensorflow", delay_load = TRUE)
   reticulate::configure_environment(pkgname)
+}
+
+.onAttach <- function(libname, pkgname) {
   if (isFALSE(reticulate::condaenv_exists())) {
     message(
       paste("Before using the package functions, follow the instrunctions",
@@ -22,4 +25,3 @@
           reticulate::py_install('numpy==1.23.5')")
   }
 }
-
