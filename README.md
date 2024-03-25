@@ -26,7 +26,6 @@ library(reticulate)
 install_miniconda()
 ```
 
-
 3. Install the tensorflow python library. If you are using **MacOS** or **Linux** it is recommended to install tensorflow using conda:
 ```r
 reticulate::conda_install("r-reticulate","tensorflow=2.4")
@@ -41,15 +40,8 @@ reticulate::py_install("tensorflow~=2.5.0rc4", pip = TRUE)
 4. Install the npBNN python library from Github:
 
 ```r
-reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE, packages = c("scipy>=1.5.2", "pandas>=1.1.5", "matplotlib>=3.3.3", "numpy<=1.23.5"))
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE)
 ```
-
-5. Get compatible version of numpy:
-
-```r
-reticulate::py_install('numpy==1.23.5')
-```
-
 
 
 # Usage
