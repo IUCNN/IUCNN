@@ -40,7 +40,7 @@
 #'information about the best model.
 #'
 #' @examples
-#'\dontrun{
+#'\donttest{
 #'
 #'data("training_occ") #geographic occurrences of species with IUCN assessment
 #'data("training_labels")# the corresponding IUCN assessments

@@ -166,7 +166,7 @@ See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 for a tutorial on how to run IUCNN.
 }
 \examples{
-\dontrun{
+\donttest{
 data("training_occ") #geographic occurrences of species with IUCN assessment
 data("training_labels")# the corresponding IUCN assessments
 

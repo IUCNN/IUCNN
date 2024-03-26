@@ -51,7 +51,7 @@ For more control over feature preparation, you can use the
 Without internet access, only geographic features are calculated,
 }
 \examples{
-\dontrun{
+\donttest{
 dat <- data.frame(species = c("A","B"),
                   decimallongitude = runif (200,10,15),
                   decimallatitude = runif (200,-5,5))

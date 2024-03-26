@@ -34,7 +34,7 @@
 #'@return a data.frame with species names and numeric labels
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' dat <- data.frame(species = c("A", "B"),
 #'                   decimallongitude = runif(200, 10, 15),
 #'                   decimallatitude = runif(200, -5, 5))

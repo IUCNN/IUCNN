@@ -25,7 +25,7 @@ prepared with the \code{iucnn_prepare_phy} function.
 Tip labels need to match the species names in x.
 }
 \examples{
-\dontrun{
+\donttest{
 dat <- data.frame(species = c("A","B", "X"),
                   decimallongitude = runif(180,10,15),
                   decimallatitude = runif(180,-5,5))
