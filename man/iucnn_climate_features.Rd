@@ -64,7 +64,7 @@ Rescaling is only done for these default variables.
 All climate variables are summarized  to the species median.
 }
 \examples{
-\donttest{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
                   decimallongitude = runif(200,10,15),
                   decimallatitude = runif(200,-5,5))

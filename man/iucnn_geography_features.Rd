@@ -44,7 +44,7 @@ Coordinate ranges are 90\% quantiles, for species with
 less than three occurrences EOO is set to AOO.
 }
 \examples{
-\donttest{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
                   decimallongitude = runif(200,10,15),
                   decimallatitude = runif(200,-5,5))

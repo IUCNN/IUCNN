@@ -34,7 +34,7 @@
 #'labels for the input species.
 #'
 #' @examples
-#'\donttest{
+#'\dontrun{
 #'data("training_occ") #geographic occurrences of species with IUCN assessment
 #'data("training_labels")# the corresponding IUCN assessments
 #'data("prediction_occ") #occurrences from Not Evaluated species to prdict

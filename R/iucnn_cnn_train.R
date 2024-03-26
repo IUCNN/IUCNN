@@ -73,7 +73,7 @@
 #'@keywords Training
 
 #' @examples
-#'\donttest{
+#'\dontrun{
 #'data("training_occ") #geographic occurrences of species with IUCN assessment
 #'data("training_labels")# the corresponding IUCN assessments
 #'

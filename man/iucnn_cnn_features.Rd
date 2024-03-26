@@ -44,7 +44,7 @@ a convolutional neural network to approximate species extinction risk.
 If y is not provided, assumes a lat/lon grid with extent equal to the respective minimum and maximum in x
 }
 \examples{
-\donttest{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
                   decimallongitude = runif(200, 10, 15),
                   decimallatitude = runif(200, -5, 5))

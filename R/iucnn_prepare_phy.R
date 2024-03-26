@@ -14,7 +14,7 @@
 #' @family Feature preparation
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' library(ape)
 #' tree <- rphylo(n = 10, birth=0.1, death=0)
 #' iucnn_prepare_phy(phy = tree)

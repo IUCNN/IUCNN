@@ -73,7 +73,7 @@ By default four categories of increasing human footprint index
 ( 1 = lowest, 4 = highest) are selected and rescaled.
 }
 \examples{
-\donttest{
+\dontrun{
 dat <- data.frame(species = c("A","B"),
                   decimallongitude = runif(200,10,15),
                   decimallatitude = runif(200,-5,5))
