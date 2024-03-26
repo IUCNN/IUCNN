@@ -26,15 +26,12 @@ library(reticulate)
 install_miniconda()
 ```
 
-3. Install the tensorflow python library. If you are using **MacOS** or **Linux** it is recommended to install tensorflow using conda:
+3. Install the tensorflow python library. Note that you may need a fresh
+R session to run the following code.
 ```r
-reticulate::conda_install("r-reticulate","tensorflow=2.4")
-```
-
-If you are using **Windows**, you can install tensorflow using pip:
-
-```r
-reticulate::py_install("tensorflow~=2.5.0rc4", pip = TRUE)
+install_github("rstudio/tensorflow")
+library(tensorflow)
+install_tensorflow()
 ```
 
 4. Install the npBNN python library from Github:
