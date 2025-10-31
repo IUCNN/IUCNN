@@ -74,14 +74,19 @@ bnn_load_data <- function(features,
   bn <- reticulate::import("np_bnn")
 
   dat <- bn$get_data(features,
-                    labels,
-                    seed = as.integer(seed),
-                    testsize = testsize, # 10% test set
-                    all_class_in_testset = as.integer(all_class_in_testset),
-                    randomize_order = randomize_order,
-                    header = as.integer(header), # input data has a header
-                    instance_id = as.integer(instance_id), # input data includes column with names of instances
-                    from_file = from_file)
+                     labels,
+                     seed = as.integer(seed),
+                     testsize = testsize, # 10% test set
+                     all_class_in_testset = as.integer(all_class_in_testset),
+                     randomize_order = randomize_order,
+                     header = as.integer(header), # input data has a header
+                     instance_id = as.integer(instance_id), # input data includes column with names of instances
+                     from_file = from_file)
+
+  # Remove elements that cannot be converted to python object and are not used anyway
+  # named list
+  dat$label_dict <- NULL
+
   return(dat)
 }
 
@@ -102,14 +107,14 @@ create_BNN_model <- function(feature_data,
   alphas <- as.integer(c(0, 0))
 
   bnn_model <- bn$npBNN(feature_data,
-                       n_nodes = as.integer(as.list(n_nodes_list)),
-                       use_class_weights = as.integer(use_class_weight),
-                       actFun = bn$ActFun(fun = actfun),
-                       use_bias_node = as.integer(use_bias_node),
-                       prior_f = as.integer(prior),
-                       p_scale = as.integer(p_scale),
-                       seed = as.integer(seed),
-                       init_std = init_std)
+                        n_nodes = as.integer(as.list(n_nodes_list)),
+                        use_class_weights = as.integer(use_class_weight),
+                        actFun = bn$ActFun(fun = actfun),
+                        use_bias_node = as.integer(use_bias_node),
+                        prior_f = as.integer(prior),
+                        p_scale = as.integer(p_scale),
+                        seed = as.integer(seed),
+                        init_std = init_std)
   return(bnn_model)
 }
 
@@ -394,14 +399,14 @@ process_iucnn_input <- function(x,
 
     # check if species were lost by the merging
     if (nrow(tmp.in) != nrow(x)) {
-      mis <- x$species[!x$species %in% tmp$species]
+      mis <- x$species[!x$species %in% tmp.in$species]
       if (verbose == 1) {
         warning("Labels for species not found, species removed.\n", paste(mis, "\n"))
       }
     }
 
     if (nrow(tmp.in) != nrow(lab$labels)) {
-      mis <- lab$labels$species[!lab$labels$species %in% tmp$species]
+      mis <- lab$labels$species[!lab$labels$species %in% tmp.in$species]
       if (verbose == 1) {
         warning("Features for species not found, species removed.\n", paste(mis, "\n"))
       }

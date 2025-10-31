@@ -67,20 +67,20 @@ iucnn_predict_status <- function(x,
                           return_raw = FALSE){
 
   # assertions
-  if (!file.exists(model$trained_model_path)) {
+  if (!file.exists(model$trained_model_path[1])) {
     stop("Model path doesn't exist.
          Maybe you saved the model in a temporary file")
   }
 
   assert_class(model, classes = "iucnn_model")
 
-  if (model$cv_fold > 1) {
-    stop("Provided model consists of multiple cross-validation (CV) folds.\n
-          CV models are only used for model evaluation in IUCNN.
-          Retrain your chosen model without using CV.
-          To do this you can use the iucnn_train_model function and simply
-          provide your CV model under the \'production_model\' flag.")
-  }
+  # if (model$cv_fold > 1) {
+  #   stop("Provided model consists of multiple cross-validation (CV) folds.\n
+  #         CV models are only used for model evaluation in IUCNN.
+  #         Retrain your chosen model without using CV.
+  #         To do this you can use the iucnn_train_model function and simply
+  #         provide your CV model under the \'production_model\' flag.")
+  # }
 
   # only run tests for models other than cnn
   if (!model$model == 'cnn') {
@@ -107,7 +107,8 @@ iucnn_predict_status <- function(x,
     dataset <- as.matrix(data_out[[1]])
     instance_names <- data_out[[3]]
 
-  }else{
+  }
+  else {
     dataset = x
     instance_names = names(x)
   }
@@ -115,16 +116,22 @@ iucnn_predict_status <- function(x,
 
   if (target_acc == 0) {
     confidence_threshold <- NULL
-  }else{
+  }
+  else {
     acc_thres_tbl <- model$accthres_tbl
     if (class(acc_thres_tbl)[1] == "matrix") {
-     confidence_threshold <- acc_thres_tbl[min(which(acc_thres_tbl[,2] >
-                                                       target_acc)),][1]
-    }else{
-     stop('Table with accuracy thresholds required when choosing target_acc > 0.
+      confidence_threshold <- NULL
+      greater_thresh <- acc_thres_tbl[, 2] > target_acc
+      if (any(greater_thresh)) {
+        m <- min(which(greater_thresh))
+        confidence_threshold <- acc_thres_tbl[m, 1]
+      }
+    }
+    else {
+      stop('Table with accuracy thresholds required when choosing target_acc > 0.
           This is only available for models where
           \'mc_dropout=TRUE\' and \'dropout_rate\' > 0.')
-   }
+    }
   }
 
 
@@ -136,52 +143,143 @@ iucnn_predict_status <- function(x,
     reticulate::source_python(system.file("python",
                                           "IUCNN_helper_functions.py",
                                           package = "IUCNN"))
-    pred_out <- predict_bnn(features = as.matrix(dataset),
-                            model_path = model$trained_model_path,
-                            posterior_threshold = confidence_threshold,
-                            post_summary_mode = 0
-                          )
+    pred_out_2 <- predict_bnn(features = as.matrix(dataset),
+                              model_path = model$trained_model_path,
+                              posterior_threshold = confidence_threshold,
+                              post_summary_mode = 0)
+    if (model$min_max_label_rescaled[2] == 1) {
+      labels <- c("Not Threatened", "Threatened")
+    }
+    else {
+      labels <- c("LC", "NT", "VU", "EN", "CR")
+    }
+    pred_out_2$class_predictions <- labels[pred_out_2$class_predictions + 1]
 
 
-  }else{
+  }
+  else {
     # source python function
     reticulate::source_python(system.file("python", "IUCNN_predict.py",
                                           package = "IUCNN"))
 
     # run predict function
-    pred_out <- iucnn_predict(
-                   input_raw = dataset,
-                   model_dir = model$trained_model_path,
-                   iucnn_mode = model$model,
-                   dropout = model$mc_dropout,
-                   dropout_reps = dropout_reps,
-                   confidence_threshold = confidence_threshold,
-                   rescale_factor = model$label_rescaling_factor,
-                   min_max_label = model$min_max_label_rescaled,
-                   stretch_factor_rescaled_labels = model$label_stretch_factor)
+    pred_out <- vector(mode = "list", length = model$cv_fold)
+    num_reps <- 1000 # from IUCNN_predict.py
+    num_taxa = nrow(x)
+    if (model$model == "cnn") {
+      num_taxa = length(x)
+    }
+    
+    num_iucn_cats <- length(model$input_data$lookup.lab.num.z)
+    mc_dropout_probs <- array(NA_real_,
+                              dim = c(model$cv_fold, num_taxa, num_iucn_cats))
+    sampled_cat_freqs <- array(NA_real_,
+                               dim = c(model$cv_fold, num_reps, num_iucn_cats))
+    class_predictions <- matrix(NA_integer_,
+                                nrow = num_taxa,
+                                ncol = model$cv_fold)
+    raw_predictions <- vector(mode = "list", length = model$cv_fold)
+
+    confidence_threshold2 <- confidence_threshold
+    if (model$cv_fold > 1) {
+      confidence_threshold2 <- 0.0
+    }
+
+    for (i in 1:model$cv_fold) {
+      pred_out[[i]] <- iucnn_predict(
+        input_raw = dataset,
+        model_dir = model$trained_model_path[i],
+        iucnn_mode = model$model,
+        dropout = model$mc_dropout,
+        dropout_reps = dropout_reps,
+        confidence_threshold = confidence_threshold2,
+        rescale_factor = model$label_rescaling_factor,
+        min_max_label = model$min_max_label_rescaled,
+        stretch_factor_rescaled_labels = model$label_stretch_factor)
+
+      class_predictions[, i] <- pred_out[[i]]$class_predictions
+      sampled_cat_freqs[i, , ] <- pred_out[[i]]$sampled_cat_freqs
+      raw_predictions[[i]] <- pred_out[[i]]$raw_predictions
+
+      if (model$mc_dropout && dropout_reps > 0) {
+        mc_dropout_probs[i, , ] <- pred_out[[i]]$mc_dropout_probs
+      }
+      pred_out[[i]]$names <- instance_names
+    }
+
+    if (model$cv_fold == 1) {
+      # No CV
+      cat_count <- get_cat_count(pred_out[[1]]$class_predictions,
+                                 max_cat = num_iucn_cats - 1,
+                                 include_NA = TRUE)
+      pred_out[[1]]$pred_cat_count <- cat_count
+      if (return_IUCN) {
+        # Translate prediction to original labels
+        lu <- model$input_data$lookup.labels
+        names(lu) <- model$input_data$lookup.lab.num.z
+
+        predictions <- lu[pred_out[[1]]$class_predictions + 1]
+        names(predictions) <- NULL
+        pred_out[[1]]$class_predictions <- predictions
+      }
+      if (return_raw == FALSE) {
+        pred_out[[1]]$raw_predictions <- NaN
+      }
+      pred_out_2 <- pred_out[[1]]
+    }
+    else {
+      # CV
+      names_out <- c("raw_predictions", "sampled_cat_freqs",
+                     "mc_dropout_probs", "class_predictions",
+                     "pred_cat_count", "names")
+      pred_out_2 <- vector(mode = "list", length = length(names_out))
+      names(pred_out_2) <- names_out
+
+      pred_out_2$names <- instance_names
+
+      class_predictions <- 1 + apply(class_predictions, 1, majority_vote)
+      pred_out_2$class_predictions <- class_predictions
+
+      if (model$mc_dropout && dropout_reps > 0) {
+        summed_sampled_cat_freqs <- apply(sampled_cat_freqs, c(2, 3), sum)
+        pred_out_2$sampled_cat_freqs <- summed_sampled_cat_freqs / model$cv_fold
+
+        summed_prob_per_cat <- apply(mc_dropout_probs, c(2, 3), sum)
+        pred_out_2$mc_dropout_probs <- summed_prob_per_cat / model$cv_fold
+
+        high_pp_indices <- apply(pred_out_2$mc_dropout_probs, 1, max) < confidence_threshold
+
+        if (return_IUCN) {
+          # Same as the IUCNN_predict.py does
+          class_predictions <- apply(pred_out_2$mc_dropout_probs, 1, which.max)
+          # Translate prediction to original labels
+          lu <- model$input_data$lookup.labels
+          names(lu) <- model$input_data$lookup.lab.num.z
+          predictions <- lu[class_predictions]
+          names(predictions) <- NULL
+          pred_out_2$class_predictions <- predictions
+          pred_out_2$class_predictions[high_pp_indices] <- NA
+        }
+
+        pred_out_2$mc_dropout_probs[high_pp_indices, ] <- NA
+        class_predictions[high_pp_indices] <- NA
+
+        if (return_raw) {
+          pred_out_2$raw_predictions <- raw_predictions
+        }
+
+      }
+      cat_count <- get_cat_count(class_predictions - 1,
+                                 max_cat = num_iucn_cats - 1,
+                                 include_NA = TRUE)
+      pred_out_2$pred_cat_count <- cat_count
+    }
   }
 
-  cat_count = get_cat_count(pred_out$class_predictions,
-                max_cat = length(model$input_data$lookup.lab.num.z)-1,
-                include_NA = TRUE)
-  pred_out$pred_cat_count = cat_count
 
-  # Translate prediction to original labels
-  if (return_IUCN) {
-    lu <- model$input_data$lookup.labels
-    names(lu) <- model$input_data$lookup.lab.num.z
+  class(pred_out_2) <- "iucnn_predictions"
 
-    predictions <- lu[pred_out$class_predictions + 1]
-    names(predictions) <- NULL
-    pred_out$class_predictions <- predictions
-  }
-  if (return_raw == FALSE) {
-    pred_out$raw_predictions <- NaN
-  }
-  pred_out$names <- instance_names
-  class(pred_out) <- "iucnn_predictions"
-
-  return(pred_out)
+  return(pred_out_2)
 
 }
 

@@ -1,14 +1,17 @@
 import os, datetime, sys
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
+import keras
 
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # disable tf compilation warning
 except:
     pass
 
+# disable progress bars globally (instead of model.predict(..., verbose=0), which does not supress progress output in R)
+tf.keras.utils.disable_interactive_logging()
 
+@keras.saving.register_keras_serializable()
 class MCDropout(tf.keras.layers.Dropout):
     def call(self, inputs):
         return super().call(inputs, training=True)
@@ -218,6 +221,8 @@ def train_cnn_model(input_raw,
                     verbose
                     ):
 
+
+
     # load settings
     # model hyper-parameters
     cv_k = int(cv_k)
@@ -232,7 +237,7 @@ def train_cnn_model(input_raw,
         criterion = 'val_loss'
     np.random.seed(seed)
     tf.random.set_seed(seed)
-
+    keras.utils.set_random_seed(seed)
 
 
     # raw input data
@@ -409,7 +414,7 @@ def train_cnn_model(input_raw,
         if save_model:
             if not os.path.exists(path_to_output):
                 os.makedirs(path_to_output)
-            model_outpath = os.path.join(path_to_output, 'cnn_model_%i'%it)
+            model_outpath = os.path.join(path_to_output, 'cnn_model_%i.keras' % it)
             model.save( model_outpath )
             print("CNN model saved at: ", model_outpath,flush=True)
         else:

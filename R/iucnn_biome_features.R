@@ -78,7 +78,7 @@ iucnn_biome_features <- function(x,
       "wwf_terr_ecos.shp"
     ))) {
       download.file(
-        "http://assets.worldwildlife.org/publications/15/files/original/official_teow.zip",
+        "https://files.worldwildlife.org/wwfcmsprod/files/Publication/file/6kcchn7e3u_official_teow.zip",
         destfile = file.path(download_folder, "wwf_ecoregions.zip")
       )
       unzip(

@@ -3,6 +3,7 @@
 .onLoad <- function(libname, pkgname) {
   # numpy <<- reticulate::import("numpy", delay_load = TRUE)
   # tensorflow <<- reticulate::import("tensorflow", delay_load = TRUE)
+  Sys.setenv(TF_USE_LEGACY_KERAS = "False")
   reticulate::configure_environment(pkgname)
 }
 

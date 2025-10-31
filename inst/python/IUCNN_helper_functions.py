@@ -125,10 +125,4 @@ def predict_bnn(features, model_path, posterior_threshold=0, post_summary_mode =
         'class_predictions':predictions
     }
 
-    return  out_dict    
-
-
-
-    
-
-
+    return  out_dict

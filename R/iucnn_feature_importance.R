@@ -43,6 +43,8 @@
 #'defined block are shuffled independently.
 #'If FALSE, each feature column within a block is resorted in the same manner.
 #'Default is TRUE.
+#'This can also be a vector of TRUE and FALSE with the same length as the
+#'feature blocks.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 #'  for a tutorial on how to run IUCNN.
@@ -84,7 +86,7 @@ iucnn_feature_importance <- function(x,
                                      verbose = FALSE,
                                      unlink_features_within_block = TRUE){
 
-  if (!file.exists(x$trained_model_path)) {
+  if (!any(file.exists(x$trained_model_path))) {
     stop("Model path doesn't exists.
          Please check if you saved it in a temporary directory.")
   }
@@ -97,6 +99,77 @@ iucnn_feature_importance <- function(x,
   assert_logical(verbose)
   assert_logical(unlink_features_within_block)
 
+  fb <- make_feature_block(x = x,
+                           feature_blocks = feature_blocks,
+                           include_all_features = TRUE,
+                           provide_indices = provide_indices,
+                           unlink_features_within_block = unlink_features_within_block)
+  feature_block_indices <- fb$feature_block_indices
+  unlink_features_within_block <- fb$unlink_features_within_block
+
+  if (x$model == 'bnn-class') {
+    # source python function
+    bn <- import("np_bnn")
+    feature_importance_out <- bn$feature_importance(x$input_data$test_data,
+                                                   weights_pkl = x$trained_model_path,
+                                                   true_labels = x$input_data$test_labels,
+                                                   fname_stem = x$input_data$file_name,
+                                                   feature_names = x$input_data$feature_names,
+                                                   n_permutations = as.integer(n_permutations),
+                                                   write_to_file = FALSE,
+                                                   feature_blocks = feature_block_indices,
+                                                   unlink_features_within_block = unlink_features_within_block)
+    selected_cols <- feature_importance_out[,2:4]
+  }else{
+    if (is.nan(x$input_data$test_data[1])) {
+      use_these_features <- x$input_data$data
+      use_these_labels <- x$input_data$labels
+
+    }else{
+      use_these_features <- x$input_data$test_data
+      use_these_labels <- x$input_data$test_labels
+    }
+    cv_k <- length(x$trained_model_path)
+    d_list <- vector(mode = "list", length = cv_k)
+    for (k in 1:cv_k) {
+      reticulate::source_python(system.file("python", "IUCNN_feature_importance.py", package = "IUCNN"))
+      feature_importance_out <- feature_importance_nn(input_features = use_these_features,
+                                                      true_labels = use_these_labels,
+                                                      model_dir = x$trained_model_path[k],
+                                                      iucnn_mode = x$model,
+                                                      feature_names = x$input_data$feature_names,
+                                                      rescale_factor = x$label_rescaling_factor,
+                                                      min_max_label = x$min_max_label,
+                                                      stretch_factor_rescaled_labels = x$label_stretch_factor,
+                                                      verbose = verbose,
+                                                      n_permutations = as.integer(n_permutations),
+                                                      feature_blocks = feature_block_indices,
+                                                      unlink_features_within_block = unlink_features_within_block)
+      d_list[[k]] <- round(data.frame(matrix(unlist(feature_importance_out),
+                                             nrow = length(feature_importance_out),
+                                             byrow = TRUE)), 3)
+    }
+    # Mean across cross-validation schemes (cv_k > 1) or a single test_fraction
+    d <- Reduce('+', d_list) / cv_k
+
+    d['feature_block'] <- names(feature_importance_out)
+    selected_cols <- d[c('feature_block','X1','X2')]
+  }
+  names(selected_cols) <- c('feature_block',
+                            'feat_imp_mean',
+                            'feat_imp_std')
+
+  class(selected_cols) <- "iucnn_featureimportance"
+
+  return(selected_cols)
+}
+
+
+make_feature_block <- function(x,
+                               feature_blocks = list(),
+                               include_all_features = TRUE,
+                               provide_indices = FALSE,
+                               unlink_features_within_block = TRUE) {
   if (length(feature_blocks) == 0) {
     ffb <- list(
       geographic = c("tot_occ",
@@ -145,8 +218,8 @@ iucnn_feature_importance <- function(x,
                  "biome_14",
                  "biome_99")
     )
-
-  }else{
+  }
+  else {
     if (provide_indices) {
       i <- 0
       ffb <- NULL
@@ -156,7 +229,8 @@ iucnn_feature_importance <- function(x,
         block_name <- paste(selected_features, collapse = ',')
         ffb[[block_name]] <- selected_features
       }
-    }else{
+    }
+    else {
       if (is.null(names(feature_blocks))) {
         names(feature_blocks) <- feature_blocks
       }
@@ -165,6 +239,11 @@ iucnn_feature_importance <- function(x,
         ffb['species'] <- NULL
       }
     }
+  }
+
+  if (length(unlink_features_within_block) > 1 &&
+      (length(unlink_features_within_block) != length(ffb))) {
+    stop("Length of feature block and unlink_features_within_block differ")
   }
 
   all_selected_feature_names <- c()
@@ -181,59 +260,23 @@ iucnn_feature_importance <- function(x,
     feature_block_indices[i] <- list(feature_indices)
   }
 
-  # treat all features that are not part of a defined feature block as an individual block
-  remaining_features <- setdiff(x$input_data$feature_names,
-                               all_selected_feature_names)
-  for (fname in remaining_features) {
-    findex <- which(x$input_data$feature_names == fname)
-    feature_block_indices[fname] <- as.integer(findex - 1)
-  }
-  if (x$model == 'bnn-class') {
-    # source python function
-    bn <- import("np_bnn")
-    feature_importance_out <- bn$feature_importance(x$input_data$test_data,
-                                                   weights_pkl = x$trained_model_path,
-                                                   true_labels = x$input_data$test_labels,
-                                                   fname_stem = x$input_data$file_name,
-                                                   feature_names = x$input_data$feature_names,
-                                                   n_permutations = as.integer(n_permutations),
-                                                   write_to_file = FALSE,
-                                                   feature_blocks = feature_block_indices,
-                                                   unlink_features_within_block = unlink_features_within_block)
-    selected_cols <- feature_importance_out[,2:4]
-  }else{
-    if (is.nan(x$input_data$test_data[1])) {
-      use_these_features <- x$input_data$data
-      use_these_labels <- x$input_data$labels
-
-    }else{
-      use_these_features <- x$input_data$test_data
-      use_these_labels <- x$input_data$test_labels
+  if (include_all_features) {
+    # treat all features that are not part of a defined feature block as an individual block
+    remaining_features <- setdiff(x$input_data$feature_names,
+                                  all_selected_feature_names)
+    for (fname in remaining_features) {
+      findex <- which(x$input_data$feature_names == fname)
+      feature_block_indices[fname] <- as.integer(findex - 1)
+      if (length(unlink_features_within_block) > 1) {
+        unlink_features_within_block <- c(unlink_features_within_block, TRUE)
+      }
     }
-    reticulate::source_python(system.file("python", "IUCNN_feature_importance.py", package = "IUCNN"))
-    feature_importance_out <- feature_importance_nn(input_features = use_these_features,
-                                                   true_labels = use_these_labels,
-                                                   model_dir = x$trained_model_path,
-                                                   iucnn_mode = x$model,
-                                                   feature_names = x$input_data$feature_names,
-                                                   rescale_factor = x$label_rescaling_factor,
-                                                   min_max_label = x$min_max_label,
-                                                   stretch_factor_rescaled_labels = x$label_stretch_factor,
-                                                   verbose = verbose,
-                                                   n_permutations = as.integer(n_permutations),
-                                                   feature_blocks = feature_block_indices,
-                                                   unlink_features_within_block = unlink_features_within_block)
-    d <- round(data.frame(matrix(unlist(feature_importance_out),
-                                 nrow = length(feature_importance_out),
-                                 byrow = TRUE)), 3)
-    d['feature_block'] <- names(feature_importance_out)
-    selected_cols <- d[c('feature_block','X1','X2')]
   }
-  names(selected_cols) <- c('feature_block',
-                            'feat_imp_mean',
-                            'feat_imp_std')
 
-  class(selected_cols) <- "iucnn_featureimportance"
+  out <- vector(mode = "list", length = 2)
+  names(out) <- c("feature_block_indices", "unlink_features_within_block")
+  out[[1]] <- feature_block_indices
+  out[[2]] <- unlink_features_within_block
 
-  return(selected_cols)
+  return(out)
 }

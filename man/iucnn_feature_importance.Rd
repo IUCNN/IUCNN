@@ -39,7 +39,9 @@ feature importance. Default is FALSE.}
 \item{unlink_features_within_block}{logical. If TRUE, the features within each
 defined block are shuffled independently.
 If FALSE, each feature column within a block is resorted in the same manner.
-Default is TRUE.}
+Default is TRUE.
+This can also be a vector of TRUE and FALSE with the same length as the
+feature blocks.}
 }
 \value{
 a data.frame with the relative importance of each feature block (see

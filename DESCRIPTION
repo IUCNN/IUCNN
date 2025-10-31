@@ -1,6 +1,6 @@
 Package: IUCNN
 Title: Neural Networks to Approximate IUCN Red List Conservation Assessments
-Version: 3.0.0
+Version: 4.0.0
 Authors@R: c(person(given = "Alexander", family = "Zizka", email = "alexander.zizka@idiv.de",
                     role = c("aut", "cre")),
              person(given = "Tobias", family = "Andermann", role = "ctb"),
@@ -10,7 +10,7 @@ License: LGPL-2.1
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 URL: https://github.com/IUCNN/IUCNN
 BugReports: https://github.com/IUCNN/IUCNN/issues
 Suggests: 
@@ -32,6 +32,7 @@ Imports:
     readr,
     reticulate,
     sf,
+    s2,
     stats,
     terra,
     tidyr,

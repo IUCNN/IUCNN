@@ -4,7 +4,7 @@
 [![R-CMD-check](https://github.com/IUCNN/IUCNN/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/IUCNN/IUCNN/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
 
-**IUCNN has been updated to version 3.0 on github and will shortly be updated on CRAN to adapt to the retirement of sp and raster. The update may not be compatible with analysis-pipelines build with version 2.x**
+**IUCNN has been updated to version 4.0 on github and will shortly be updated on CRAN to adapt to the retirement of sp and raster. The update may not be compatible with analysis-pipelines build with version 2.x**
 
 # IUCNN
 Batch estimation of species' IUCN Red List threat status using neural networks.

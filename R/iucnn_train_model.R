@@ -38,6 +38,8 @@
 #'@param max_epochs integer. The maximum number of epochs.
 #'@param patience integer. Number of epochs with no improvement
 #' after which training will be stopped.
+#'@param batch_size integer. Number of samples per gradient update.
+#'If unspecified, batch_size will default to 32.
 #'@param n_layers character string. Define number node per layer by providing a
 #'character string where the number of nodes for each layer are separated by
 #'underscores. E.g. '50_30_10' (default) will train a model with 3 hidden layers with
@@ -96,6 +98,14 @@
 #'@param save_model logical. If TRUE the model is saved to disk.
 #'@param overwrite logical. If TRUE existing models are
 #'overwritten. Default is set to FALSE.
+#'@param optimizer character string. Default adam. Sets the tensorflow
+#'optimizer.
+#'@param optimizer_args named list. Default NULL.
+#'Provides optional arguments for the tensorflow optimizers. See tensorflow
+#'documentation.
+#'@param l2_regularizer named list. Default NULL.
+#'Provides optional values for L2 regularization for the kernel_regularizer,
+#'bias_regularizer, and activity_regularizer. E.g list(kernel_regularizer = 1e-4)
 #'@param verbose Default 0, set to 1 for \code{iucnn_train_model} to print
 #'additional info to the screen while training.
 #'
@@ -122,13 +132,18 @@
 #'
 #'summary(m1)
 #'plot(m1)
+#'
+#'# 3. Change optimizer
+#'m2 <- iucnn_train_model(x = features, lab = labels_train, overwrite = TRUE,
+#'                        optimizer = "SGD", optimizer_args = list(learning_rate = 0.02))
+#'summary(m2)
 #'}
 #'
 #'
 #' @export
 #' @importFrom reticulate py_get_attr source_python
 #' @importFrom stats complete.cases
-#' @importFrom checkmate assert_data_frame assert_character assert_logical assert_numeric
+#' @importFrom checkmate assert_data_frame assert_character assert_logical assert_numeric assert_list assert_names
 
 iucnn_train_model <- function(x,
                         lab,
@@ -140,6 +155,7 @@ iucnn_train_model <- function(x,
                         seed = 1234,
                         max_epochs = 1000,
                         patience = 200,
+                        batch_size = 32,
                         n_layers = '50_30_10',
                         use_bias = TRUE,
                         balance_classes = FALSE,
@@ -154,6 +170,9 @@ iucnn_train_model <- function(x,
                         rescale_features = FALSE,
                         save_model = TRUE,
                         overwrite = FALSE,
+                        optimizer = "adam",
+                        optimizer_args = NULL,
+                        l2_regularizer = NULL,
                         verbose = 1){
 
   # Check input
@@ -176,12 +195,25 @@ iucnn_train_model <- function(x,
   assert_logical(rescale_features)
   assert_logical(overwrite)
   match.arg(mode, choices = c("nn-class", "nn-reg", "bnn-class", "cnn-class"))
-
-  if (cv_fold == 1) {
-    if (test_fraction == 0) {
-      patience <- 0
-    }
+  assert_list(optimizer_args, null.ok = TRUE)
+  match.arg(optimizer,
+            choices = c("adadelta", "adafactor", "adagrad", "adam", "adamw",
+                        "adamax", "ftrl", "nadam", "optimizer", "rmsprop",
+                        "sgd"))
+  assert_list(l2_regularizer, types = "numeric", null.ok = TRUE)
+  names_reg <- names(l2_regularizer)
+  if (!is.null(names_reg)) {
+    assert_names(names_reg,
+                 subset.of = c("kernel_regularizer", "bias_regularizer",
+                               "activity_regularizer"))
   }
+
+  # TH: Why we do not allow fitting a model without test data?
+  # if (cv_fold == 1) {
+  #   if (test_fraction == 0) {
+  #     patience <- 0
+  #   }
+  # }
 
   if (mode == "bnn-class") {
     cat("Please add the number of MCMC generations. Should be at least 1M:\n")
@@ -193,7 +225,7 @@ iucnn_train_model <- function(x,
   if (inherits(provided_model, "iucnn_model")) {
     mode <- provided_model$model
     test_fraction <- 0.
-    cv_fold <- 1
+    cv_fold <- as.integer(1)
     seed <- provided_model$seed
     max_epochs <- round(mean(provided_model$final_training_epoch))
     patience <- 0
@@ -234,7 +266,7 @@ iucnn_train_model <- function(x,
   labels <- data_out[[2]]
   instance_names <- data_out[[3]]
 
-  n_layers <- as.numeric(strsplit(n_layers,'_')[[1]])
+  n_layers <- as.integer(strsplit(n_layers,'_')[[1]])
 
   # set act fun if chosen auto
   if (act_f_out == 'auto') {
@@ -268,16 +300,15 @@ the BNN will instead provide posterior estimates of the class labels for each in
 
     # transform the data into BNN compatible format
     bnn_data <- bnn_load_data(dataset,
-                             labels,
-                             seed = as.integer(seed),
-                             testsize = test_fraction,
-                             all_class_in_testset = FALSE,
-                             randomize_order = randomize_instances,
-                             header = TRUE, # input data has a header
-                             # input data includes names of instances
-                             instance_id = TRUE,
-                             from_file = FALSE
-    )
+                              labels,
+                              seed = as.integer(seed),
+                              testsize = test_fraction,
+                              all_class_in_testset = FALSE,
+                              randomize_order = randomize_instances,
+                              header = TRUE, # input data has a header
+                              # input data includes names of instances
+                              instance_id = TRUE,
+                              from_file = FALSE)
 
     # define number of layers and nodes per layer for BNN
     # define the BNN model
@@ -287,12 +318,11 @@ the BNN will instead provide posterior estimates of the class labels for each in
       bias_node_setting = 0
     }
     bnn_model <- create_BNN_model(bnn_data,
-                                 n_layers,
-                                 seed = as.integer(seed),
-                                 use_class_weight = balance_classes,
-                                 use_bias_node = bias_node_setting,
-                                 actfun = act_f
-    )
+                                  n_layers,
+                                  seed = as.integer(seed),
+                                  use_class_weight = balance_classes,
+                                  use_bias_node = bias_node_setting,
+                                  actfun = act_f)
 
     # set up the MCMC environment
     update_frequencies <- rep(0.05, length(n_layers) + 1)
@@ -333,6 +363,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
     pklfile_path <- as.character(py_get_attr(logger, '_pklfile'))
 
     test_labels <- bnn_data$test_labels
+    test_instance_names <- bnn_data$id_test_data
     test_predictions <- apply(post_pr_test$post_prob_predictions,
                                     1,
                                     which.max) - 1
@@ -411,6 +442,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
                       verbose = 0,
                       max_epochs = as.integer(max_epochs),
                       patience = patience,
+                      batch_size = as.integer(batch_size),
                       n_layers = as.list(n_layers),
                       use_bias = use_bias,
                       balance_classes = balance_classes,
@@ -424,7 +456,10 @@ the BNN will instead provide posterior estimates of the class labels for each in
                       mc_dropout = mc_dropout,
                       label_noise_factor = label_noise_factor,
                       no_validation = no_validation,
-                      save_model = save_model
+                      save_model = save_model,
+                      optimizer = tolower(optimizer),
+                      optimizer_kwargs = optimizer_args,
+                      l2_regularizer = l2_regularizer
     )
 
     test_labels <- as.vector(res$test_labels)

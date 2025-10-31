@@ -47,8 +47,8 @@ If python has been installed before, you can specify the python version to sue w
 3. Install the tensorflow Python module. IUCNN uses functions of the python modules tensorflow and npBNN which also need to be installed (via R). 
 
 ```r
-reticulate::conda_install("r-reticulate","tensorflow=2.4")
-reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.10.tar.gz", 
+reticulate::conda_install("r-reticulate","tensorflow=2.18")
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.17.tar.gz", 
                        pip = TRUE)
 ```
 

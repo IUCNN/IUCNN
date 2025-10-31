@@ -6,17 +6,40 @@ Created on Fri May  6 17:51:02 2021
 @author: Tobias Andermann (tobiasandermann88@gmail.com)
 """
 
-import numpy as np
 import os, sys
+# use only one thread
+try:
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1"
+    os.environ['TF_NUM_INTEROP_THREADS'] = '1'
+    os.environ['TF_NUM_INTRAOP_THREADS'] = '1'
+except:
+    pass
+
+import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 import tensorflow as tf
+import keras
+
+from keras.optimizers import Adadelta, Adagrad, Adam, Adamax, Ftrl, Nadam, Optimizer, RMSprop, SGD
+
+# disable progress bars globally (instead of model.predict(..., verbose=0), which does not supress progress output in R)
+tf.keras.utils.disable_interactive_logging()
+
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # disable tf compilation warning
 except:
     pass
 
-def iucnn_train(dataset, 
+# declare location of the python files make functions of other python files importable
+sys.path.append(os.path.dirname(__file__))
+from IUCNN_predict import rescale_labels, turn_reg_output_into_softmax
+
+def iucnn_train(dataset,
                 labels,
                 mode,
                 path_to_output,
@@ -28,6 +51,7 @@ def iucnn_train(dataset,
                 verbose,
                 max_epochs,
                 patience,
+                batch_size,
                 n_layers,
                 use_bias,
                 balance_classes,
@@ -42,53 +66,108 @@ def iucnn_train(dataset,
                 label_noise_factor,
                 no_validation,
                 save_model,
+                optimizer,
+                optimizer_kwargs,
+                l2_regularizer,
                 test_label_balance_factor = 1.0):
     
+    keras.utils.set_random_seed(seed)
     
+    @keras.saving.register_keras_serializable()
     class MCDropout(tf.keras.layers.Dropout):
         def call(self, inputs):
-            return super().call(inputs, training=True)    
-    
-    def build_classification_model(dropout,dropout_rate,use_bias):
+            return super().call(inputs, training=True)
+
+    def get_optimizer(optimizer, optimizer_kwargs):
+        opt = optimizer
+        if optimizer == 'adadelta' and not optimizer_kwargs is None:
+            opt = Adadelta(**optimizer_kwargs)
+        elif optimizer == 'adafactor' and not optimizer_kwargs is None:
+            opt = Adafactor(**optimizer_kwargs)
+        elif optimizer == 'adagrad' and not optimizer_kwargs is None:
+            opt = Adagrad(**optimizer_kwargs)
+        elif optimizer == 'adam' and not optimizer_kwargs is None:
+            opt = Adam(**optimizer_kwargs)
+        elif optimizer == 'adamw' and not optimizer_kwargs is None:
+            opt = AdamW(**optimizer_kwargs)
+        elif optimizer == 'adamax' and not optimizer_kwargs is None:
+            opt = Adamax(**optimizer_kwargs)
+        elif optimizer == 'ftrl' and not optimizer_kwargs is None:
+            opt = Ftrl(**optimizer_kwargs)
+        elif optimizer == 'nadam' and not optimizer_kwargs is None:
+            opt = Nadam(**optimizer_kwargs)
+        elif optimizer == 'optimizer' and not optimizer_kwargs is None:
+            opt = Optimizer(**optimizer_kwargs)
+        elif optimizer == 'rmsprop' and not optimizer_kwargs is None:
+            opt = RMSprop(**optimizer_kwargs)
+        elif optimizer == 'sgd' and not optimizer_kwargs is None:
+            opt = SGD(**optimizer_kwargs)
+        return opt
+
+    def get_l2_regularizer(l2_regularizer):
+        l2_reg = [None, None, None]
+        if not l2_regularizer is None:
+            if 'kernel_regularizer' in l2_regularizer.keys():
+                l2_reg[0] = tf.keras.regularizers.L2(l2_regularizer['kernel_regularizer'])
+            if 'bias_regularizer' in l2_regularizer.keys():
+                l2_reg[1] = tf.keras.regularizers.L2(l2_regularizer['bias_regularizer'])
+            if 'activity_regularizer' in l2_regularizer.keys():
+                l2_reg[2] = tf.keras.regularizers.L2(l2_regularizer['activity_regularizer'])
+        return l2_reg
+
+    def build_classification_model(dropout, dropout_rate, use_bias, l2_regularizer):
+        l2_regularizer_settings = get_l2_regularizer(l2_regularizer)
         architecture = [tf.keras.layers.Flatten(input_shape=[train_set.shape[1]])]
         architecture.append(tf.keras.layers.Dense(n_layers[0],
-                                      activation=act_f,
-                                      use_bias=use_bias))
+                                                  activation=act_f,
+                                                  use_bias=use_bias,
+                                                  kernel_regularizer=l2_regularizer_settings[0],
+                                                  bias_regularizer=l2_regularizer_settings[1],
+                                                  activity_regularizer=l2_regularizer_settings[2]))
         for i in n_layers[1:]:
             architecture.append(tf.keras.layers.Dense(i, activation=act_f))
         if dropout:
             dropout_layers = [MCDropout(dropout_rate) for i in architecture[1:]]
             architecture = [architecture[0]] + [j for i in zip(architecture[1:],dropout_layers) for j in i]
 
-        architecture.append(tf.keras.layers.Dense(n_class, 
-                                         activation=act_f_out))
+        architecture.append(tf.keras.layers.Dense(n_class,
+                                                  activation=act_f_out))
         model = tf.keras.Sequential(architecture)
+        opt = get_optimizer(optimizer, optimizer_kwargs)
         model.compile(loss='categorical_crossentropy',
-                      optimizer="adam",
+                      optimizer=opt,
                       metrics=['accuracy'])
         return model
 
-    def build_regression_model(dropout,dropout_rate,use_bias):
+    def build_regression_model(dropout, dropout_rate, use_bias, l2_regularizer):
+        l2_regularizer_settings = get_l2_regularizer(l2_regularizer)
         architecture = [tf.keras.layers.Flatten(input_shape=[train_set.shape[1]])]
         architecture.append(tf.keras.layers.Dense(n_layers[0],
-                                      activation=act_f,
-                                      use_bias=use_bias))
+                                                  activation=act_f,
+                                                  use_bias=use_bias,
+                                                  kernel_regularizer=l2_regularizer_settings[0],
+                                                  bias_regularizer=l2_regularizer_settings[1],
+                                                  activity_regularizer=l2_regularizer_settings[2]))
         for i in n_layers[1:]:
             architecture.append(tf.keras.layers.Dense(i, activation=act_f))
 
         if dropout:
             dropout_layers = [MCDropout(dropout_rate) for i in architecture[1:]]
-            architecture = [architecture[0]] + [j for i in zip(architecture[1:],dropout_layers) for j in i]
+            architecture = [architecture[0]] + [j for i in zip(architecture[1:], dropout_layers) for j in i]
 
         if act_f_out:
-            architecture.append(tf.keras.layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
+            # sigmoid or tanh
+            architecture.append(tf.keras.layers.Dense(1,
+                                                      activation=act_f_out))
         else:
             architecture.append(tf.keras.layers.Dense(1))
         model = tf.keras.Sequential(architecture)
-        optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
+#        optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
+        
+        opt = get_optimizer(optimizer, optimizer_kwargs)
         model.compile(loss='mean_squared_error',
-                      optimizer=optimizer,
-                      metrics=['mae','mse'])
+                      optimizer=opt,
+                      metrics=['mae', 'mse'])
         return model
 
     def determine_optim_rounding_boundary(regressed_labels,true_labels):
@@ -147,30 +226,11 @@ def iucnn_train(dataset,
             cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
             return cat_acc, label_predictions, prm_est_mean
 
-    def rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=False):
-        label_range = max(min_max_label)-min(min_max_label)
-        modified_range = stretch_factor_rescaled_labels*label_range
-        midpoint_range = np.mean(min_max_label)
-        if reverse:
-            rescaled_labels_tmp = (labels-midpoint_range)/modified_range
-            rescaled_labels = (rescaled_labels_tmp+0.5)*rescale_factor
-        else:
-            rescaled_labels_tmp = (labels/rescale_factor)-0.5
-            rescaled_labels = rescaled_labels_tmp*modified_range+midpoint_range
-        return(rescaled_labels)
-    
-    # def rescale_labels(labels,n_labels,lab_range):
-    #     if n_labels == 0:
-    #         rescaled_labels = labels
-    #     else:
-    #         rescaled_labels = ((labels/lab_range) +0.5) * (n_labels-1)
-    #     return(rescaled_labels)
-
-    def model_init(mode,dropout,dropout_rate,use_bias):
+    def model_init(mode,dropout, dropout_rate, use_bias, l2_regularizer):
         if mode == 'nn-reg':
-            model = build_regression_model(dropout,dropout_rate,use_bias)
-        elif mode == 'nn-class':    
-            model = build_classification_model(dropout,dropout_rate,use_bias)
+            model = build_regression_model(dropout, dropout_rate, use_bias, l2_regularizer)
+        elif mode == 'nn-class':
+            model = build_classification_model(dropout, dropout_rate, use_bias, l2_regularizer)
         return model 
 
     def iter_test_indices(features, n_splits = 5, shuffle = True, seed = None):
@@ -218,11 +278,6 @@ def iucnn_train(dataset,
         accuracy = len(pred[pred == labels_supported])/len(pred)
         dropped_frequency = len(pred)/len(labels)
         return {'predictions': pred, 'accuracy': accuracy, 'retained_samples': dropped_frequency}
-
-    def turn_reg_output_into_softmax(reg_out_rescaled,label_cats):
-            predictions = np.round(reg_out_rescaled, 0).astype(int)
-            softmax_probs_mean = np.array([[len(np.where(predictions[:,i]==j)[0])/len(predictions[:,i]) for j in label_cats] for  i in np.arange(predictions.shape[1])])
-            return softmax_probs_mean
 
     def supersample_classes(train_ids,labels):
         train_ids = np.array(train_ids)
@@ -317,7 +372,8 @@ def iucnn_train(dataset,
         else:
             test_size = int(len(labels)*test_fraction)
             train_index_blocks = [rnd_indx[:-test_size]]
-            test_indices = [rnd_indx[-test_size:]]         
+            test_indices = [rnd_indx[-test_size:]]
+                
         cv = False
         
     train_acc_per_fold = []
@@ -350,8 +406,12 @@ def iucnn_train(dataset,
     for it, __ in enumerate(train_index_blocks):
         if cv:
             test_ids = train_index_blocks[it] # in case of cv, choose one of the k chunks as test set
-            train_ids = np.concatenate(np.array([train_index_blocks[i] for i in list(np.delete(np.arange(len(train_index_blocks)),it))])).astype(int)
-            print("Training CV fold %i/%i on %i training instances (%i test instances)..."%(it+1,cv_k,len(train_ids),len(test_ids)),flush=True)
+            train_ids = np.array([])
+            for i in list(np.delete(np.arange(len(train_index_blocks)), it)):
+                train_ids = np.concatenate((train_ids, train_index_blocks[i]), axis = None)
+            train_ids = train_ids.astype(int)
+            #train_ids = np.concatenate(np.array([train_index_blocks[i] for i in list(np.delete(np.arange(len(train_index_blocks)),it))])).astype(int)
+            print("Training CV fold %i/%i on %i training instances (%i test instances)..." % (it+1, cv_k, len(train_ids), len(test_ids)), flush=True)
         else:
             test_ids = list(test_indices[it])
             train_ids = list(train_index_blocks[it])
@@ -394,34 +454,38 @@ def iucnn_train(dataset,
             print('Running training for set number of epochs: %i'%max_epochs,flush=True)
             tf.random.set_seed(seed)
             # determining optimal number of epochs
-            model = model_init(mode,dropout,dropout_rate,use_bias)
+            model = model_init(mode,dropout, dropout_rate, use_bias, l2_regularizer)
             #model.build((train_set.shape[1],))
             #model.summary()
-            history = model.fit(train_set, 
-                                labels_for_training, 
+            
+            history = model.fit(train_set,
+                                labels_for_training,
                                 epochs=max_epochs,
+                                batch_size=batch_size,
                                 verbose=verbose)
             stopping_point = max_epochs-1
         else:
             tf.random.set_seed(seed)
             # train model
-            model = model_init(mode,dropout,dropout_rate,use_bias)
+            model = model_init(mode,dropout, dropout_rate, use_bias, l2_regularizer)
             #model.build((train_set.shape[1],))
             if verbose:
                 model.summary()
             # The patience parameter is the amount of epochs to check for improvement
             early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience, restore_best_weights=True)
             if cv: # when using CV use test set to determine stopping point
-                history = model.fit(train_set, 
-                                    labels_for_training, 
+                history = model.fit(train_set,
+                                    labels_for_training,
                                     epochs=max_epochs,
+                                    batch_size=batch_size,
                                     validation_data=(test_set,labels_for_testing),
                                     verbose=verbose,
                                     callbacks=[early_stop])
             else:
-                history = model.fit(train_set, 
-                                    labels_for_training, 
+                history = model.fit(train_set,
+                                    labels_for_training,
                                     epochs=max_epochs,
+                                    batch_size=batch_size,
                                     validation_split=0.2,
                                     verbose=verbose,
                                     callbacks=[early_stop])
@@ -513,9 +577,9 @@ def iucnn_train(dataset,
         if save_model:
             if not os.path.exists(path_to_output):
                 os.makedirs(path_to_output)
-            model_outpath = os.path.join(path_to_output, 'nn_model_%i'%it)
+            model_outpath = os.path.join(path_to_output, 'nn_model_%s.keras' % it)
             model.save( model_outpath )
-            print("IUC-NN model saved at: ", model_outpath,flush=True)
+            print("\nIUC-NN model saved at: ", model_outpath, flush=True)
         else:
             model_outpath = ''
         all_model_outpaths.append(model_outpath)
@@ -611,202 +675,53 @@ def iucnn_train(dataset,
 
 
     output = {
-                'test_labels':all_test_labels,
-                'test_predictions':all_test_predictions,
-                'test_instance_names':all_test_instance_names,
-                'test_predictions_raw':all_test_predictions_raw,
+                'test_labels': all_test_labels,
+                'test_predictions': all_test_predictions,
+                'test_instance_names': all_test_instance_names,
+                'test_predictions_raw': all_test_predictions_raw,
                 
-                'training_accuracy':avg_train_acc,
-                'validation_accuracy':avg_validation_acc,
-                'test_accuracy':avg_test_acc,
+                'training_accuracy': avg_train_acc,
+                'validation_accuracy': avg_validation_acc,
+                'test_accuracy': avg_test_acc,
 
-                'training_loss':avg_train_loss,
-                'validation_loss':avg_validation_loss,
+                'training_loss': avg_train_loss,
+                'validation_loss': avg_validation_loss,
                 'test_loss': avg_test_loss,
                 
-                'training_loss_history':training_histories,
-                'validation_loss_history':validation_histories,
+                'training_loss_history': training_histories,
+                'validation_loss_history': validation_histories,
 
-                'training_accuracy_history':train_acc_histories,
-                'validation_accuracy_history':val_acc_histories,
+                'training_accuracy_history': train_acc_histories,
+                'validation_accuracy_history': val_acc_histories,
                 
-                'training_mae_history':train_mae_histories,
-                'validation_mae_history':val_mae_histories,
+                'training_mae_history': train_mae_histories,
+                'validation_mae_history': val_mae_histories,
                 
-                'rescale_labels_boolean':rescale_labels_boolean,
-                'label_rescaling_factor':rescale_factor,
-                'min_max_label':np.array(min_max_label),
-                'label_stretch_factor':stretch_factor_rescaled_labels,
+                'rescale_labels_boolean': rescale_labels_boolean,
+                'label_rescaling_factor': rescale_factor,
+                'min_max_label': np.array(min_max_label),
+                'label_stretch_factor': stretch_factor_rescaled_labels,
                 
-                'activation_function':act_f_out,
-                'trained_model_path':all_model_outpaths,
+                'activation_function': act_f_out,
+                'trained_model_path': all_model_outpaths,
                 
-                'confusion_matrix':confusion_matrix,
-                'mc_dropout':mc_dropout,
-                'accthres_tbl':accthres_tbl,
-                'true_class_count':true_class_count,
-                'predicted_class_count':predicted_class_count,
-                'stopping_point':np.array(stopping_points),
+                'confusion_matrix': confusion_matrix,
+                'mc_dropout': mc_dropout,
+                'accthres_tbl': accthres_tbl,
+                'true_class_count': true_class_count,
+                'predicted_class_count': predicted_class_count,
+                'stopping_point': np.array(stopping_points),
                 
-                'input_data':   {"data":data_train,
-                                "labels":labels_train,
-                                "label_dict":np.unique(orig_labels).astype(str),
-                                "test_data":data_test,
-                                "test_labels":labels_test,
-                                "id_data":train_instance_names,
-                                "id_test_data":test_instance_names,
-                                "file_name":os.path.basename(path_to_output),
-                                "feature_names":feature_names
+                'input_data':   {"data": data_train,
+                                "labels": labels_train,
+                                "label_dict": np.unique(orig_labels).astype(str),
+                                "test_data": data_test,
+                                "test_labels": labels_test,
+                                "id_data": train_instance_names,
+                                "id_test_data": test_instance_names,
+                                "file_name": os.path.basename(path_to_output),
+                                "feature_names": feature_names
                                 }
     }
     
     return output
-
-
-#error_min_max = [test_predictions_raw-test_predictions_raw_std[0],test_predictions_raw_std[1]-test_predictions_raw]
-#plt.errorbar(test_predictions_raw, test_labels, xerr=error_min_max, fmt='o')
-
-    # print("\nVStopped after:", len(history.history['val_loss']), "epochs")
-    # print("\nTraining loss: {:5.3f}".format(history.history['loss'][-1]))
-    # print("Training accuracy: {:5.3f}".format(history.history['accuracy'][-1]))
-    # print("\nValidation loss: {:5.3f}".format(history.history['val_loss'][-1]))
-    # print("Validation accuracy: {:5.3f}".format(history.history['val_accuracy'][-1]))
-
-    # print("\nTest accuracy: {:5.3f}".format(test_acc))
-
-
-#plt.scatter(train_labels_scaled,model.predict(train_set).flatten())
-
-#import matplotlib.pyplot as plt
-#import matplotlib.gridspec as gridspec
-
-    # if plot_labels_against_features:    
-    #     # define figure dimensions
-    #     n_features = train_set.shape[1]
-    #     n_cols = 4
-    #     n_rows = int(n_features/n_cols)+1
-    #     fig = plt.figure(figsize=(n_cols*2, n_rows*2))
-    #     # specify grid
-    #     grid = gridspec.GridSpec(n_rows, n_cols, wspace=0.2, hspace=0.2)
-    #     for i,feature in enumerate(train_set.T):
-    #         fig.add_subplot(grid[i])
-    #         plt.scatter(feature,train_labels,c='black',ec=None,s=10)
-    #         plt.scatter(feature,train_predictions,c='red',ec=None,s=10,alpha=0.5)
-    #         if rescale_features:
-    #             plt.xlim(-0.04,1.04)
-    #     fig.savefig(os.path.join(path_to_output,'predicted_labels_by_feature.png'),bbox_inches='tight', dpi = 200)
-    #     plt.close()
-    
-    # if plot_training_stats:
-    #     fig = plt.figure()
-    #     if mode == 'nn-class':            
-    #         grid = gridspec.GridSpec(2, 1, wspace=0.2, hspace=0.4)
-    #         fig.add_subplot(grid[0])
-    #         if patience == 0:
-    #             acc_at_best_epoch = history_fit.history["val_accuracy"][stopping_point]
-    #             plt.plot(history_fit.history['accuracy'],label='train')
-    #             plt.plot(history_fit.history['val_accuracy'], label='val')
-    #             plt.axvline(stopping_point,linestyle='--',color='red')
-    #             plt.axhline(acc_at_best_epoch,linestyle='--',color='red')
-    #         else:
-    #             plt.plot(history.history['accuracy'],label='train')
-    #             plt.plot(history.history['val_accuracy'], label='val')
-    #         plt.title('Accuracy')
-    #         fig.add_subplot(grid[1])
-    #         if patience == 0:
-    #             loss_at_best_epoch = history_fit.history["val_loss"][stopping_point]
-    #             plt.plot(history_fit.history['loss'],label='train')
-    #             plt.plot(history_fit.history['val_loss'], label='val')
-    #             plt.axvline(stopping_point,linestyle='--',color='red')
-    #             plt.axhline(loss_at_best_epoch,linestyle='--',color='red')
-    #         else:
-    #             plt.plot(history.history['loss'],label='train')
-    #             plt.plot(history.history['val_loss'], label='val')                
-    #         plt.title('Loss')                
-    #     elif mode == 'nn-reg':
-    #         if patience == 0:
-    #             mae_at_best_epoch = history_fit.history["val_mae"][stopping_point]
-    #             plt.plot(history_fit.history['mae'],label='train')
-    #             plt.plot(history_fit.history['val_mae'], label='val')
-    #             plt.axvline(stopping_point,linestyle='--',color='red')
-    #             plt.axhline(mae_at_best_epoch,linestyle='--',color='red')
-    #         else:
-    #             plt.plot(history.history['mae'],label='train')
-    #             plt.plot(history.history['val_mae'], label='val')
-    #         plt.title('Mean Average Error') 
-    #     plt.legend(loc='lower right')
-    #     fig.savefig(os.path.join(path_to_output,'training_stats.pdf'),bbox_inches='tight')
-
-    # def build_regression_model():
-    #     architecture = [tf.keras.layers.Dense(n_layers[0],
-    #                                  activation=act_f,
-    #                                  input_shape=[train_set.shape[1]], 
-    #                                  use_bias=use_bias)]
-    #     for i in n_layers[1:]:
-    #         architecture.append(tf.keras.layers.Dense(i, activation=act_f))
-        
-    #     if act_f_out:
-    #         architecture.append(tf.keras.layers.Dense(1, activation=act_f_out))    #sigmoid or tanh
-    #     else:
-    #         architecture.append(tf.keras.layers.Dense(1))
-    #     model = tf.keras.Sequential(architecture)
-    #     optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
-    #     model.compile(loss='mean_squared_error',
-    #                   optimizer=optimizer,
-    #                   metrics=['mae','mse'])
-    #     return model
-
-    # def build_regression_model():
-    #     input_layer = tf.keras.layers.Input(shape=(train_set.shape[1],))
-    #     if dropout:
-    #         input_layer = tf.keras.layers.Dropout(dropout_rate)(input_layer,training=True)
-    #     hidden_1 = tf.keras.layers.Dense(n_layers[0],activation=act_f,use_bias=use_bias)(input_layer)
-    #     if dropout:
-    #         hidden_1 = tf.keras.layers.Dropout(dropout_rate)(hidden_1,training=True)
-    #     for i in n_layers[1:]:
-    #         hidden_n = tf.keras.layers.Dense(i, activation=act_f)(hidden_1)
-    #         if dropout:
-    #             hidden_n = tf.keras.layers.Dropout(dropout_rate)(hidden_n,training=True)
-    #     if act_f_out:
-    #         outputs = tf.keras.layers.Dense(1, activation=act_f_out)(hidden_n)    #sigmoid or tanh
-    #     else:
-    #         outputs = tf.keras.layers.Dense(1)(hidden_n)
-    #     #my_loss = keras.losses.mean_squared_error
-    #     #my_metric = [keras.metrics.mean_absolute_error,keras.metrics.mean_squared_error]
-    #     model = tf.keras.Model(outputs)
-    #     optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
-    #     model.compile(loss='mae',
-    #                   optimizer=optimizer,
-    #                   metrics=['mae','mse'])
-    #     return model
-
-    # class RegressionModel(tf.keras.Model):
-    #     def __init__(self, **kwargs):
-    #         super().__init__(**kwargs)
-    #         self.input_layer = tf.keras.layers.Flatten(input_shape=(train_set.shape[1],))
-    #         self.hidden1 = tf.keras.layers.Dense(n_layers[0],activation=act_f,use_bias=use_bias)
-    #         self.hidden2 = tf.keras.layers.Dense(n_layers[1],activation=act_f,use_bias=use_bias)
-    #         self.hidden3 = tf.keras.layers.Dense(n_layers[2],activation=act_f,use_bias=use_bias)
-    #         self.output_layer = tf.keras.layers.Dense(1, activation=act_f_out)
-    #         self.dropout_layer = tf.keras.layers.Dropout(rate=dropout_rate)
-        
-    #     def call(self, input, training=None):
-    #         input_layer = self.input_layer(input)
-    #         input_layer = self.dropout_layer(input_layer)
-    #         hidden1 = self.hidden1(input_layer)
-    #         hidden1 = self.dropout_layer(hidden1, training=True)
-    #         hidden2 = self.hidden2(hidden1)
-    #         hidden2 = self.dropout_layer(hidden2, training=True)
-    #         hidden3 = self.hidden3(hidden2)
-    #         hidden3 = self.dropout_layer(hidden3, training=True)
-    #         output_layer = self.output_layer(hidden3)
-    #         return output_layer
-
-
-    # model = RegressionModel()
-    # optimizer = "adam"       # "adam" or tf.keras.optimizers.RMSprop(0.001)
-    # model.compile(loss='mean_squared_error',
-    #               optimizer=optimizer,
-    #               metrics=['mae','mse'])
-
-

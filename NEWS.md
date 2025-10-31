@@ -1,6 +1,16 @@
+# IUCNN 4.0.0 (29.01.2024)
+=========================
+* update to TensorFlow >= 2.14 and Keras 3, requiring python >= 3.9. This breaks backwards compatibility.
+* feature updates:
+	* partial dependence plots visualizing the influence of single features on IUCN status
+	* _unlink_features_within_block_ argument of _iucnn_feature_importance_ function allows block-specific unlinking
+	* _iucnn_train_model_ allows to specify different TensorFlow optimizers
+	* feature importance and status prediction for all cross-validation folds
+* update download links for spatial data
+
 # IUCNN 3.0.0 (29.01.2024)
 =========================
-  * Modified all functions to remove dependencies on retired spatial packages
+* Modified all functions to remove dependencies on retired spatial packages
 
 # IUCNN 2.1.0 (12.05.2022)
 =========================

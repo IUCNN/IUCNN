@@ -108,7 +108,7 @@ iucnn_footprint_features <- function(x,
     }
 
     # load raster
-    footp_inp <-  terra::rast(file.path(download_folder,
+    footp_inp <-  terra::rast(file.path(download_folder, "landuse",
                                         paste("wildareas-v3-",
                                               year, "-human-footprint_geo.tif",
                                               sep = "")))

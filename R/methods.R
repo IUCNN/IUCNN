@@ -1,51 +1,55 @@
 #' @export
 #' @method summary iucnn_model
 summary.iucnn_model <-  function(object,
-                               ...) {
-cat(sprintf("A model of type %s, trained on %s species and %s features.\n\n",
-            object$model,
+                                 ...) {
+  cat(sprintf("A model of type %s, trained on %s species and %s features.\n\n",
+              object$model,
               length(object$input_data$labels),
               length(object$input_data$feature_names)))
 
-cat(sprintf("Training accuracy: %s\n",
-            round(object$training_accuracy, 3)))
-cat(sprintf("Validation accuracy: %s\n",
-            round(object$validation_accuracy, 3)))
-cat(sprintf("Accuracy on unseen data (test set): %s\n\n",
-            round(object$test_accuracy, 3)))
+  cat(sprintf("Training accuracy: %s\n",
+              round(object$training_accuracy, 3)))
+  cat(sprintf("Validation accuracy: %s\n",
+              round(object$validation_accuracy, 3)))
 
-cat(sprintf("Label detail: %s Classes (%s)\n\n",
-            length(object$input_data$label_dict),
-            ifelse(length(object$input_data$label_dict) > 2,
-                   "detailed",
-                   "Threatened/Not Threatened")))
+  if (object$test_fraction > 0.0) {
+    cat(sprintf("Accuracy on unseen data (test set): %s\n\n",
+                round(object$test_accuracy, 3)))
 
-cat("Label representation\n")
+    cat(sprintf("Label detail: %s Classes (%s)\n\n",
+                length(object$input_data$label_dict),
+                ifelse(length(object$input_data$label_dict) > 2,
+                       "detailed",
+                       "Threatened/Not Threatened")))
 
-maxlab <- max(object$test_predictions)
-tel <- data.frame(0:maxlab,
-                  get_cat_count(object$test_predictions,
-                                max_cat = maxlab))
-names(tel) <- c("Var1","Freq")
-trl <- data.frame(0:maxlab,
-                  get_cat_count(object$test_labels,
-                                max_cat = maxlab))
-names(trl) <- c("Var1","Freq")
-lab <- merge(trl,tel, by = "Var1")
+    cat("Label representation\n")
 
-names(lab) <- c("Label", "Input_count", "Estimated_count")
+    maxlab <- max(object$test_predictions)
+    tel <- data.frame(0:maxlab,
+                      get_cat_count(object$test_predictions,
+                                    max_cat = maxlab))
+    names(tel) <- c("Var1","Freq")
+    trl <- data.frame(0:maxlab,
+                      get_cat_count(object$test_labels,
+                                    max_cat = maxlab))
+    names(trl) <- c("Var1","Freq")
+    lab <- merge(trl,tel, by = "Var1")
 
-print(lab)
-cat("\n")
+    names(lab) <- c("Label", "Input_count", "Estimated_count")
 
-cat("Confusion matrix (rows test data and columns predicted):\n")
+    print(lab)
+    cat("\n")
 
-cm <- data.frame(object$confusion_matrix,
-                 row.names = object$input_data$lookup.labels)
+    cat("Confusion matrix (rows test data and columns predicted):\n")
 
-names(cm) <- object$input_data$lookup.labels
+    cm <- data.frame(object$confusion_matrix,
+                     row.names = object$input_data$lookup.labels)
 
-print(cm)
+    names(cm) <- object$input_data$lookup.labels
+
+    print(cm)
+  }
+
 }
 
 #' @export

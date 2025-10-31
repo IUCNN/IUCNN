@@ -6,14 +6,33 @@ Created on Fri Mar  5 17:25:09 2021
 @author: Tobias Andermann (tobiasandermann88@gmail.com)
 """
 
+import os, sys
+# use only one thread
+try:
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+    os.environ["NUMEXPR_NUM_THREADS"] = "1"
+    os.environ['TF_NUM_INTEROP_THREADS'] = '1'
+    os.environ['TF_NUM_INTRAOP_THREADS'] = '1'
+except:
+    pass
+
 import numpy as np
 import tensorflow as tf
-import warnings, os
+import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 try:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # disable tf compilation warning
 except:
     pass
+
+# declare location of the python files make functions of other python files importable
+sys.path.append(os.path.dirname(__file__))
+from IUCNN_predict import rescale_labels
+
 
 def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels):
     prm_est = model.predict(features).flatten()
@@ -22,18 +41,6 @@ def get_regression_accuracy(model,features,labels,rescale_factor,min_max_label,s
     label_predictions = np.round(prm_est_rescaled, 0).astype(int).flatten()
     cat_acc = np.sum(label_predictions==real_labels)/len(label_predictions)
     return cat_acc, label_predictions, prm_est_rescaled
-
-def rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=False):
-    label_range = max(min_max_label)-min(min_max_label)
-    modified_range = stretch_factor_rescaled_labels*label_range
-    midpoint_range = np.mean(min_max_label)
-    if reverse:
-        rescaled_labels_tmp = (labels-midpoint_range)/modified_range
-        rescaled_labels = (rescaled_labels_tmp+0.5)*rescale_factor
-    else:
-        rescaled_labels_tmp = (labels/rescale_factor)-0.5
-        rescaled_labels = rescaled_labels_tmp*modified_range+midpoint_range
-    return(rescaled_labels)
 
 
 def feature_importance_nn( input_features,
@@ -64,6 +71,9 @@ def feature_importance_nn( input_features,
         selected_features = [[i] for i in feature_indices]
         feature_block_names = [[i] for i in feature_names]
 
+    # if there is no block-specific information if permutation of the features within the block should be independent
+    if isinstance(unlink_features_within_block, bool):
+        unlink_features_within_block = [unlink_features_within_block] * len(selected_features)
 
     model = tf.keras.models.load_model(model_dir)
     if iucnn_mode == 'nn-class':
@@ -88,7 +98,7 @@ def feature_importance_nn( input_features,
         n_accuracies = []
         for i in np.arange(n_permutations):
             features = input_features.copy()
-            if unlink_features_within_block and len(feature_block)>1:
+            if unlink_features_within_block[block_id] and len(feature_block)>1:
                 for feature_index in feature_block: # shuffle each column by it's own random indices
                     features[:,feature_index] = np.random.permutation(features[:,feature_index])
             else:
@@ -96,7 +106,7 @@ def feature_importance_nn( input_features,
             if iucnn_mode == 'nn-class':
                 __, accuracy = model.evaluate(features,true_labels,verbose=0)
         
-            elif iucnn_mode == 'nn-reg':       
+            elif iucnn_mode == 'nn-reg':
                 accuracy,__,__ = get_regression_accuracy(model,features,true_labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels)
             
             n_accuracies.append(accuracy)     
