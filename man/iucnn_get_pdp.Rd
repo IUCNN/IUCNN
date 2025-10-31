@@ -72,9 +72,9 @@ feature_blocks <- list(color = c('yellow', 'blue', 'red'), aoo = 'aoo')
 pdp <- iucnn_get_pdp(x = train_output,
                     dropout_reps = 10,
                     feature_blocks = feature_blocks)
-}
 
 # plot partial dependence probabilities
 plot(pdp)
+}
 
 }

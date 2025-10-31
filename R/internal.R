@@ -687,3 +687,11 @@ get_mc_dropout_cat_counts <- function(mc_dropout_probs,
 }
 
 rnd <- function(x) trunc(x + sign(x) * 0.5)
+
+
+majority_vote <- function(x) {
+  x <- unlist(x)
+  Freq <- table(x)
+  Out <- as.numeric(names(which.max(Freq)))
+  return(Out)
+}

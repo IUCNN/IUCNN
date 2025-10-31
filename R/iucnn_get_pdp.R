@@ -50,10 +50,10 @@
 #'pdp <- iucnn_get_pdp(x = train_output,
 #'                     dropout_reps = 10,
 #'                     feature_blocks = feature_blocks)
-#'}
 #'
 #'# plot partial dependence probabilities
 #'plot(pdp)
+#'}
 #'
 #' @export
 #' @importFrom reticulate import source_python
