@@ -17,6 +17,8 @@
 #'mar = c(10, 4, 0.5, 0.5)
 #'
 #' @export
+#' @importFrom graphics axis lines polygon rect segments
+#' @importFrom stats prcomp
 #'
 plot.iucnn_pdp <- function(x,
                            ask = FALSE,
