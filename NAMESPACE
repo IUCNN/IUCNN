@@ -2,6 +2,7 @@
 
 S3method(plot,iucnn_featureimportance)
 S3method(plot,iucnn_model)
+S3method(plot,iucnn_pdp)
 S3method(plot,iucnn_predictions)
 S3method(summary,iucnn_model)
 export(iucnn_best_model)
