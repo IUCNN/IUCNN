@@ -1,4 +1,4 @@
-# IUCNN 4.0.0 (29.01.2024)
+# IUCNN 4.0.0 (31.10.2025)
 =========================
 * update to TensorFlow >= 2.14 and Keras 3, requiring python >= 3.9. This breaks backwards compatibility.
 * feature updates:
