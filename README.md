@@ -37,7 +37,7 @@ install_tensorflow()
 4. Install the npBNN python library from Github:
 
 ```r
-reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v0.1.11.tar.gz", pip = TRUE)
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v.0.1.17.tar.gz", pip = TRUE)
 ```
 
 
