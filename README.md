@@ -10,15 +10,15 @@
 Batch estimation of species' IUCN Red List threat status using neural networks.
 
 # Installation
-1. Install IUCNN directly from Github using devtools (some users, will need to start from the step 2 before installing the package). 
+1. Install IUCNN directly from Github using remotes (some users, will need to start from the step 2 before installing the package). These steps only need to be performed once.
 ```r
-install.packages("devtools")
-library(devtools)
+install.packages("remotes")
+library(remotes)
 
 install_github("IUCNN/IUCNN")
 ```
 
-2. Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the `install_miniconda()` function of the package `reticulate` (this will need c. 3 GB disk space).
+2. Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the `install_miniconda()` function of the package `reticulate` (this will need ca. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
 ```r
 install.packages("reticulate")
@@ -26,15 +26,15 @@ library(reticulate)
 install_miniconda()
 ```
 
-3. Install the tensorflow python library. Note that you may need a fresh
-R session to run the following code.
+3. Create a Miniconda environment called _icunn_ and install the required Python libraries. Note that you may need a fresh R session to run the following code.
 ```r
-install_github("rstudio/tensorflow")
-library(tensorflow)
-install_tensorflow()
+conda_create(envname = "iucnn", python_version = "3.12", packages = c("numpy", "scipy", "matplotlib", "pandas", "tensorflow", "keras"))
 ```
 
-4. Install the npBNN python library from Github:
+4. Activate the Miniconda environment.
+use_condaenv("iucnn")
+
+5. Install the npBNN python library from Github:
 
 ```r
 reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v.0.1.17.tar.gz", pip = TRUE)
@@ -47,6 +47,8 @@ There are multiple models and features available in IUCNN. A vignette with a det
 A simple example run for terrestrial orchids (This will take about 5 minutes and download ~500MB of data for feature preparation into the working directory):
 
 ```r
+library(reticulate)
+use_condaenv("iucnn")
 library(tidyverse)
 library(IUCNN)
 

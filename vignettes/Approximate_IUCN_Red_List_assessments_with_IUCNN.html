@@ -124,29 +124,37 @@ library(magrittr)
 library(dplyr)
 </code></pre>
 <h1 id="chp:installation">Installation</h1>
-<p>IUCNN uses R and python. All software needed can be installed via R.</p>
 <ol>
-<li>install IUCNN directly from Github using devtools.</li>
+<li>Install IUCNN directly from Github using remotes (some users, will need to start from the step 2 before installing the package). These steps only need to be performed once.</li>
 </ol>
-<pre><code class="language-r">install.packages(&quot;devtools&quot;)
-library(devtools)
-library(IUCNN)
+<pre><code class="language-r">install.packages(&quot;remotes&quot;)
+library(remotes)
+
+install_github(&quot;IUCNN/IUCNN&quot;)
 </code></pre>
 <ol start="2">
-<li>Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
+<li>Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the <code>install_miniconda()</code> function of the package <code>reticulate</code> (this will need ca. 3 GB disk space).
 If problems occur at this step, check the excellent <a href="https://rstudio.github.io/reticulate/index.html">documentation of reticulate</a>.</li>
 </ol>
-<pre><code class="language-r">install.packages(reticulate)
-library(&quot;reticulate&quot;)
+<pre><code class="language-r">install.packages(&quot;reticulate&quot;)
+library(reticulate)
 install_miniconda()
 </code></pre>
-<p>If python has been installed before, you can specify the python version to sue with <code>reticulate::use_python()</code></p>
 <ol start="3">
-<li>Install the tensorflow Python module. IUCNN uses functions of the python modules tensorflow and npBNN which also need to be installed (via R).</li>
+<li>Create a Miniconda environment called <em>icunn</em> and install the required Python libraries. Note that you may need a fresh R session to run the following code.</li>
 </ol>
-<pre><code class="language-r">reticulate::conda_install(&quot;r-reticulate&quot;,&quot;tensorflow=2.18&quot;)
-reticulate::py_install(&quot;https://github.com/dsilvestro/npBNN/archive/v0.1.17.tar.gz&quot;, 
-                       pip = TRUE)
+<pre><code class="language-r">conda_create(envname = &quot;iucnn&quot;, python_version = &quot;3.12&quot;, packages = c(&quot;numpy&quot;, &quot;scipy&quot;, &quot;matplotlib&quot;, &quot;pandas&quot;, &quot;tensorflow&quot;, &quot;keras&quot;))
+</code></pre>
+<ol start="4">
+<li>
+<p>Activate the Miniconda environment.
+use_condaenv(“iucnn”)</p>
+</li>
+<li>
+<p>Install the npBNN python library from Github:</p>
+</li>
+</ol>
+<pre><code class="language-r">reticulate::py_install(&quot;https://github.com/dsilvestro/npBNN/archive/refs/tags/v.0.1.17.tar.gz&quot;, pip = TRUE)
 </code></pre>
 <h1 id="chp:prepare-input-data">Prepare input data</h1>
 <p>IUCNN predicts the IUCN RL categories of Not Evaluated and Data Deficient species based on geographic occurrence records and a set of training species for which occurrence records and IUCN assessments that are available for a set of reference species (training data). The amount of training species necessary varies with the number of categories but in general “the more, the better”. Ideally, the training dataset should comprise several hundred species or more, so a typical scenario will be to use all available plant species from a region, or all available species from a plant family. If the availability of training species is limited, a good option can be to reduce detail and predict Possibly threatened (IUCN categories “CR”, “EN”, and “VU”) v. Not threatened species (“NT” and “LC”).</p>

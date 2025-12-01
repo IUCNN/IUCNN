@@ -23,33 +23,35 @@ library(dplyr)
 ```
 
 # Installation
-IUCNN uses R and python. All software needed can be installed via R.
 
-1. install IUCNN directly from Github using devtools. 
-
+1. Install IUCNN directly from Github using remotes (some users, will need to start from the step 2 before installing the package). These steps only need to be performed once.
 ```r
-install.packages("devtools")
-library(devtools)
-library(IUCNN)
+install.packages("remotes")
+library(remotes)
+
+install_github("IUCNN/IUCNN")
 ```
 
-2. Python needs to be installed, for instance using miniconda and reticulated from within R (this will need c. 3 GB disk space).
+2. Since some of IUCNNs functions are run in Python, IUCNN needs to set up a Python environment. This is easily done from within R, using the `install_miniconda()` function of the package `reticulate` (this will need ca. 3 GB disk space).
 If problems occur at this step, check the excellent [documentation of reticulate](https://rstudio.github.io/reticulate/index.html).
-
 ```r
-install.packages(reticulate)
-library("reticulate")
+install.packages("reticulate")
+library(reticulate)
 install_miniconda()
 ```
 
-If python has been installed before, you can specify the python version to sue with `reticulate::use_python()`
+3. Create a Miniconda environment called _icunn_ and install the required Python libraries. Note that you may need a fresh R session to run the following code.
+```r
+conda_create(envname = "iucnn", python_version = "3.12", packages = c("numpy", "scipy", "matplotlib", "pandas", "tensorflow", "keras"))
+```
 
-3. Install the tensorflow Python module. IUCNN uses functions of the python modules tensorflow and npBNN which also need to be installed (via R). 
+4. Activate the Miniconda environment.
+use_condaenv("iucnn")
+
+5. Install the npBNN python library from Github:
 
 ```r
-reticulate::conda_install("r-reticulate","tensorflow=2.18")
-reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/v0.1.17.tar.gz", 
-                       pip = TRUE)
+reticulate::py_install("https://github.com/dsilvestro/npBNN/archive/refs/tags/v.0.1.17.tar.gz", pip = TRUE)
 ```
 
 # Prepare input data
