@@ -144,7 +144,7 @@ iucnn_footprint_features <- function(x,
   }
 
   ## classify the footprint into equal-sized bins
-  footp_ex[, -1] <- apply(footp_ex[, -1],
+  footp_ex[, -1] <- apply(footp_ex[, -1, drop = FALSE],
                           2,
                           function(k){cut(k,
                                           breaks = breaks,
