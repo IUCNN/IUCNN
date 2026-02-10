@@ -99,19 +99,22 @@ iucnn_footprint_features <- function(x,
       return(NULL)
     }
 
-    # download the human footprint raster from https://wcshumanfootprint.org/
-    if (length(year) > 1) {
-      year2 <- as.list(year)
-      lapply(year2, FUN = geodata::footprint, path = download_folder)
-    }else{
-      geodata::footprint(x = year, path = download_folder)
+    # If we switch from year = 1993 to year = 2009,
+    # the footprint file will not be attempt to download and we get an error
+    name_landuse_folder <- file.path(download_folder, "landuse")
+    names_geofiles <- file.path(name_landuse_folder,
+                                paste0("wildareas-v3-",
+                                      year, "-human-footprint_geo.tif"))
+    downloaded_years <- as.numeric(gsub("wildareas-v3-|-human-footprint_geo.tif",
+                                        "", list.files(name_landuse_folder)))
+    missing_year <- any(year %in% downloaded_years == FALSE)
+
+    if (missing_year) {
+      sapply(year, FUN = geodata::footprint, path = download_folder)
     }
 
     # load raster
-    footp_inp <-  terra::rast(file.path(download_folder, "landuse",
-                                        paste("wildareas-v3-",
-                                              year, "-human-footprint_geo.tif",
-                                              sep = "")))
+    footp_inp <- terra::rast(names_geofiles)
 
   }else{
     ## If no, download
