@@ -38,6 +38,7 @@ except:
 # declare location of the python files make functions of other python files importable
 sys.path.append(os.path.dirname(__file__))
 from IUCNN_predict import rescale_labels, turn_reg_output_into_softmax
+from IUCNN_custom_layers import MCDropout
 
 def iucnn_train(dataset,
                 labels,
@@ -72,11 +73,6 @@ def iucnn_train(dataset,
                 test_label_balance_factor = 1.0):
     
     keras.utils.set_random_seed(seed)
-    
-    @keras.saving.register_keras_serializable()
-    class MCDropout(tf.keras.layers.Dropout):
-        def call(self, inputs):
-            return super().call(inputs, training=True)
 
     def get_optimizer(optimizer, optimizer_kwargs):
         opt = optimizer

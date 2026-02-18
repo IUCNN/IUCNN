@@ -13,6 +13,8 @@
 #'calculated for all feature.
 #'@param provide_indices logical. Set to TRUE if custom \code{feature_blocks}
 #'are provided as indices. Default is FALSE.
+#'@param n_cores integer, (default = 1). Number of CPU cores for parallel
+#'processing of cross-validated models.
 #'
 #'@note See \code{vignette("Approximate_IUCN_Red_List_assessments_with_IUCNN")}
 #'  for a tutorial on how to run IUCNN and \code{\link{plot.iucnn_pdp}} for plotting
@@ -64,7 +66,8 @@ iucnn_get_pdp <- function(x,
                           dropout_reps = 100,
                           feature_blocks = list(),
                           include_all_features = FALSE,
-                          provide_indices = FALSE){
+                          provide_indices = FALSE,
+                          n_cores = 1){
 
   if (!any(file.exists(x$trained_model_path))) {
     stop("Model path doesn't exists.
@@ -77,6 +80,7 @@ iucnn_get_pdp <- function(x,
   assert_class(feature_blocks, "list")
   assert_logical(include_all_features)
   assert_logical(provide_indices)
+  assert_numeric(n_cores)
 
   dropout_reps <- as.integer(dropout_reps)
 
@@ -126,7 +130,8 @@ iucnn_get_pdp <- function(x,
                           dropout_reps = dropout_reps,
                           rescale_factor = rescale_factor,
                           min_max_label = min_max_label,
-                          stretch_factor_rescaled_labels = stretch_factor_rescaled_labels)
+                          stretch_factor_rescaled_labels = stretch_factor_rescaled_labels,
+                          n_cores = as.integer(n_cores))
 
     if (length(feature_block_indices[[i]]) == 1) {
       colnames(pdp[[i]][[1]]) <- names(feature_block_indices)[i]

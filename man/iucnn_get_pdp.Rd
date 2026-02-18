@@ -9,7 +9,8 @@ iucnn_get_pdp(
   dropout_reps = 100,
   feature_blocks = list(),
   include_all_features = FALSE,
-  provide_indices = FALSE
+  provide_indices = FALSE,
+  n_cores = 1
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ calculated for all feature.}
 
 \item{provide_indices}{logical. Set to TRUE if custom \code{feature_blocks}
 are provided as indices. Default is FALSE.}
+
+\item{n_cores}{integer, (default = 1). Number of CPU cores for parallel
+processing of cross-validated models.}
 }
 \value{
 A list named according to the feature block with the gradient of the

@@ -21,6 +21,7 @@ except:
 
 import tensorflow as tf
 import numpy as np
+import np_bnn as bn
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -170,7 +171,24 @@ def iucnn_predict(input_raw,
     return  out_dict
 
 
+def get_pdp(arg):
+    if len(arg) == 5:
+        [iucnn_mode, features, num_model_output, model, dropout_reps] = arg
+    else:
+        [iucnn_mode, features, num_model_output, posterior_weight_samples, actFun, output_act_fun] = arg
 
+    if iucnn_mode == 'bnn-class':
+        pred, _ = bn.get_posterior_cat_prob(features,
+                                            posterior_weight_samples,
+                                            actFun=actFun,
+                                            output_act_fun=output_act_fun)
+        pred = np.swapaxes(pred, 0, 1)
+    else:
+        pred = np.zeros((features.shape[0], dropout_reps, num_model_output))
+        for k in range(dropout_reps):
+            pred[:, k, :] = model.predict(features, verbose=0)
+
+    return pred
 
 
 

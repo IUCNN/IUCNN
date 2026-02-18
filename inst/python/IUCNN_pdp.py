@@ -21,6 +21,7 @@ except:
 
 import tensorflow as tf
 import numpy as np
+from multiprocessing import get_context
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -34,7 +35,7 @@ except:
 
 # declare location of the python files make functions of other python files importable
 sys.path.append(os.path.dirname(__file__))
-from IUCNN_predict import rescale_labels, turn_reg_output_into_softmax
+from IUCNN_predict import rescale_labels, turn_reg_output_into_softmax, get_pdp
 
 
 def iucnn_pdp(input_features,
@@ -46,7 +47,8 @@ def iucnn_pdp(input_features,
               dropout_reps,
               rescale_factor,
               min_max_label,
-              stretch_factor_rescaled_labels
+              stretch_factor_rescaled_labels,
+              n_cores
              ):
 
     uncertainty = dropout
@@ -60,9 +62,9 @@ def iucnn_pdp(input_features,
         uncertainty = True
     else:
         if cv_fold == 1:
-            model = [tf.keras.models.load_model(model_dir)]
+            model = [tf.keras.models.load_model(model_dir, custom_objects={'MCDropout': MCDropout})]
         else:
-            model = [tf.keras.models.load_model(model_dir[i]) for i in range(cv_fold)]
+            model = [tf.keras.models.load_model(model_dir[i], custom_objects={'MCDropout': MCDropout}) for i in range(cv_fold)]
 
     if not isinstance(focal_features, list):
         focal_features = [focal_features]
@@ -75,7 +77,6 @@ def iucnn_pdp(input_features,
         num_iucn_cat = int(rescale_factor + 1)
         num_model_output = 1
         label_cats = np.arange(num_iucn_cat)
-        depth_idx, row_idx = np.indices((num_taxa, cv_fold * dropout_reps))
     else:
         num_iucn_cat = min_max_label[1] + 1
         num_model_output = num_iucn_cat
@@ -95,33 +96,48 @@ def iucnn_pdp(input_features,
         sys.exit('No partial dependence probabilities possible for CNN')
 
     else:
+        tmp_features = []
         for i in range(num_pdp_steps):
-            tmp_features = np.copy(input_features)
-            tmp_features[:, focal_features] = pdp_features[i, :]
+            tmp = np.copy(input_features)
+            tmp[:, focal_features] = pdp_features[i, :]
+            tmp_features.append(tmp)
+        tmp_features = np.vstack(tmp_features)
 
-            predictions_raw = np.zeros((num_taxa, cv_fold * dropout_reps, num_model_output))
-            counter = 0
-            for j in range(cv_fold):
-                if iucnn_mode == 'bnn-class':
-                    predictions_raw, _ = bn.get_posterior_cat_prob(tmp_features,
-                                                                   posterior_weight_samples,
-                                                                   actFun=actFun,
-                                                                   output_act_fun=output_act_fun)
-                    predictions_raw = np.swapaxes(predictions_raw, 0, 1)
-                else:
-                    for k in range(dropout_reps):
-                        predictions_raw[:, counter, :] = model[j].predict(tmp_features, verbose=0)
-                        counter += 1
+        args = []
+        for i in range(cv_fold):
+            if iucnn_mode == 'bnn-class':
+               a = [iucnn_mode, tmp_features, num_model_output, posterior_weight_samples, actFun, output_act_fun]
+            else:
+                a = [iucnn_mode, tmp_features, num_model_output, model[i], dropout_reps]
+            args.append(a)
 
+        n_cores = min(n_cores, cv_fold)
+
+        if n_cores == 1:
+            predictions_raw = [get_pdp(args[i]) for i in range(cv_fold)]
+        else:
+            pool = get_context('spawn').Pool(n_cores)
+            predictions_raw = list(pool.imap_unordered(get_pdp, args))
+            pool.close()
+
+        if cv_fold == 1:
+            predictions_raw = predictions_raw[0]
+        else:
+            predictions_raw = np.concatenate(predictions_raw, axis=1)
+
+        for i in range(num_pdp_steps):
+            start = i * num_taxa
+            end = start + num_taxa
+            predictions_raw_i = predictions_raw[start:end, ...]
             if iucnn_mode == 'nn-reg':
-                predictions_rescaled = rescale_labels(predictions_raw, rescale_factor, min_max_label,
+                predictions_rescaled = rescale_labels(predictions_raw_i, rescale_factor, min_max_label,
                                                       stretch_factor_rescaled_labels, reverse=True)
-                predictions_raw = np.zeros((num_taxa, cv_fold * dropout_reps, num_iucn_cat))
+                predictions_raw_i = np.zeros((num_taxa, cv_fold * dropout_reps, num_iucn_cat))
                 predictions_rescaled = np.round(predictions_rescaled, 0).astype(int)
                 predictions_rescaled = np.squeeze(predictions_rescaled, axis=2)
-                predictions_raw[idx_axis0, idx_axis1, predictions_rescaled] = 1.0
+                predictions_raw_i[idx_axis0, idx_axis1, predictions_rescaled] = 1.0
 
-            pred_reps = np.cumsum(predictions_raw, axis=2)
+            pred_reps = np.cumsum(predictions_raw_i, axis=2)
 
             if uncertainty:
                 pred_quantiles = np.quantile(np.mean(pred_reps, axis=0), q=(0.025, 0.975), axis=0)
