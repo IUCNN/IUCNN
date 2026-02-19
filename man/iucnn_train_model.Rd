@@ -33,7 +33,7 @@ iucnn_train_model(
   optimizer = "adam",
   optimizer_args = NULL,
   l2_regularizer = NULL,
-  verbose = 1
+  verbose = 0
 )
 }
 \arguments{
