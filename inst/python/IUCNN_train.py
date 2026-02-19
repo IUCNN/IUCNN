@@ -182,10 +182,10 @@ def iucnn_train(dataset,
             return np.array([]), np.array([]), np.nan, np.nan
         else:
             if mc_dropout:
-                predictions_raw = np.array([model.predict(features) for i in np.arange(dropout_reps)])
+                predictions_raw = np.array([model.predict(features, verbose=0) for i in np.arange(dropout_reps)])
                 predictions_raw_mean = np.mean(predictions_raw,axis=0)
             else:
-                predictions_raw_mean = model.predict(features)
+                predictions_raw_mean = model.predict(features, verbose=0)
             label_predictions = np.argmax(predictions_raw_mean, axis=1)
             true_label_cats = np.argmax(true_labels,axis=1)
             mean_acc_man = np.sum(label_predictions==true_label_cats)/len(label_predictions)
@@ -209,12 +209,12 @@ def iucnn_train(dataset,
         else:   
             if mc_dropout:
                 label_cats = np.arange(rescale_factor+1)
-                prm_est_reps_unscaled = np.array([model.predict(features).flatten() for i in np.arange(dropout_reps)])
+                prm_est_reps_unscaled = np.array([model.predict(features, verbose=0).flatten() for i in np.arange(dropout_reps)])
                 predictions_raw = np.array([rescale_labels(i,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True) for i in prm_est_reps_unscaled])
                 prm_est_mean = turn_reg_output_into_softmax(predictions_raw,label_cats)
                 label_predictions = np.argmax(prm_est_mean, axis=1)
             else:
-                prm_est_mean_unscaled = model.predict(features).flatten()
+                prm_est_mean_unscaled = model.predict(features, verbose=0).flatten()
                 prm_est_mean = rescale_labels(prm_est_mean_unscaled,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True)
                 label_predictions = np.round(prm_est_mean, 0).astype(int).flatten()
             real_labels = rescale_labels(labels,rescale_factor,min_max_label,stretch_factor_rescaled_labels,reverse=True).astype(int).flatten()
@@ -345,7 +345,7 @@ def iucnn_train(dataset,
         min_max_label = [min(labels),max(labels)]
     else:
         quit('Invalid mode provided. Choose from "nn-class", "nn-reg", or "bnn-class"')
-    if balance_classes:
+    if balance_classes and verbose:
         print('Super-sampling minority classes to reach class balance for training.',flush=True)
     
     
@@ -407,11 +407,13 @@ def iucnn_train(dataset,
                 train_ids = np.concatenate((train_ids, train_index_blocks[i]), axis = None)
             train_ids = train_ids.astype(int)
             #train_ids = np.concatenate(np.array([train_index_blocks[i] for i in list(np.delete(np.arange(len(train_index_blocks)),it))])).astype(int)
-            print("Training CV fold %i/%i on %i training instances (%i test instances)..." % (it+1, cv_k, len(train_ids), len(test_ids)), flush=True)
+            if verbose:
+                print("Training CV fold %i/%i on %i training instances (%i test instances)..." % (it+1, cv_k, len(train_ids), len(test_ids)), flush=True)
         else:
             test_ids = list(test_indices[it])
             train_ids = list(train_index_blocks[it])
-            print("Training model on %i training instances (%i test instances)..."%(len(train_ids),len(test_ids)),flush=True)
+            if verbose:
+                print("Training model on %i training instances (%i test instances)..."%(len(train_ids),len(test_ids)),flush=True)
         
         # these are just to keep track of the true, unaltered arrays for output
         orig_train_set = dataset[train_ids,:]
@@ -447,7 +449,8 @@ def iucnn_train(dataset,
 
         # run for set number of iterations, no early stopping
         if no_validation:
-            print('Running training for set number of epochs: %i'%max_epochs,flush=True)
+            if verbose:
+                print('Running training for set number of epochs: %i'%max_epochs,flush=True)
             tf.random.set_seed(seed)
             # determining optimal number of epochs
             model = model_init(mode,dropout, dropout_rate, use_bias, l2_regularizer)
@@ -468,7 +471,10 @@ def iucnn_train(dataset,
             if verbose:
                 model.summary()
             # The patience parameter is the amount of epochs to check for improvement
-            early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this, patience=patience, restore_best_weights=True)
+            early_stop = tf.keras.callbacks.EarlyStopping(monitor=optimize_for_this,
+                                                          patience=patience,
+                                                          verbose=verbose,
+                                                          restore_best_weights=True)
             if cv: # when using CV use test set to determine stopping point
                 history = model.fit(train_set,
                                     labels_for_training,
@@ -489,7 +495,8 @@ def iucnn_train(dataset,
                 stopping_point = np.argmax(history.history[optimize_for_this])
             else:
                 stopping_point = np.argmin(history.history[optimize_for_this])
-            print('Best training epoch: ',stopping_point+1,flush=True)
+            if verbose:
+                print('Best training epoch: ',stopping_point+1,flush=True)
     
         if mode == 'nn-class':
             train_predictions, train_predictions_raw, train_loss, train_acc = get_classification_accuracy(model,train_set,labels_for_training,mc_dropout,dropout_reps,loss=True)
@@ -575,7 +582,8 @@ def iucnn_train(dataset,
                 os.makedirs(path_to_output)
             model_outpath = os.path.join(path_to_output, 'nn_model_%s.keras' % it)
             model.save( model_outpath )
-            print("\nIUC-NN model saved at: ", model_outpath, flush=True)
+            if verbose:
+                print("\nIUC-NN model saved at: ", model_outpath, flush=True)
         else:
             model_outpath = ''
         all_model_outpaths.append(model_outpath)

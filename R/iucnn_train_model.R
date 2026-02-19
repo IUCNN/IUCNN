@@ -173,7 +173,7 @@ iucnn_train_model <- function(x,
                         optimizer = "adam",
                         optimizer_args = NULL,
                         l2_regularizer = NULL,
-                        verbose = 1){
+                        verbose = 0){
 
   # Check input
   ## assertion
@@ -439,7 +439,7 @@ the BNN will instead provide posterior estimates of the class labels for each in
                       seed = as.integer(seed),
                       instance_names = as.matrix(instance_names),
                       feature_names = names(dataset),
-                      verbose = 0,
+                      verbose = as.integer(verbose),
                       max_epochs = as.integer(max_epochs),
                       patience = patience,
                       batch_size = as.integer(batch_size),

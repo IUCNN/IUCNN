@@ -117,7 +117,7 @@ def iucnn_predict(input_raw,
                 predictions_raw = pred_sum
                 mc_dropout_probs = pred_sum/dropout_reps
             else:
-                predictions_raw = np.array([model.predict(feature_set) for i in np.arange(dropout_reps)])
+                predictions_raw = np.array([model.predict(feature_set, verbose=0) for i in np.arange(dropout_reps)])
                 mc_dropout_probs = np.mean(predictions_raw, axis=0)
             predictions = np.argmax(mc_dropout_probs, axis=1)
         else:
