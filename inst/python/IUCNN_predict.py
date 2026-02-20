@@ -21,11 +21,9 @@ except:
 
 import tensorflow as tf
 import numpy as np
-import np_bnn as bn
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# disable progress bars globally (instead of model.predict(..., verbose=0), which does not supress progress output in R)
 tf.keras.utils.disable_interactive_logging()
 
 try:
@@ -178,6 +176,7 @@ def get_pdp(arg):
         [iucnn_mode, features, num_model_output, posterior_weight_samples, actFun, output_act_fun] = arg
 
     if iucnn_mode == 'bnn-class':
+        import np_bnn as bn
         pred, _ = bn.get_posterior_cat_prob(features,
                                             posterior_weight_samples,
                                             actFun=actFun,
