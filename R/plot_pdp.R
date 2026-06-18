@@ -5,8 +5,9 @@
 #'See \code{\link{iucnn_get_pdp}}
 #'@param ask logical (default = FALSE). Indicates if the user is prompted before
 #'a new plot will be displayed.
-#'@param features (default=NULL). Optional vector of integers specifying which
-#'feature's PD should be plotted, e.g. c(1, 3).
+#'@param features (default=NULL). Optional vector specifying which feature's PD
+#'should be plotted. Either numeric e.g. c(1, 3) or characters e.g.
+#'c("aoo", "lat_range")
 #'@param uncertainty logical (default = TRUE). Should dropout uncertainty be
 #'displayed?
 #'@param order_categorical (default = TRUE). Should categorical features be
@@ -14,11 +15,12 @@
 #'displayed in the order given by x.
 #'@param col (default = NULL). Custom colors for IUCNN categories.
 #'@param ... further graphical parameter for par, e.g. different margins with
-#'mar = c(10, 4, 0.5, 0.5)
+#'mar = c(10, 4, 0.5, 0.5) or plot, e.g. xaxt='n'
 #'
 #' @export
 #' @importFrom graphics axis lines polygon rect segments
 #' @importFrom stats prcomp
+#' @importFrom checkmate assert_class assert_logical assert_choice
 #'
 plot.iucnn_pdp <- function(x,
                            ask = FALSE,
@@ -26,9 +28,26 @@ plot.iucnn_pdp <- function(x,
                            uncertainty = TRUE,
                            order_categorical = TRUE,
                            col = NULL, ...) {
+
+  # assertions
+  assert_class(x, "iucnn_pdp")
+  assert_logical(ask)
+  assert_choice(typeof(features), c("NULL", "integer", "double", "character"))
+  assert_logical(uncertainty)
+  assert_logical(order_categorical)
+  assert_choice(typeof(col), c("NULL", "integer", "double", "character"))
+
   if (is.null(features)) {
     features <- 1:length(x)
   }
+  else if (is.character(features)) {
+    features_in_pdp <- features %in% names(x)
+    if (!all(features_in_pdp)) {
+      cat("Missing features", features[!features_in_pdp])
+    }
+    features <- match(features, names(x))
+  }
+
   feature_names <- names(x)
 
   num_cats <- ncol(x[[features[1]]]$pdp)
@@ -44,8 +63,9 @@ plot.iucnn_pdp <- function(x,
     uncertainty <- length(x[[1]]) == 4
   }
 
-  for (fe in 1:length(features)) {
-    cont_feature <- is.numeric(x[[features[fe]]]$feature[, 1])
+
+  for (fe in features) {
+    cont_feature <- is.numeric(x[[fe]]$feature[, 1])
     x_fe <- x[[fe]]
 
     ask_plot <- FALSE
@@ -59,7 +79,7 @@ plot.iucnn_pdp <- function(x,
            ylim = c(0, 1), xlim = range(x_fe$feature),
            xlab = feature_names[fe],
            ylab = "Partial dependence probability",
-           xaxs = "i", yaxs = "i")
+           xaxs = "i", yaxs = "i", ...)
 
       if (uncertainty) {
         polygon(x = c(x_fe$feature, rev(x_fe$feature)),
@@ -123,7 +143,7 @@ plot.iucnn_pdp <- function(x,
           rect(xleft = j - 1, xright = j, ybottom = l[1], ytop = u[1],
                border = NA, col = "grey")
           segments(x0 = j - 1, x1 = j, y0 = p[1], y1 = p[1],
-                   col = col[2], lwd = 3)
+                   col = col[2], lwd = 3, lend = 1)
           if (num_cats == 5) {
             for (k in 2:(num_cats - 1)) {
               rect(xleft = j - 1, xright = j, ybottom = u[k - 1], ytop = l[k],
@@ -131,7 +151,7 @@ plot.iucnn_pdp <- function(x,
               rect(xleft = j - 1, xright = j, ybottom = u[k], ytop = l[k],
                    border = NA, col = "grey")
               segments(x0 = j - 1, x1 = j, y0 = p[k], y1 = p[k],
-                       col = col[k + 1], lwd = 3)
+                       col = col[k + 1], lwd = 3, lend = 1)
             }
           }
           rect(xleft = j - 1, xright = j, ybottom = u[num_cats - 1], ytop = 1,

@@ -51,7 +51,7 @@ def iucnn_pdp(input_features,
               n_cores
              ):
 
-    uncertainty = dropout
+    uncertainty = dropout and dropout_reps > 0
     if iucnn_mode == 'bnn-class':
         import np_bnn as bn
         weight_pickle = model_dir

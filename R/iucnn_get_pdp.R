@@ -60,7 +60,7 @@
 #' @export
 #' @importFrom reticulate import source_python
 #' @importFrom checkmate assert_class assert_numeric assert_character
-#'   assert_logical
+#' @importFrom checkmate assert_logical
 #'
 iucnn_get_pdp <- function(x,
                           dropout_reps = 100,

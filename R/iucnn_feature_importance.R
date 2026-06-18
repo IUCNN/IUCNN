@@ -77,7 +77,7 @@
 #' @export
 #' @importFrom reticulate import source_python
 #' @importFrom checkmate assert_class assert_numeric assert_character
-#'   assert_logical
+#' @importFrom checkmate assert_logical
 
 iucnn_feature_importance <- function(x,
                                      feature_blocks = list(),

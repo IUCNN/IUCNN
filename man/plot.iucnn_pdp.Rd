@@ -22,8 +22,9 @@ See \code{\link{iucnn_get_pdp}}}
 \item{ask}{logical (default = FALSE). Indicates if the user is prompted before
 a new plot will be displayed.}
 
-\item{features}{(default=NULL). Optional vector of integers specifying which
-feature's PD should be plotted, e.g. c(1, 3).}
+\item{features}{(default=NULL). Optional vector specifying which feature's PD
+should be plotted. Either numeric e.g. c(1, 3) or characters e.g.
+c("aoo", "lat_range")}
 
 \item{uncertainty}{logical (default = TRUE). Should dropout uncertainty be
 displayed?}
@@ -35,7 +36,7 @@ displayed in the order given by x.}
 \item{col}{(default = NULL). Custom colors for IUCNN categories.}
 
 \item{...}{further graphical parameter for par, e.g. different margins with
-mar = c(10, 4, 0.5, 0.5)}
+mar = c(10, 4, 0.5, 0.5) or plot, e.g. xaxt='n'}
 }
 \description{
 Plot partial dependence probabilities
