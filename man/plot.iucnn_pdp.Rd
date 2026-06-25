@@ -10,6 +10,7 @@
   features = NULL,
   uncertainty = TRUE,
   order_categorical = TRUE,
+  xlab = NULL,
   col = NULL,
   ...
 )
@@ -32,6 +33,8 @@ displayed?}
 \item{order_categorical}{(default = TRUE). Should categorical features be
 ordered so that extinction risk increased along the x-axis or should they be
 displayed in the order given by x.}
+
+\item{xlab}{(default = NULL). Vector of name used for the x-axis label.}
 
 \item{col}{(default = NULL). Custom colors for IUCNN categories.}
 

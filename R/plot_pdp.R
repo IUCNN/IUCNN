@@ -13,6 +13,7 @@
 #'@param order_categorical (default = TRUE). Should categorical features be
 #'ordered so that extinction risk increased along the x-axis or should they be
 #'displayed in the order given by x.
+#'@param xlab (default = NULL). Vector of name used for the x-axis label.
 #'@param col (default = NULL). Custom colors for IUCNN categories.
 #'@param ... further graphical parameter for par, e.g. different margins with
 #'mar = c(10, 4, 0.5, 0.5) or plot, e.g. xaxt='n'
@@ -27,6 +28,7 @@ plot.iucnn_pdp <- function(x,
                            features = NULL,
                            uncertainty = TRUE,
                            order_categorical = TRUE,
+                           xlab = NULL,
                            col = NULL, ...) {
 
   # assertions
@@ -35,6 +37,7 @@ plot.iucnn_pdp <- function(x,
   assert_choice(typeof(features), c("NULL", "integer", "double", "character"))
   assert_logical(uncertainty)
   assert_logical(order_categorical)
+  assert_choice(typeof(xlab), c("NULL", "character"))
   assert_choice(typeof(col), c("NULL", "integer", "double", "character"))
 
   if (is.null(features)) {
@@ -43,12 +46,20 @@ plot.iucnn_pdp <- function(x,
   else if (is.character(features)) {
     features_in_pdp <- features %in% names(x)
     if (!all(features_in_pdp)) {
-      cat("Missing features", features[!features_in_pdp])
+      cat("Missing features:", features[!features_in_pdp])
     }
     features <- match(features, names(x))
   }
 
   feature_names <- names(x)
+  if (!is.null(xlab)) {
+    stopifnot(
+      "Selected features and names provides by xlab must have equal lengths" =
+        length(features) == length(xlab)
+      )
+    feature_names[features] <- xlab
+  }
+
 
   num_cats <- ncol(x[[features[1]]]$pdp)
 
