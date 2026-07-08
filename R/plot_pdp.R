@@ -28,6 +28,7 @@ plot.iucnn_pdp <- function(x,
                            features = NULL,
                            uncertainty = TRUE,
                            order_categorical = TRUE,
+                           ylab = "Partial dependence probability",
                            xlab = NULL,
                            col = NULL, ...) {
 
@@ -37,7 +38,8 @@ plot.iucnn_pdp <- function(x,
   assert_choice(typeof(features), c("NULL", "integer", "double", "character"))
   assert_logical(uncertainty)
   assert_logical(order_categorical)
-  assert_choice(typeof(xlab), c("NULL", "character"))
+  assert_choice(typeof(xlab), c("NULL", "character", "expression"))
+  assert_choice(typeof(ylab), c("NULL", "character", "expression"))
   assert_choice(typeof(col), c("NULL", "integer", "double", "character"))
 
   if (is.null(features)) {
@@ -89,7 +91,7 @@ plot.iucnn_pdp <- function(x,
       plot(0, 0, type = "n",
            ylim = c(0, 1), xlim = range(x_fe$feature),
            xlab = feature_names[fe],
-           ylab = "Partial dependence probability",
+           ylab = ylab,
            xaxs = "i", yaxs = "i", ...)
 
       if (uncertainty) {
@@ -138,7 +140,7 @@ plot.iucnn_pdp <- function(x,
       par(las = 1, ask = ask_plot, ...)
       plot(0, 0, type = "n",
            ylim = c(0, 1), xlim = c(0, nrow(x_fe$feature)),
-           xlab = "", ylab = "Partial dependence probability",
+           xlab = "", ylab = ylab,
            xaxs = "i", yaxs = "i", xaxt = "n")
       par(las = 2)
       axis(side = 1, at = 1:nrow(x_fe$feature) - 0.5,

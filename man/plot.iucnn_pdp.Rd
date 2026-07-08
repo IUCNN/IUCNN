@@ -10,6 +10,7 @@
   features = NULL,
   uncertainty = TRUE,
   order_categorical = TRUE,
+  ylab = "Partial dependence probability",
   xlab = NULL,
   col = NULL,
   ...
